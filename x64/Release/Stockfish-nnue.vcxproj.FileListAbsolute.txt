@@ -1,0 +1,1 @@
+C:\Stockfish-nnue\x64\Release\Stockfish-nnue.exe

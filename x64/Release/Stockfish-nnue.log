@@ -1,0 +1,75 @@
+﻿cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+  benchmark.cpp
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+  bitbase.cpp
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+  bitboard.cpp
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+  endgame.cpp
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+  evaluate.cpp
+  evaluate_mir_inv_tools.cpp
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+  evaluate_nnue.cpp
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
+cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+  evaluate_nnue_learner.cpp
+  castling_right.cpp
+  enpassant.cpp
+  half_kp.cpp
+  half_relative_kp.cpp
+  k.cpp
+  p.cpp
+  nnue_test_command.cpp
+  sfen_packer.cpp
+  gensfen2019.cpp
+  learner.cpp
+  learning_tools.cpp
+  multi_think.cpp
+  main.cpp
+  material.cpp
+  misc.cpp
+  movegen.cpp
+  movepick.cpp
+  pawns.cpp
+  position.cpp
+  psqt.cpp
+  search.cpp
+  tbprobe.cpp
+  thread.cpp
+  timeman.cpp
+  tt.cpp
+  tune.cpp
+  uci.cpp
+  ucioption.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 4131 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  Stockfish-nnue.vcxproj -> C:\Stockfish-nnue\x64\Release\Stockfish-nnue.exe
