@@ -66,7 +66,7 @@ namespace Eval {
 
 		// Initialize learning
 		void InitializeTraining(double eta1, uint64_t eta1_epoch,
-			double eta2, uint64_t eta2_epoch, double eta3) (
+        		double eta2, uint64_t eta2_epoch, double eta3) {
 				std::cout << "Initializing NN training for "
 				<< GetArchitectureString() << std::endl;
 
@@ -150,7 +150,7 @@ namespace Eval {
 			std::sort(training_features.begin(), training_features.end());
 
 			auto& unique_features = example.training_features[color];
-			for (const auto& feature : training_features) (
+			for (const auto& feature : training_features) {
 				if (!unique_features.empty() &&
 					feature.GetIndex() == unique_features.back().GetIndex()) {
 					unique_features.back() += feature;

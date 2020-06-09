@@ -36,6 +36,6 @@
   ucioption.cpp
   Generating code
   Previous IPDB not found, fall back to full compilation.
-  All 4131 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 5990 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   Stockfish-nnue.vcxproj -> C:\Stockfish-nnue\x64\Release\Stockfish-nnue.exe

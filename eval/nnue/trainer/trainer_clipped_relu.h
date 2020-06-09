@@ -23,7 +23,7 @@ namespace Eval {
 		public:
 			// factory function
 			static std::shared_ptr<Trainer> Create(
-				LayerType* target_layer, FeatureTransformer* feature_transformer) (
+      LayerType* target_layer, FeatureTransformer* feature_transformer) {
 					return std::shared_ptr<Trainer>(
 						new Trainer(target_layer, feature_transformer));
 		}
