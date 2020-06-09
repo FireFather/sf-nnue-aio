@@ -342,6 +342,8 @@ void UCI::loop(int argc, char* argv[]) {
   Position pos;
   string token, cmd;
   StateListPtr states(new std::deque<StateInfo>(1));
+	
+  is_ready();
 
   pos.set(StartFEN, false, &states->back(), Threads.main());
 
@@ -377,7 +379,7 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "go")         go(pos, is, states);
       else if (token == "position")   position(pos, is, states);
       else if (token == "ucinewgame") Search::clear();
-      else if (token == "isready")    is_ready();
+      else if (token == "isready")    sync_cout << "readyok" << sync_endl;
 
       // Additional custom non-UCI commands, mainly for debugging.
       // Do not use these commands during a search!
