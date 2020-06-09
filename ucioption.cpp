@@ -36,176 +36,182 @@ UCI::OptionsMap Options; // Global object
 
 namespace UCI {
 
-/// 'On change' actions, triggered by an option's value change
-void on_clear_hash(const Option&) { Search::clear(); }
-void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
-void on_logger(const Option& o) { start_logger(o); }
-void on_threads(const Option& o) { Threads.set(size_t(o)); }
-void on_tb_path(const Option& o) { Tablebases::init(o); }
-void on_eval_dir(const Option& o) { load_eval_finished = false; }
+	/// 'On change' actions, triggered by an option's value change
+	void on_clear_hash(const Option&) { Search::clear(); }
+	void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
+	void on_logger(const Option& o) { start_logger(o); }
+	void on_threads(const Option& o) { Threads.set(size_t(o)); }
+	void on_tb_path(const Option& o) { Tablebases::init(o); }
+	void on_eval_dir(const Option& o) { load_eval_finished = false; }
 
+	/// Our case insensitive less() function as required by UCI protocol
+	bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const {
 
-/// Our case insensitive less() function as required by UCI protocol
-bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const {
+		return std::lexicographical_compare(s1.begin(), s1.end(), s2.begin(), s2.end(),
+			[](char c1, char c2) { return tolower(c1) < tolower(c2); });
+	}
 
-  return std::lexicographical_compare(s1.begin(), s1.end(), s2.begin(), s2.end(),
-         [](char c1, char c2) { return tolower(c1) < tolower(c2); });
-}
+	/// init() initializes the UCI options to their hard-coded default values
 
+	void init(OptionsMap& o) {
 
-/// init() initializes the UCI options to their hard-coded default values
+		// at most 2^32 clusters.
+		constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
 
-void init(OptionsMap& o) {
-
-  // at most 2^32 clusters.
-  constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
-
-  o["Debug Log File"]        << Option("", on_logger);
-  o["Contempt"]              << Option(24, -100, 100);
-  o["Analysis Contempt"]     << Option("Both var Off var White var Black var Both", "Both");
-  o["Threads"]               << Option(1, 1, 512, on_threads);
-  o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
-  o["Clear Hash"]            << Option(on_clear_hash);
-  o["Ponder"]                << Option(false);
-  o["MultiPV"]               << Option(1, 1, 500);
-  o["Skill Level"]           << Option(20, 0, 20);
-  o["Move Overhead"]         << Option(10, 0, 5000);
-  o["Minimum Thinking Time"] << Option( 0, 0, 5000);
-  o["Slow Mover"]            << Option(100, 10, 1000);
-  o["nodestime"]             << Option(0, 0, 10000);
-  o["UCI_Chess960"]          << Option(false);
-  o["UCI_AnalyseMode"]       << Option(false);
-  o["UCI_LimitStrength"]     << Option(false);
-  o["UCI_Elo"]               << Option(1350, 1350, 2850);
-  o["SyzygyPath"]            << Option("<empty>", on_tb_path);
-  o["SyzygyProbeDepth"]      << Option(1, 1, 100);
-  o["Syzygy50MoveRule"]      << Option(true);
-  o["SyzygyProbeLimit"]      << Option(7, 0, 7);
-  // 評価関数フォルダ。これを変更したとき、評価関数を次のisreadyタイミングで読み直す必要がある。
-  o["EvalDir"]               << Option("eval", on_eval_dir);
-  // isreadyタイミングで評価関数を読み込まれると、新しい評価関数の変換のために
-  // test evalconvertコマンドを叩きたいのに、その新しい評価関数がないがために
-  // このコマンドの実行前に異常終了してしまう。
-  // そこでこの隠しオプションでisready時の評価関数の読み込みを抑制して、
-  // test evalconvertコマンドを叩く。
-  o["SkipLoadingEval"]       << Option(false);
-  // 定跡の指し手を何手目まで用いるか
-  o["BookMoves"] << Option(16, 0, 10000);
+		o["Debug Log File"] << Option("", on_logger);
+		o["Contempt"] << Option(24, -100, 100);
+		o["Analysis Contempt"] << Option("Both var Off var White var Black var Both", "Both");
+		o["Threads"] << Option(1, 1, 512, on_threads);
+		o["Hash"] << Option(16, 1, MaxHashMB, on_hash_size);
+		o["Clear Hash"] << Option(on_clear_hash);
+		o["Ponder"] << Option(false);
+		o["MultiPV"] << Option(1, 1, 500);
+		o["Skill Level"] << Option(20, 0, 20);
+		o["Move Overhead"] << Option(10, 0, 5000);
+		o["Minimum Thinking Time"] << Option(0, 0, 5000);
+		o["Slow Mover"] << Option(100, 10, 1000);
+		o["nodestime"] << Option(0, 0, 10000);
+		o["UCI_Chess960"] << Option(false);
+		o["UCI_AnalyseMode"] << Option(false);
+		o["UCI_LimitStrength"] << Option(false);
+		o["UCI_Elo"] << Option(1350, 1350, 2850);
+		o["SyzygyPath"] << Option("<empty>", on_tb_path);
+		o["SyzygyProbeDepth"] << Option(1, 1, 100);
+		o["Syzygy50MoveRule"] << Option(true);
+		o["SyzygyProbeLimit"] << Option(7, 0, 7);
+		// Evaluation function folder. When this is changed, it is necessary to reread the evaluation function at the next isready timing.
+		o["EvalDir"] << Option("eval", on_eval_dir);
+		// When the evaluation function is loaded at the isready timing, the conversion of the new evaluation function
+		// I want to hit the test eval convert command, but there is no new evaluation function
+		// Abends before executing this command.
+		// Therefore, with this hidden option, you can suppress the loading of the evaluation function when isready,
+		// Hit the test eval convert command.
+		o["SkipLoadingEval"] << Option(false);
+		// how many moves to use a fixed move
+		o["BookMoves"] << Option(16, 0, 10000);
 
 #if defined(EVAL_LEARN)
-  // 評価関数の学習を行なうときは、評価関数の保存先のフォルダを変更できる。
-  // デフォルトではevalsave。このフォルダは事前に用意されているものとする。
-  // このフォルダ配下にフォルダを"0/","1/",…のように自動的に掘り、そこに評価関数ファイルを保存する。
-  o["EvalSaveDir"] << Option("evalsave");
+		// When learning the evaluation function, you can change the folder to save the evaluation function.
+		// Evalsave by default. This folder shall be prepared in advance.
+		// Dig a folder under this folder automatically like "0/", "1/", ... and save the evaluation function file there.
+		o["EvalSaveDir"] << Option("evalsave");
 #endif
-}
+	}
 
 
-/// operator<<() is used to print all the options default values in chronological
-/// insertion order (the idx field) and in the format defined by the UCI protocol.
+	/// operator<<() is used to print all the options default values 窶銀喫n chronological
+	/// insertion order (the idx field) and in the format defined by the UCI protocol.
 
-std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
+	std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
 
-  for (size_t idx = 0; idx < om.size(); ++idx)
-      for (const auto& it : om)
-          if (it.second.idx == idx)
-          {
-              const Option& o = it.second;
-              os << "\noption name " << it.first << " type " << o.type;
+		for (size_t idx = 0; idx < om.size(); ++idx)
+			for (const auto& it : om)
+				if (it.second.idx == idx)
+				{
+					const Option& o = it.second;
+					os << "\noption name " << it.first << " type " << o.type;
 
-              if (o.type == "string" || o.type == "check" || o.type == "combo")
-                  os << " default " << o.defaultValue;
+					if (o.type == "string" || o.type == "check" || o.type == "combo")
+						os << " default " << o.defaultValue;
 
-              if (o.type == "spin")
-                  os << " default " << int(stof(o.defaultValue))
-                     << " min "     << o.min
-                     << " max "     << o.max;
+					if (o.type == "spin")
+						os << " default " << int(stof(o.defaultValue))
+						<< " min " << o.min
+						<< " max " << o.max;
 
-              break;
-          }
+					break;
+				}
 
-  return os;
-}
-
-
-/// Option class constructors and conversion operators
-
-Option::Option(const char* v, OnChange f) : type("string"), min(0), max(0), on_change(f)
-{ defaultValue = currentValue = v; }
-
-Option::Option(bool v, OnChange f) : type("check"), min(0), max(0), on_change(f)
-{ defaultValue = currentValue = (v ? "true" : "false"); }
-
-Option::Option(OnChange f) : type("button"), min(0), max(0), on_change(f)
-{}
-
-Option::Option(double v, int minv, int maxv, OnChange f) : type("spin"), min(minv), max(maxv), on_change(f)
-{ defaultValue = currentValue = std::to_string(v); }
-
-Option::Option(const char* v, const char* cur, OnChange f) : type("combo"), min(0), max(0), on_change(f)
-{ defaultValue = v; currentValue = cur; }
-
-Option::operator double() const {
-  assert(type == "check" || type == "spin");
-  return (type == "spin" ? stof(currentValue) : currentValue == "true");
-}
-
-Option::operator std::string() const {
-  assert(type == "string");
-  return currentValue;
-}
-
-bool Option::operator==(const char* s) const {
-  assert(type == "combo");
-  return   !CaseInsensitiveLess()(currentValue, s)
-        && !CaseInsensitiveLess()(s, currentValue);
-}
+		return os;
+	}
 
 
-/// operator<<() inits options and assigns idx in the correct printing order
+	/// Option class constructors and conversion operators
 
-void Option::operator<<(const Option& o) {
+	Option::Option(const char* v, OnChange f) : type("string"), min(0), max(0), on_change(f)
+	{
+		defaultValue = currentValue = v;
+	}
 
-  static size_t insert_order = 0;
+	Option::Option(bool v, OnChange f) : type("check"), min(0), max(0), on_change(f)
+	{
+		defaultValue = currentValue = (v ? "true" : "false");
+	}
 
-  *this = o;
-  idx = insert_order++;
-}
+	Option::Option(OnChange f) : type("button"), min(0), max(0), on_change(f)
+	{}
+
+	Option::Option(double v, int minv, int maxv, OnChange f) : type("spin"), min(minv), max(maxv), on_change(f)
+	{
+		defaultValue = currentValue = std::to_string(v);
+	}
+
+	Option::Option(const char* v, const char* cur, OnChange f) : type("combo"), min(0), max(0), on_change(f)
+	{
+		defaultValue = v; currentValue = cur;
+	}
+
+	Option::operator double() const {
+		assert(type == "check" || type == "spin");
+		return (type == "spin" ? stof(currentValue) : currentValue == "true");
+	}
+
+	Option::operator std::string() const {
+		assert(type == "string");
+		return currentValue;
+	}
+
+	bool Option::operator==(const char* s) const {
+		assert(type == "combo");
+		return !CaseInsensitiveLess()(currentValue, s)
+			&& !CaseInsensitiveLess()(s, currentValue);
+	}
 
 
-/// operator=() updates currentValue and triggers on_change() action. It's up to
-/// the GUI to check for option's limits, but we could receive the new value
-/// from the user by console window, so let's check the bounds anyway.
+	/// operator<<() inits options and assigns idx in the correct printing order
 
-Option& Option::operator=(const string& v) {
+	void Option::operator<<(const Option& o) {
 
-  assert(!type.empty());
+		static size_t insert_order = 0;
 
-  if (   (type != "button" && v.empty())
-      || (type == "check" && v != "true" && v != "false")
-      || (type == "spin" && (stof(v) < min || stof(v) > max)))
-      return *this;
+		*this = o;
+		idx = insert_order++;
+	}
 
-  if (type == "combo")
-  {
-      OptionsMap comboMap; // To have case insensitive compare
-      string token;
-      std::istringstream ss(defaultValue);
-      while (ss >> token)
-          comboMap[token] << Option();
-      if (!comboMap.count(v) || v == "var")
-          return *this;
-  }
 
-  if (type != "button")
-      currentValue = v;
+	/// operator=() updates currentValue and triggers on_change() action. It's up to
+	/// the GUI to check for option's limits, but we could receive the new value
+	/// from the user by console window, so let's check the bounds anyway.
 
-  if (on_change)
-      on_change(*this);
+	Option& Option::operator=(const string& v) {
 
-  return *this;
-}
+		assert(!type.empty());
 
-// 評価関数を読み込んだかのフラグ。これはevaldirの変更にともなってfalseにする。
-bool load_eval_finished = false;
+		if ((type != "button" && v.empty())
+			|| (type == "check" && v != "true" && v != "false")
+			|| (type == "spin" && (stof(v) < min || stof(v) > max)))
+			return *this;
+
+		if (type == "combo")
+		{
+			OptionsMap comboMap; // To have case insensitive compare
+			string token;
+			std::istringstream ss(defaultValue);
+			while (ss >> token)
+				comboMap[token] << Option();
+			if (!comboMap.count(v) || v == "var")
+				return *this;
+		}
+
+		if (type != "button")
+			currentValue = v;
+
+		if (on_change)
+			on_change(*this);
+
+		return *this;
+	}
+
+	// Flag whether the evaluation function has been read. This is set to false when evaldir is changed.
+	bool load_eval_finished = false;
 } // namespace UCI

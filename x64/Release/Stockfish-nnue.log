@@ -1,46 +1,12 @@
-﻿cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
-  benchmark.cpp
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
+﻿  benchmark.cpp
   bitbase.cpp
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
   bitboard.cpp
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
   endgame.cpp
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
   evaluate.cpp
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
   evaluate_mir_inv_tools.cpp
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
   evaluate_nnue.cpp
   evaluate_nnue_learner.cpp
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
   castling_right.cpp
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
-cl : command line warning D9025: overriding '/DEVAL_LEARN' with '/UEVAL_LEARN'
-cl : command line warning D9025: overriding '/DUSE_BLAS' with '/UUSE_BLAS'
   enpassant.cpp
   half_kp.cpp
   half_relative_kp.cpp

@@ -1,4 +1,4 @@
-// NNUE•]‰¿ŠÖ”‚Ì“ü—Í“Á’¥—ÊK‚Ì’è‹`
+ï»¿//Definition of input feature quantity K of NNUE evaluation function
 
 #if defined(EVAL_NNUE)
 
@@ -7,41 +7,41 @@
 
 namespace Eval {
 
-  namespace NNUE {
+	namespace NNUE {
 
-    namespace Features {
+		namespace Features {
 
-      // “Á’¥—Ê‚Ì‚¤‚¿A’l‚ª1‚Å‚ ‚éƒCƒ“ƒfƒbƒNƒX‚ÌƒŠƒXƒg‚ğæ“¾‚·‚é
-      void EnPassant::AppendActiveIndices(
-        const Position& pos, Color perspective, IndexList* active) {
-        // ƒRƒ“ƒpƒCƒ‰‚ÌŒx‚ğ‰ñ”ğ‚·‚é‚½‚ßA”z—ñƒTƒCƒY‚ª¬‚³‚¢ê‡‚Í‰½‚à‚µ‚È‚¢
-        if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
+			// Get a list of indices with a value of 1 among the features
+			void EnPassant::AppendActiveIndices(
+				const Position& pos, Color perspective, IndexList* active) {
+				// do nothing if array size is small to avoid compiler warning
+				if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 
-        auto epSquare = pos.state()->epSquare;
-        if (epSquare == SQ_NONE) {
-          return;
-        }
+				auto epSquare = pos.state()->epSquare;
+				if (epSquare == SQ_NONE) {
+					return;
+				}
 
-        if (perspective == BLACK) {
-          epSquare = Inv(epSquare);
-        }
+				if (perspective == BLACK) {
+					epSquare = Inv(epSquare);
+				}
 
-        auto file = file_of(epSquare);
-        active->push_back(file);
-      }
+				auto file = file_of(epSquare);
+				active->push_back(file);
+			}
 
-      // “Á’¥—Ê‚Ì‚¤‚¿Aˆêè‘O‚©‚ç’l‚ª•Ï‰»‚µ‚½ƒCƒ“ƒfƒbƒNƒX‚ÌƒŠƒXƒg‚ğæ“¾‚·‚é
-      void EnPassant::AppendChangedIndices(
-        const Position& pos, Color perspective,
-        IndexList* removed, IndexList* added) {
-        // Not implemented.
-        assert(false);
-      }
+			// Get a list of indexes whose values â€‹â€‹have changed from the previous one among the feature quantities
+			void EnPassant::AppendChangedIndices(
+				const Position& pos, Color perspective,
+				IndexList* removed, IndexList* added) {
+				// Not implemented.
+				assert(false);
+			}
 
-    }  // namespace Features
+		} // namespace Features
 
-  }  // namespace NNUE
+	} // namespace NNUE
 
-}  // namespace Eval
+} // namespace Eval
 
-#endif  // defined(EVAL_NNUE)
+#endif // defined(EVAL_NNUE)

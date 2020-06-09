@@ -100,9 +100,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>EVAL_NNUE;EVAL_LEARN;USE_EVAL_HASH;USE_AVX2;USE_SSE2;ENABLE_TEST_CMD;USE_BLAS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EVAL_NNUE;USE_EVAL_HASH;USE_AVX2;USE_SSE2;ENABLE_TEST_CMD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <UndefinePreprocessorDefinitions>EVAL_LEARN;USE_BLAS;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
