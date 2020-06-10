@@ -63,7 +63,7 @@ struct StateInfo {
 #if defined(EVAL_NNUE)
   Eval::NNUE::Accumulator accumulator;
 
-  // �]���l�̍����v�Z�̊Ǘ��p
+// For management of evaluation value difference calculation
   Eval::DirtyPiece dirtyPiece;
 #endif  // defined(EVAL_NNUE)
 };
@@ -81,7 +81,7 @@ typedef std::unique_ptr<std::deque<StateInfo>> StateListPtr;
 /// traversing the search tree.
 class Thread;
 
-// pack���ꂽsfen
+// packed sfen
 struct PackedSfen { uint8_t data[32]; };
 
 class Position {
@@ -135,7 +135,7 @@ public:
 
   // Properties of moves
   [[nodiscard]] bool legal(Move m) const;
-  [[nodiscard]] bool pseudo_legal(const Move m) const;
+  [[nodiscard]] bool pseudo_legal(Move m) const;
   [[nodiscard]] bool capture(Move m) const;
   [[nodiscard]] bool capture_or_promotion(Move m) const;
   [[nodiscard]] bool gives_check(Move m) const;
@@ -184,32 +184,32 @@ public:
 #if defined(EVAL_NNUE) || defined(EVAL_LEARN)
   // --- StateInfo
 
-  // ���݂̋ǖʂɑΉ�����StateInfo��Ԃ��B
-  // ���Ƃ��΁Astate()->capturedPiece�ł���΁A�O�ǖʂŕߊl���ꂽ��i�[����Ă���B
-  [[nodiscard]] StateInfo* state() const { return st; }
+  // Returns the StateInfo corresponding to the current situation.
+  // For example, if state()->capturedPiece, the pieces captured in the previous phase are stored.
+ [[nodiscard]] StateInfo* state() const {return st;}
 
-  // �]���֐��Ŏg�����߂́A�ǂ̋�ԍ��̋�ǂ��ɂ��邩�Ȃǂ̏��B
-  [[nodiscard]] const Eval::EvalList* eval_list() const { return &evalList; }
-#endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)
+  // Information such as where which piece number is used for the evaluation function.
+ [[nodiscard]] const Eval::EvalList* eval_list() const {return &evalList;}
+#endif // defined(EVAL_NNUE) || defined(EVAL_LEARN)
 
 #if defined(EVAL_LEARN)
-  // -- sfen���w���p
+  // --sfenization helper
 
-  // pack���ꂽsfen�𓾂�B�����Ɏw�肵���o�b�t�@�ɕԂ��B
-  // gamePly��pack�Ɋ܂߂Ȃ��B
+  // Get the packed sfen. Returns to the buffer specified in the argument.
+  // do not include gamePly in pack.
   void sfen_pack(PackedSfen& sfen);
 
-  // ��sfen��o�R����ƒx���̂Œ���pack���ꂽsfen��Z�b�g����֐��������B
-  // pos.set(sfen_unpack(data),si,th); �Ɠ����B
-  // �n���ꂽ�ǖʂɖ�肪�����āA�G���[�̂Ƃ��͔�0��Ԃ��B
-  // PackedSfen��gamePly�͊܂܂Ȃ��̂ŕ����ł��Ȃ��B������ݒ肵�����̂ł���Έ����Ŏw�肷�邱�ƁB
+  // ↑ Since it is slow via sfen, I made a function to set the packed sfen directly.
+  // Equivalent to pos.set(sfen_unpack(data),si,th);.
+  // If there is a problem with the passed phase and there is an error, non-zero is returned.
+  // PackedSfen does not include gamePly so it cannot be restored. If you want to set it, specify it with an argument.
   int set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread* th, bool mirror = false);
 
-  // �ՖʂƎ��A��Ԃ�^���āA����sfen��Ԃ��B
+  // Give the board, hand piece, and turn, and return the sfen.
   //static std::string sfen_from_rawdata(Piece board[81], Hand hands[2], Color turn, int gamePly);
 
-  // c���̋ʂ̈ʒu��Ԃ��B
-  [[nodiscard]] Square king_square(Color c) const { return pieceList[make_piece(c, KING)][0]; }
+  // Returns the position of the ball on the c side.
+ [[nodiscard]] Square king_square(Color c) const {return pieceList[make_piece(c, KING)][0];}
 #endif // EVAL_LEARN
 
 private:
@@ -226,7 +226,7 @@ private:
   void do_castling(Color us, Square from, Square& to, Square& rfrom, Square& rto);
 
 #if defined(EVAL_NNUE)
-  // �Տ��sq�̏��ɂ�����PieceNumber��Ԃ��B
+  // Returns the PieceNumber of the piece in the sq box on the board.
   [[nodiscard]] PieceNumber piece_no_of(Square sq) const;
 #endif  // defined(EVAL_NNUE)
 
@@ -248,7 +248,7 @@ private:
   bool chess960;
 
 #if defined(EVAL_NNUE) || defined(EVAL_LEARN)
-  // �]���֐��ŗp�����̃��X�g
+  // List of pieces used in the evaluation function
   Eval::EvalList evalList;
 #endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)
 };
@@ -296,19 +296,23 @@ inline Bitboard Position::pieces(Color c, PieceType pt1, PieceType pt2) const {
   return pieces(c) & (pieces(pt1) | pieces(pt2));
 }
 
-template<PieceType Pt> inline int Position::count(Color c) const {
+template<PieceType Pt>
+int Position::count(Color c) const {
   return pieceCount[make_piece(c, Pt)];
 }
 
-template<PieceType Pt> inline int Position::count() const {
+template<PieceType Pt>
+int Position::count() const {
   return count<Pt>(WHITE) + count<Pt>(BLACK);
 }
 
-template<PieceType Pt> inline const Square* Position::squares(Color c) const {
+template<PieceType Pt>
+const Square* Position::squares(Color c) const {
   return pieceList[make_piece(c, Pt)];
 }
 
-template<PieceType Pt> inline Square Position::square(Color c) const {
+template<PieceType Pt>
+Square Position::square(Color c) const {
   assert(pieceCount[make_piece(c, Pt)] == 1);
   return squares<Pt>(c)[0];
 }
@@ -371,7 +375,7 @@ inline bool Position::advanced_pawn_push(Move m) const {
 }
 
 inline int Position::pawns_on_same_color_squares(Color c, Square s) const {
-  return popcount(pieces(c, PAWN) & ((DarkSquares & s) ? DarkSquares : ~DarkSquares));
+  return popcount(pieces(c, PAWN) & (DarkSquares & s ? DarkSquares : ~DarkSquares));
 }
 
 inline Key Position::key() const {
@@ -424,7 +428,7 @@ inline bool Position::capture_or_promotion(Move m) const {
 inline bool Position::capture(Move m) const {
   assert(is_ok(m));
   // Castling is encoded as "king captures rook"
-  return (!empty(to_sq(m)) && type_of(m) != CASTLING) || type_of(m) == ENPASSANT;
+  return !empty(to_sq(m)) && type_of(m) != CASTLING || type_of(m) == ENPASSANT;
 }
 
 inline Piece Position::captured_piece() const {
@@ -452,12 +456,12 @@ inline void Position::remove_piece(Square s) {
   // do_move() and then replace it in undo_move() we will put it at the end of
   // the list and not in its original place, it means index[] and pieceList[]
   // are not invariant to a do_move() + undo_move() sequence.
-  Piece pc = board[s];
+  const auto pc = board[s];
   byTypeBB[ALL_PIECES] ^= s;
   byTypeBB[type_of(pc)] ^= s;
   byColorBB[color_of(pc)] ^= s;
   /* board[s] = NO_PIECE;  Not needed, overwritten by the capturing one */
-  Square lastSquare = pieceList[pc][--pieceCount[pc]];
+  const auto lastSquare = pieceList[pc][--pieceCount[pc]];
   index[lastSquare] = index[s];
   pieceList[pc][index[lastSquare]] = lastSquare;
   pieceList[pc][pieceCount[pc]] = SQ_NONE;
@@ -469,8 +473,8 @@ inline void Position::move_piece(Square from, Square to) {
 
   // index[from] is not updated and becomes stale. This works as long as index[]
   // is accessed just by known occupied squares.
-  Piece pc = board[from];
-  Bitboard fromTo = from | to;
+  const auto pc = board[from];
+  const auto fromTo = from | to;
   byTypeBB[ALL_PIECES] ^= fromTo;
   byTypeBB[type_of(pc)] ^= fromTo;
   byColorBB[color_of(pc)] ^= fromTo;
