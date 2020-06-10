@@ -9,29 +9,25 @@
 #include "../layers/affine_transform.h"
 #include "../layers/clipped_relu.h"
 
-namespace Eval {
+namespace Eval::NNUE
+{
 
-  namespace NNUE {
+	// Input features used in evaluation function
+	using RawFeatures = Features::FeatureSet<Features::K, Features::P,
+		Features::CastlingRight>;
 
-    // Input features used in evaluation function
-    using RawFeatures = Features::FeatureSet<Features::K, Features::P,
-      Features::CastlingRight>;
+	// Number of input feature dimensions after conversion
+	constexpr IndexType kTransformedFeatureDimensions = 256;
 
-    // Number of input feature dimensions after conversion
-    constexpr IndexType kTransformedFeatureDimensions = 256;
+	namespace Layers {
 
-    namespace Layers {
+		// define network structure
+		using InputLayer = InputSlice<kTransformedFeatureDimensions * 2>;
+		using HiddenLayer1 = ClippedReLU<AffineTransform<InputLayer, 32>>;
+		using HiddenLayer2 = ClippedReLU<AffineTransform<HiddenLayer1, 32>>;
+		using OutputLayer = AffineTransform<HiddenLayer2, 1>;
 
-      // define network structure
-      using InputLayer = InputSlice<kTransformedFeatureDimensions * 2>;
-      using HiddenLayer1 = ClippedReLU<AffineTransform<InputLayer, 32>>;
-      using HiddenLayer2 = ClippedReLU<AffineTransform<HiddenLayer1, 32>>;
-      using OutputLayer = AffineTransform<HiddenLayer2, 1>;
+	} // namespace Layers
 
-    } // namespace Layers
-
-    using Network = Layers::OutputLayer;
-
-  } // namespace NNUE
-
+	using Network = Layers::OutputLayer;
 } // namespace Eval

@@ -5,43 +5,35 @@
 #include "enpassant.h"
 #include "index_list.h"
 
-namespace Eval {
+namespace Eval::NNUE::Features
+{
 
-	namespace NNUE {
+	// Get a list of indices with a value of 1 among the features
+	void EnPassant::AppendActiveIndices(
+		const Position& pos, Color perspective, IndexList* active) {
+		// do nothing if array size is small to avoid compiler warning
+		if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 
-		namespace Features {
+		auto epSquare = pos.state()->epSquare;
+		if (epSquare == SQ_NONE) {
+			return;
+		}
 
-			// Get a list of indices with a value of 1 among the features
-			void EnPassant::AppendActiveIndices(
-				const Position& pos, Color perspective, IndexList* active) {
-				// do nothing if array size is small to avoid compiler warning
-				if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
+		if (perspective == BLACK) {
+			epSquare = Inv(epSquare);
+		}
 
-				auto epSquare = pos.state()->epSquare;
-				if (epSquare == SQ_NONE) {
-					return;
-				}
+		auto file = file_of(epSquare);
+		active->push_back(file);
+	}
 
-				if (perspective == BLACK) {
-					epSquare = Inv(epSquare);
-				}
-
-				auto file = file_of(epSquare);
-				active->push_back(file);
-			}
-
-			// Get a list of indexes whose values ​​have changed from the previous one among the feature quantities
-			void EnPassant::AppendChangedIndices(
-				const Position& pos, Color perspective,
-				IndexList* removed, IndexList* added) {
-				// Not implemented.
-				assert(false);
-			}
-
-		} // namespace Features
-
-	} // namespace NNUE
-
+	// Get a list of indexes whose values ​​have changed from the previous one among the feature quantities
+	void EnPassant::AppendChangedIndices(
+		const Position& pos, Color perspective,
+		IndexList* removed, IndexList* added) {
+		// Not implemented.
+		assert(false);
+	}
 } // namespace Eval
 
 #endif // defined(EVAL_NNUE)
