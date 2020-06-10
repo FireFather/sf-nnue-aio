@@ -125,11 +125,11 @@ extern ExtBonaPiece kpp_board_index[PIECE_NB];
 struct EvalList
 {
 // List of frame numbers used in evaluation function (FV38 type)
-BonaPiece* piece_list_fw() const {return const_cast<BonaPiece*>(pieceListFw);}
-BonaPiece* piece_list_fb() const {return const_cast<BonaPiece*>(pieceListFb);}
+[[nodiscard]] BonaPiece* piece_list_fw() const {return const_cast<BonaPiece*>(pieceListFw);}
+[[nodiscard]] BonaPiece* piece_list_fb() const {return const_cast<BonaPiece*>(pieceListFb);}
 
 // Convert the specified piece_no piece to ExtBonaPiece type and return it.
-ExtBonaPiece bona_piece(PieceNumber piece_no) const
+[[nodiscard]] ExtBonaPiece bona_piece(PieceNumber piece_no) const
 {
 ExtBonaPiece bp;
 bp.fw = pieceListFw[piece_no];
@@ -143,7 +143,7 @@ set_piece_on_board(piece_no, BonaPiece(kpp_board_index[pc].fw + sq), BonaPiece(k
 }
 
 // Returns the PieceNumber corresponding to a box on the board.
-PieceNumber piece_no_of_board(Square sq) const {return piece_no_list_board[sq];}
+[[nodiscard]] PieceNumber piece_no_of_board(Square sq) const {return piece_no_list_board[sq];}
 
 // Initialize the pieceList.
 // Set the value of unused pieces to BONA_PIECE_ZERO in case you want to deal with dropped pieces.
@@ -180,7 +180,7 @@ piece_no_list_board[sq] = piece_no;
 // Length of piece list
 // 38 fixed
 public:
-int length() const {return PIECE_NUMBER_KING;}
+[[nodiscard]] int length() const {return PIECE_NUMBER_KING;}
 
 // Must be a multiple of 4 to use VPGATHERDD.
 // In addition, KPPT type evaluation functions, etc. are based on the assumption that the 39th and 40th elements are zero.

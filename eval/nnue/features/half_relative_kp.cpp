@@ -15,7 +15,7 @@ namespace Eval::NNUE::Features
 		constexpr IndexType W = kBoardWidth;
 		constexpr IndexType H = kBoardHeight;
 		const IndexType piece_index = (p - fe_hand_end) / SQUARE_NB;
-		const Square sq_p = static_cast<Square>((p - fe_hand_end) % SQUARE_NB);
+		const auto sq_p = static_cast<Square>((p - fe_hand_end) % SQUARE_NB);
 		const IndexType relative_file = file_of(sq_p) - file_of(sq_k) + (W / 2);
 		const IndexType relative_rank = rank_of(sq_p) - rank_of(sq_k) + (H / 2);
 		return H * W * piece_index + H * relative_file + relative_rank;

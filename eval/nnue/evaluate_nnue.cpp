@@ -87,7 +87,7 @@ namespace Eval {
 			std::uint32_t hash_value, const std::string& architecture) {
 			stream.write(reinterpret_cast<const char*>(&kVersion), sizeof(kVersion));
 			stream.write(reinterpret_cast<const char*>(&hash_value), sizeof(hash_value));
-			const std::uint32_t size = static_cast<std::uint32_t>(architecture.size());
+			const auto size = static_cast<std::uint32_t>(architecture.size());
 			stream.write(reinterpret_cast<const char*>(&size), sizeof(size));
 			stream.write(architecture.data(), size);
 			return !stream.fail();

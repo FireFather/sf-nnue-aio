@@ -1,4 +1,4 @@
-/*
+ï»¿/*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
@@ -91,7 +91,7 @@ struct LimitsType {
     silent = false;
   }
 
-  bool use_time_management() const {
+  [[nodiscard]] bool use_time_management() const {
     return !(mate | movetime | depth | nodes | perft | infinite);
   }
 
@@ -99,8 +99,8 @@ struct LimitsType {
   TimePoint time[COLOR_NB], inc[COLOR_NB], npmsec, movetime, startTime;
   int movestogo, depth, mate, perft, infinite;
   int64_t nodes;
-  // ‰æ–Ê‚Éo—Í‚µ‚È‚¢ƒTƒCƒŒƒ“ƒgƒ‚[ƒh(ƒvƒƒZƒX“à‚Å‚Ì˜A‘±©ŒÈ‘Îí‚Ì‚Æ‚«—p)
-  // ‚±‚Ì‚Æ‚«PV‚ğo—Í‚µ‚È‚¢B
+  // Silent mode that does not output to the screen (for continuous self-play in the process)
+  // Do not output PV at this time.
   bool silent;
 };
 

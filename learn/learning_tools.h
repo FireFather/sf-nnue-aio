@@ -195,7 +195,7 @@ namespace EvalLearningTools
 		// grad addition
 		template <typename T> void add_grad(const T& g_) { g += g_; }
 
-		LearnFloatType get_grad() const { return g; }
+		[[nodiscard]] LearnFloatType get_grad() const { return g; }
 	};
 #if defined(_MSC_VER)
 #pragma pack(pop)
@@ -215,7 +215,7 @@ namespace EvalLearningTools
 		template <typename T> void set_grad(const std::array<T, 2>& g) { for (int i = 0; i < 2; ++i) w[i].set_grad(g[i]); }
 		template <typename T> void add_grad(const std::array<T, 2>& g) { for (int i = 0; i < 2; ++i) w[i].add_grad(g[i]); }
 
-		std::array<LearnFloatType, 2> get_grad() const { return std::array<LearnFloatType, 2>{w[0].get_grad(), w[1].get_grad()}; }
+		[[nodiscard]] std::array<LearnFloatType, 2> get_grad() const { return std::array<LearnFloatType, 2>{w[0].get_grad(), w[1].get_grad()}; }
 	};
 
 	// ------------------------------------------------ -
@@ -243,12 +243,14 @@ namespace EvalLearningTools
 	{
 
 		// Minimum and maximum serial numbers when serializing KK, KKP, KPP arrays + 1.
-		/*final*/ uint64_t min_index() const { return min_index_; }
-		/*final*/ uint64_t max_index() const { return min_index() + max_raw_index_; }
+		/*final*/
+		[[nodiscard]] uint64_t min_index() const { return min_index_; }
+		/*final*/
+		[[nodiscard]] uint64_t max_index() const { return min_index() + max_raw_index_; }
 
 		// max_index()-the value of min_index().
 		// Derived class side calculates and returns the value from max_king_sq_,fe_end_ etc.
-		virtual uint64_t size() const = 0;
+		[[nodiscard]] virtual uint64_t size() const = 0;
 
 		// Determine if the given index is more than min_index() and less than max_index().
 		/*final*/ bool is_ok(uint64_t index) { return min_index() <= index && index < max_index(); }
@@ -263,12 +265,13 @@ namespace EvalLearningTools
 		}
 
 		// Get the index when serialized, based on the value of the current member.
-		/*final*/ uint64_t toIndex() const {
+		/*final*/
+		[[nodiscard]] uint64_t toIndex() const {
 			return min_index() + toRawIndex();
 		}
 
 		// Returns the index when serializing. (The value of min_index() is before addition)
-		virtual uint64_t toRawIndex() const = 0;
+		[[nodiscard]] virtual uint64_t toRawIndex() const = 0;
 
 	protected:
 		// The value of min_index() returned by this class
@@ -293,13 +296,13 @@ namespace EvalLearningTools
 	public:
 		KK() {}
 
-		virtual uint64_t size() const { return max_king_sq_ * max_king_sq_; }
+		[[nodiscard]] virtual uint64_t size() const { return max_king_sq_ * max_king_sq_; }
 
 		// builder that creates KK object from index (serial number)
-		KK fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
+		[[nodiscard]] KK fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
 
 		// builder that creates KK object from raw_index (number starting from 0, not serial number)
-		KK fromRawIndex(uint64_t raw_index) const
+		[[nodiscard]] KK fromRawIndex(uint64_t raw_index) const
 		{
 			int king1 = (int)(raw_index % SQUARE_NB);
 			raw_index /= SQUARE_NB;
@@ -307,18 +310,20 @@ namespace EvalLearningTools
 			assert(king0 < SQUARE_NB);
 			return fromKK((Square)king0, (Square)king1, false);
 		}
-		KK fromKK(Square king0, Square king1, bool inverse) const
+
+		[[nodiscard]] KK fromKK(Square king0, Square king1, bool inverse) const
 		{
 			// The variable name kk is used in the Eval::kk array etc., so it needs to be different. (The same applies to KKP and KPP classes, etc.)
 			KK my_kk(king0, king1, inverse);
 			my_kk.set(max_king_sq_, fe_end_, min_index());
 			return my_kk;
 		}
-		KK fromKK(Square king0, Square king1) const { return fromKK(king0, king1, false); }
+
+		[[nodiscard]] KK fromKK(Square king0, Square king1) const { return fromKK(king0, king1, false); }
 
 		// When you construct this object using fromIndex(), you can get information with the following accessors.
-		Square king0() const { return king0_; }
-		Square king1() const { return king1_; }
+		[[nodiscard]] Square king0() const { return king0_; }
+		[[nodiscard]] Square king1() const { return king1_; }
 
 		// number of dimension reductions
 #if defined(USE_KK_INVERSE_WRITE)
@@ -350,12 +355,12 @@ namespace EvalLearningTools
 		}
 
 		// Get the index when counting the value of min_index() of this class as 0.
-		virtual uint64_t toRawIndex() const {
+		[[nodiscard]] virtual uint64_t toRawIndex() const {
 			return (uint64_t)king0_ * (uint64_t)max_king_sq_ + (uint64_t)king1_;
 		}
 
 		//Returns whether the dimension lowered with toLowerDimensions is inverse.
-		bool is_inverse() const {
+		[[nodiscard]] bool is_inverse() const {
 			return inverse_sign;
 		}
 
@@ -391,13 +396,13 @@ namespace EvalLearningTools
 	public:
 		KKP() {}
 
-		virtual uint64_t size() const { return (uint64_t)max_king_sq_ * (uint64_t)max_king_sq_ * (uint64_t)fe_end_; }
+		[[nodiscard]] virtual uint64_t size() const { return (uint64_t)max_king_sq_ * (uint64_t)max_king_sq_ * (uint64_t)fe_end_; }
 
 		// builder that creates KKP object from index (serial number)
-		KKP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
+		[[nodiscard]] KKP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
 
 		// builder that creates KKP object from raw_index (number starting from 0, not serial number)
-		KKP fromRawIndex(uint64_t raw_index) const
+		[[nodiscard]] KKP fromRawIndex(uint64_t raw_index) const
 		{
 			int piece = (int)(raw_index % Eval::fe_end);
 			raw_index /= Eval::fe_end;
@@ -408,18 +413,19 @@ namespace EvalLearningTools
 			return fromKKP((Square)king0, (Square)king1, (Eval::BonaPiece)piece, false);
 		}
 
-		KKP fromKKP(Square king0, Square king1, Eval::BonaPiece p, bool inverse) const
+		[[nodiscard]] KKP fromKKP(Square king0, Square king1, Eval::BonaPiece p, bool inverse) const
 		{
 			KKP my_kkp(king0, king1, p, inverse);
 			my_kkp.set(max_king_sq_, fe_end_, min_index());
 			return my_kkp;
 		}
-		KKP fromKKP(Square king0, Square king1, Eval::BonaPiece p) const { return fromKKP(king0, king1, p, false); }
+
+		[[nodiscard]] KKP fromKKP(Square king0, Square king1, Eval::BonaPiece p) const { return fromKKP(king0, king1, p, false); }
 
 		// fromIndex()を用いてこのオブジェクトを構築したときに、以下のアクセッサで情報が得られる。
-		Square king0() const { return king0_; }
-		Square king1() const { return king1_; }
-		Eval::BonaPiece piece() const { return piece_; }
+		[[nodiscard]] Square king0() const { return king0_; }
+		[[nodiscard]] Square king1() const { return king1_; }
+		[[nodiscard]] Eval::BonaPiece piece() const { return piece_; }
 
 		// Number of KKP dimension reductions
 #if defined(USE_KKP_INVERSE_WRITE)
@@ -451,12 +457,12 @@ namespace EvalLearningTools
 		}
 
 		// Get the index when counting the value of min_index() of this class as 0.
-		virtual uint64_t toRawIndex() const {
+		[[nodiscard]] virtual uint64_t toRawIndex() const {
 			return ((uint64_t)king0_ * (uint64_t)max_king_sq_ + (uint64_t)king1_) * (uint64_t)fe_end_ + (uint64_t)piece_;
 		}
 
 		//Returns whether the dimension lowered with toLowerDimensions is inverse.
-		bool is_inverse() const {
+		[[nodiscard]] bool is_inverse() const {
 			return inverse_sign;
 		}
 
@@ -498,7 +504,7 @@ namespace EvalLearningTools
 // The part of the square array of [fe_end][fe_end] of kpp[SQUARE_NB][fe_end][fe_end] is made into a triangular array.
 // If kpp[SQUARE_NB][triangle_fe_end], the first row of this triangular array has one element, the second row has two elements, and so on.
 // hence triangle_fe_end = 1 + 2 + .. + fe_end = fe_end * (fe_end + 1) / 2
-		virtual uint64_t size() const { return (uint64_t)max_king_sq_ * (uint64_t)triangle_fe_end; }
+		[[nodiscard]] virtual uint64_t size() const { return (uint64_t)max_king_sq_ * (uint64_t)triangle_fe_end; }
 #endif
 
 		virtual void set(int max_king_sq, uint64_t fe_end, uint64_t min_index)
@@ -510,10 +516,10 @@ namespace EvalLearningTools
 		}
 
 		// builder that creates KPP object from index (serial number)
-		KPP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
+		[[nodiscard]] KPP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
 
 		// A builder that creates KPP objects from raw_index (a number that starts from 0, not a serial number)
-		KPP fromRawIndex(uint64_t raw_index) const
+		[[nodiscard]] KPP fromRawIndex(uint64_t raw_index) const
 		{
 			const uint64_t triangle_fe_end = (uint64_t)fe_end_ * ((uint64_t)fe_end_ + 1) / 2;
 
@@ -546,7 +552,7 @@ namespace EvalLearningTools
 			return fromKPP((Square)king, (Eval::BonaPiece)piece0, (Eval::BonaPiece)piece1);
 		}
 
-		KPP fromKPP(Square king, Eval::BonaPiece p0, Eval::BonaPiece p1) const
+		[[nodiscard]] KPP fromKPP(Square king, Eval::BonaPiece p0, Eval::BonaPiece p1) const
 		{
 			KPP my_kpp(king, p0, p1);
 			my_kpp.set(max_king_sq_, fe_end_, min_index());
@@ -554,9 +560,9 @@ namespace EvalLearningTools
 		}
 
 		// When you construct this object using fromIndex(), you can get information with the following accessors.
-		Square king() const { return king_; }
-		Eval::BonaPiece piece0() const { return piece0_; }
-		Eval::BonaPiece piece1() const { return piece1_; }
+		[[nodiscard]] Square king() const { return king_; }
+		[[nodiscard]] Eval::BonaPiece piece0() const { return piece0_; }
+		[[nodiscard]] Eval::BonaPiece piece1() const { return piece1_; }
 
 
 		// number of dimension reductions
@@ -596,7 +602,7 @@ namespace EvalLearningTools
 		}
 
 		// Get the index when counting the value of min_index() of this class as 0.
-		virtual uint64_t toRawIndex() const {
+		[[nodiscard]] virtual uint64_t toRawIndex() const {
 
 #if !defined(USE_TRIANGLE_WEIGHT_ARRAY)
 
@@ -625,7 +631,7 @@ namespace EvalLearningTools
 
 		//Returns whether the dimension lowered with toLowerDimensions is inverse.
 		// Prepared to match KK, KKP and interface. This method always returns false for this KPP class.
-		bool is_inverse() const {
+		[[nodiscard]] bool is_inverse() const {
 			return false;
 		}
 
@@ -680,7 +686,7 @@ namespace EvalLearningTools
 	public:
 		KPPP() {}
 
-		virtual uint64_t size() const { return (uint64_t)max_king_sq_ * triangle_fe_end; }
+		[[nodiscard]] virtual uint64_t size() const { return (uint64_t)max_king_sq_ * triangle_fe_end; }
 
 		// Set fe_end and king_sq.
 		// fe_end: fe_end assumed by this KPPP class
@@ -721,10 +727,10 @@ namespace EvalLearningTools
 		}
 
 		// builder that creates KPPP object from index (serial number)
-		KPPP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
+		[[nodiscard]] KPPP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
 
 		// A builder that creates KPPP objects from raw_index (a number that starts from 0, not a serial number)
-		KPPP fromRawIndex(uint64_t raw_index) const
+		[[nodiscard]] KPPP fromRawIndex(uint64_t raw_index) const
 		{
 			uint64_t index2 = raw_index % triangle_fe_end;
 
@@ -801,7 +807,7 @@ namespace EvalLearningTools
 
 		// Specify k,p0,p1,p2 to build KPPP instance.
 		// The king_sq and fe_end passed by set() which is internally retained are inherited.
-		KPPP fromKPPP(int king, Eval::BonaPiece p0, Eval::BonaPiece p1, Eval::BonaPiece p2) const
+		[[nodiscard]] KPPP fromKPPP(int king, Eval::BonaPiece p0, Eval::BonaPiece p1, Eval::BonaPiece p2) const
 		{
 			KPPP kppp(king, p0, p1, p2);
 			kppp.set(max_king_sq_, fe_end_, min_index());
@@ -809,7 +815,7 @@ namespace EvalLearningTools
 		}
 
 		// Get the index when counting the value of min_index() of this class as 0.
-		virtual uint64_t toRawIndex() const {
+		[[nodiscard]] virtual uint64_t toRawIndex() const {
 
 			// Macro similar to that used in Bonanza 6.0
 			// Precondition) i> j> k.
@@ -834,19 +840,19 @@ namespace EvalLearningTools
 		}
 
 		// When you construct this object using fromIndex(), you can get information with the following accessors.
-		int king() const { return king_; }
-		Eval::BonaPiece piece0() const { return piece0_; }
-		Eval::BonaPiece piece1() const { return piece1_; }
-		Eval::BonaPiece piece2() const { return piece2_; }
+		[[nodiscard]] int king() const { return king_; }
+		[[nodiscard]] Eval::BonaPiece piece0() const { return piece0_; }
+		[[nodiscard]] Eval::BonaPiece piece1() const { return piece1_; }
+		[[nodiscard]] Eval::BonaPiece piece2() const { return piece2_; }
 		//Returns whether the dimension lowered with toLowerDimensions is inverse.
 		// Prepared to match KK, KKP and interface. This method always returns false for this KPPP class.
-		bool is_inverse() const {
+		[[nodiscard]] bool is_inverse() const {
 			return false;
 		}
 
 		//Returns the number of elements in a triangular array. It is assumed that the kppp array is the following two-dimensional array.
 		// kppp[king_sq][triangle_fe_end];
-		uint64_t get_triangle_fe_end() const { return triangle_fe_end; }
+		[[nodiscard]] uint64_t get_triangle_fe_end() const { return triangle_fe_end; }
 
 		// comparison operator
 		bool operator==(const KPPP& rhs) {
@@ -899,7 +905,7 @@ namespace EvalLearningTools
 	public:
 		KKPP() {}
 
-		virtual uint64_t size() const { return (uint64_t)max_king_sq_ * triangle_fe_end; }
+		[[nodiscard]] virtual uint64_t size() const { return (uint64_t)max_king_sq_ * triangle_fe_end; }
 
 		// Set fe_end and king_sq.
 		// fe_end: fe_end assumed by this KPPP class
@@ -929,10 +935,10 @@ namespace EvalLearningTools
 		}
 
 		// builder that creates KKPP object from index (serial number)
-		KKPP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
+		[[nodiscard]] KKPP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
 
 		// A builder that creates a KKPP object from raw_index (a number that starts from 0, not a serial number)
-		KKPP fromRawIndex(uint64_t raw_index) const
+		[[nodiscard]] KKPP fromRawIndex(uint64_t raw_index) const
 		{
 			uint64_t index2 = raw_index % triangle_fe_end;
 
@@ -959,7 +965,7 @@ namespace EvalLearningTools
 
 		// Specify k,p0,p1 to build KKPP instance.
 		// The king_sq and fe_end passed by set() which is internally retained are inherited.
-		KKPP fromKKPP(int king, Eval::BonaPiece p0, Eval::BonaPiece p1) const
+		[[nodiscard]] KKPP fromKKPP(int king, Eval::BonaPiece p0, Eval::BonaPiece p1) const
 		{
 			KKPP kkpp(king, p0, p1);
 			kkpp.set(max_king_sq_, fe_end_, min_index());
@@ -967,7 +973,7 @@ namespace EvalLearningTools
 		}
 
 		// Get the index when counting the value of min_index() of this class as 0.
-		virtual uint64_t toRawIndex() const {
+		[[nodiscard]] virtual uint64_t toRawIndex() const {
 
 			// Macro similar to that used in Bonanza 6.0
 			// Precondition) i> j.
@@ -987,19 +993,19 @@ namespace EvalLearningTools
 		}
 
 		// When you construct this object using fromIndex(), fromKKPP(), you can get information with the following accessors.
-		int king() const { return king_; }
-		Eval::BonaPiece piece0() const { return piece0_; }
-		Eval::BonaPiece piece1() const { return piece1_; }
+		[[nodiscard]] int king() const { return king_; }
+		[[nodiscard]] Eval::BonaPiece piece0() const { return piece0_; }
+		[[nodiscard]] Eval::BonaPiece piece1() const { return piece1_; }
 
 		//Returns whether the dimension lowered with toLowerDimensions is inverse.
 		// Prepared to match KK, KKP and interface. This method always returns false for this KKPP class.
-		bool is_inverse() const {
+		[[nodiscard]] bool is_inverse() const {
 			return false;
 		}
 
 		//Returns the number of elements in a triangular array. It is assumed that the kkpp array is the following two-dimensional array.
 		// kkpp[king_sq][triangle_fe_end];
-		uint64_t get_triangle_fe_end() const { return triangle_fe_end; }
+		[[nodiscard]] uint64_t get_triangle_fe_end() const { return triangle_fe_end; }
 
 		// comparison operator
 		bool operator==(const KKPP& rhs) {

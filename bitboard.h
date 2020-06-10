@@ -88,7 +88,7 @@ struct Magic {
   unsigned  shift;
 
   // Compute the attack's index using the 'magic bitboards' approach
-  unsigned index(Bitboard occupied) const {
+  [[nodiscard]] unsigned index(Bitboard occupied) const {
 
     if (HasPext)
         return unsigned(pext(occupied, mask));
@@ -96,8 +96,8 @@ struct Magic {
     if (Is64Bit)
         return unsigned(((occupied & mask) * magic) >> shift);
 
-    unsigned lo = unsigned(occupied) & unsigned(mask);
-    unsigned hi = unsigned(occupied >> 32) & unsigned(mask >> 32);
+    auto lo = unsigned(occupied) & unsigned(mask);
+    auto hi = unsigned(occupied >> 32) & unsigned(mask >> 32);
     return (lo * unsigned(magic) ^ hi * unsigned(magic >> 32)) >> shift;
   }
 };
@@ -205,7 +205,7 @@ inline Bitboard adjacent_files_bb(Square s) {
 /// If the given squares are not on a same file/rank/diagonal, return 0.
 
 inline Bitboard between_bb(Square s1, Square s2) {
-  Bitboard b = LineBB[s1][s2] & ((AllSquares << s1) ^ (AllSquares << s2));
+	auto b = LineBB[s1][s2] & ((AllSquares << s1) ^ (AllSquares << s2));
   return b & (b - 1); //exclude lsb
 }
 
@@ -268,7 +268,7 @@ inline int edge_distance(Rank r) { return std::min(r, Rank(RANK_8 - r)); }
 
 inline Bitboard safe_destination(Square s, int step)
 {
-    Square to = Square(s + step);
+	auto to = Square(s + step);
     return is_ok(to) && distance(s, to) <= 2 ? square_bb(to) : Bitboard(0);
 }
 
@@ -409,7 +409,7 @@ inline Square msb(Bitboard b) {
 
 inline Square pop_lsb(Bitboard* b) {
   assert(*b);
-  const Square s = lsb(*b);
+  const auto s = lsb(*b);
   *b &= *b - 1;
   return s;
 }

@@ -1,4 +1,4 @@
-/*
+ï»¿/*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
@@ -61,15 +61,16 @@ template<GenType T>
 struct MoveList {
 
   explicit MoveList(const Position& pos) : last(generate<T>(pos, moveList)) {}
-  const ExtMove* begin() const { return moveList; }
-  const ExtMove* end() const { return last; }
-  size_t size() const { return last - moveList; }
-  bool contains(Move move) const {
+  [[nodiscard]] const ExtMove* begin() const { return moveList; }
+  [[nodiscard]] const ExtMove* end() const { return last; }
+  [[nodiscard]] size_t size() const { return last - moveList; }
+
+  [[nodiscard]] bool contains(Move move) const {
     return std::find(begin(), end(), move) != end();
   }
 
-  // i”Ô–Ú‚Ì—v‘f‚ð•Ô‚·
-  const ExtMove at(size_t i) const { assert(0 <= i && i < size()); return begin()[i]; }
+  // iï¿½Ô–Ú‚Ì—vï¿½fï¿½ï¿½Ô‚ï¿½
+  [[nodiscard]] const ExtMove at(size_t i) const { assert(0 <= i && i < size()); return begin()[i]; }
 
 private:
   ExtMove moveList[MAX_MOVES], *last;

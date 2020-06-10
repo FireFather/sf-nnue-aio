@@ -1,4 +1,4 @@
-/*
+ï»¿/*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
@@ -63,7 +63,7 @@ struct StateInfo {
 #if defined(EVAL_NNUE)
   Eval::NNUE::Accumulator accumulator;
 
-  // •]‰¿’l‚Ì·•ªŒvZ‚ÌŠÇ——p
+  // ï¿½]ï¿½ï¿½ï¿½lï¿½Ìï¿½ï¿½ï¿½ï¿½vï¿½Zï¿½ÌŠÇ—ï¿½ï¿½p
   Eval::DirtyPiece dirtyPiece;
 #endif  // defined(EVAL_NNUE)
 };
@@ -81,7 +81,7 @@ typedef std::unique_ptr<std::deque<StateInfo>> StateListPtr;
 /// traversing the search tree.
 class Thread;
 
-// pack‚³‚ê‚½sfen
+// packï¿½ï¿½ï¿½ê‚½sfen
 struct PackedSfen { uint8_t data[32]; };
 
 class Position {
@@ -95,54 +95,58 @@ public:
   // FEN string input/output
   Position& set(const std::string& fenStr, bool isChess960, StateInfo* si, Thread* th);
   Position& set(const std::string& code, Color c, StateInfo* si);
-  const std::string fen() const;
+  [[nodiscard]] const std::string fen() const;
 
   // Position representation
-  Bitboard pieces(PieceType pt) const;
-  Bitboard pieces(PieceType pt1, PieceType pt2) const;
-  Bitboard pieces(Color c) const;
-  Bitboard pieces(Color c, PieceType pt) const;
-  Bitboard pieces(Color c, PieceType pt1, PieceType pt2) const;
-  Piece piece_on(Square s) const;
-  Square ep_square() const;
-  bool empty(Square s) const;
-  template<PieceType Pt> int count(Color c) const;
-  template<PieceType Pt> int count() const;
-  template<PieceType Pt> const Square* squares(Color c) const;
-  template<PieceType Pt> Square square(Color c) const;
-  bool is_on_semiopen_file(Color c, Square s) const;
+  [[nodiscard]] Bitboard pieces(PieceType pt) const;
+  [[nodiscard]] Bitboard pieces(PieceType pt1, PieceType pt2) const;
+  [[nodiscard]] Bitboard pieces(Color c) const;
+  [[nodiscard]] Bitboard pieces(Color c, PieceType pt) const;
+  [[nodiscard]] Bitboard pieces(Color c, PieceType pt1, PieceType pt2) const;
+  [[nodiscard]] Piece piece_on(Square s) const;
+  [[nodiscard]] Square ep_square() const;
+  [[nodiscard]] bool empty(Square s) const;
+  template<PieceType Pt>
+  [[nodiscard]] int count(Color c) const;
+  template<PieceType Pt>
+  [[nodiscard]] int count() const;
+  template<PieceType Pt>
+  [[nodiscard]] const Square* squares(Color c) const;
+  template<PieceType Pt>
+  [[nodiscard]] Square square(Color c) const;
+  [[nodiscard]] bool is_on_semiopen_file(Color c, Square s) const;
 
   // Castling
-  CastlingRights castling_rights(Color c) const;
-  bool can_castle(CastlingRights cr) const;
-  bool castling_impeded(CastlingRights cr) const;
-  Square castling_rook_square(CastlingRights cr) const;
+  [[nodiscard]] CastlingRights castling_rights(Color c) const;
+  [[nodiscard]] bool can_castle(CastlingRights cr) const;
+  [[nodiscard]] bool castling_impeded(CastlingRights cr) const;
+  [[nodiscard]] Square castling_rook_square(CastlingRights cr) const;
 
   // Checking
-  Bitboard checkers() const;
-  Bitboard blockers_for_king(Color c) const;
-  Bitboard check_squares(PieceType pt) const;
-  bool is_discovery_check_on_king(Color c, Move m) const;
+  [[nodiscard]] Bitboard checkers() const;
+  [[nodiscard]] Bitboard blockers_for_king(Color c) const;
+  [[nodiscard]] Bitboard check_squares(PieceType pt) const;
+  [[nodiscard]] bool is_discovery_check_on_king(Color c, Move m) const;
 
   // Attacks to/from a given square
-  Bitboard attackers_to(Square s) const;
-  Bitboard attackers_to(Square s, Bitboard occupied) const;
+  [[nodiscard]] Bitboard attackers_to(Square s) const;
+  [[nodiscard]] Bitboard attackers_to(Square s, Bitboard occupied) const;
   Bitboard slider_blockers(Bitboard sliders, Square s, Bitboard& pinners) const;
 
   // Properties of moves
-  bool legal(Move m) const;
-  bool pseudo_legal(const Move m) const;
-  bool capture(Move m) const;
-  bool capture_or_promotion(Move m) const;
-  bool gives_check(Move m) const;
-  bool advanced_pawn_push(Move m) const;
-  Piece moved_piece(Move m) const;
-  Piece captured_piece() const;
+  [[nodiscard]] bool legal(Move m) const;
+  [[nodiscard]] bool pseudo_legal(const Move m) const;
+  [[nodiscard]] bool capture(Move m) const;
+  [[nodiscard]] bool capture_or_promotion(Move m) const;
+  [[nodiscard]] bool gives_check(Move m) const;
+  [[nodiscard]] bool advanced_pawn_push(Move m) const;
+  [[nodiscard]] Piece moved_piece(Move m) const;
+  [[nodiscard]] Piece captured_piece() const;
 
   // Piece specific
-  bool pawn_passed(Color c, Square s) const;
-  bool opposite_bishops() const;
-  int  pawns_on_same_color_squares(Color c, Square s) const;
+  [[nodiscard]] bool pawn_passed(Color c, Square s) const;
+  [[nodiscard]] bool opposite_bishops() const;
+  [[nodiscard]] int  pawns_on_same_color_squares(Color c, Square s) const;
 
   // Doing and undoing moves
   void do_move(Move m, StateInfo& newSt);
@@ -152,60 +156,60 @@ public:
   void undo_null_move();
 
   // Static Exchange Evaluation
-  bool see_ge(Move m, Value threshold = VALUE_ZERO) const;
+  [[nodiscard]] bool see_ge(Move m, Value threshold = VALUE_ZERO) const;
 
   // Accessing hash keys
-  Key key() const;
-  Key key_after(Move m) const;
-  Key material_key() const;
-  Key pawn_key() const;
+  [[nodiscard]] Key key() const;
+  [[nodiscard]] Key key_after(Move m) const;
+  [[nodiscard]] Key material_key() const;
+  [[nodiscard]] Key pawn_key() const;
 
   // Other properties of the position
-  Color side_to_move() const;
-  int game_ply() const;
-  bool is_chess960() const;
-  Thread* this_thread() const;
-  bool is_draw(int ply) const;
-  bool has_game_cycle(int ply) const;
-  bool has_repeated() const;
-  int rule50_count() const;
-  Score psq_score() const;
-  Value non_pawn_material(Color c) const;
-  Value non_pawn_material() const;
+  [[nodiscard]] Color side_to_move() const;
+  [[nodiscard]] int game_ply() const;
+  [[nodiscard]] bool is_chess960() const;
+  [[nodiscard]] Thread* this_thread() const;
+  [[nodiscard]] bool is_draw(int ply) const;
+  [[nodiscard]] bool has_game_cycle(int ply) const;
+  [[nodiscard]] bool has_repeated() const;
+  [[nodiscard]] int rule50_count() const;
+  [[nodiscard]] Score psq_score() const;
+  [[nodiscard]] Value non_pawn_material(Color c) const;
+  [[nodiscard]] Value non_pawn_material() const;
 
   // Position consistency check, for debugging
-  bool pos_is_ok() const;
+  [[nodiscard]] bool pos_is_ok() const;
   void flip();
 
 #if defined(EVAL_NNUE) || defined(EVAL_LEARN)
   // --- StateInfo
 
-  // Œ»İ‚Ì‹Ç–Ê‚É‘Î‰‚·‚éStateInfo‚ğ•Ô‚·B
-  // ‚½‚Æ‚¦‚ÎAstate()->capturedPiece‚Å‚ ‚ê‚ÎA‘O‹Ç–Ê‚Å•ßŠl‚³‚ê‚½‹î‚ªŠi”[‚³‚ê‚Ä‚¢‚éB
-  StateInfo* state() const { return st; }
+  // ï¿½ï¿½ï¿½İ‚Ì‹Ç–Ê‚É‘Î‰ï¿½ï¿½ï¿½ï¿½ï¿½StateInfoï¿½ï¿½Ô‚ï¿½ï¿½B
+  // ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ÎAstate()->capturedPieceï¿½Å‚ï¿½ï¿½ï¿½ÎAï¿½Oï¿½Ç–Ê‚Å•ßŠlï¿½ï¿½ï¿½ê‚½ï¿½î‚ªï¿½iï¿½[ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½B
+  [[nodiscard]] StateInfo* state() const { return st; }
 
-  // •]‰¿ŠÖ”‚Åg‚¤‚½‚ß‚ÌA‚Ç‚Ì‹î”Ô†‚Ì‹î‚ª‚Ç‚±‚É‚ ‚é‚©‚È‚Ç‚Ìî•ñB
-  const Eval::EvalList* eval_list() const { return &evalList; }
+  // ï¿½]ï¿½ï¿½ï¿½Öï¿½ï¿½Ågï¿½ï¿½ï¿½ï¿½ï¿½ß‚ÌAï¿½Ç‚Ì‹ï¿½Ôï¿½ï¿½Ì‹î‚ªï¿½Ç‚ï¿½ï¿½É‚ï¿½ï¿½é‚©ï¿½È‚Ç‚Ìï¿½ï¿½B
+  [[nodiscard]] const Eval::EvalList* eval_list() const { return &evalList; }
 #endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)
 
 #if defined(EVAL_LEARN)
-  // -- sfen‰»ƒwƒ‹ƒp
+  // -- sfenï¿½ï¿½ï¿½wï¿½ï¿½ï¿½p
 
-  // pack‚³‚ê‚½sfen‚ğ“¾‚éBˆø”‚Éw’è‚µ‚½ƒoƒbƒtƒ@‚É•Ô‚·B
-  // gamePly‚Ípack‚ÉŠÜ‚ß‚È‚¢B
+  // packï¿½ï¿½ï¿½ê‚½sfenï¿½ğ“¾‚ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½Éwï¿½è‚µï¿½ï¿½ï¿½oï¿½bï¿½tï¿½@ï¿½É•Ô‚ï¿½ï¿½B
+  // gamePlyï¿½ï¿½packï¿½ÉŠÜ‚ß‚È‚ï¿½ï¿½B
   void sfen_pack(PackedSfen& sfen);
 
-  // ªsfen‚ğŒo—R‚·‚é‚Æ’x‚¢‚Ì‚Å’¼Úpack‚³‚ê‚½sfen‚ğƒZƒbƒg‚·‚éŠÖ”‚ğì‚Á‚½B
-  // pos.set(sfen_unpack(data),si,th); ‚Æ“™‰¿B
-  // “n‚³‚ê‚½‹Ç–Ê‚É–â‘è‚ª‚ ‚Á‚ÄAƒGƒ‰[‚Ì‚Æ‚«‚Í”ñ0‚ğ•Ô‚·B
-  // PackedSfen‚ÉgamePly‚ÍŠÜ‚Ü‚È‚¢‚Ì‚Å•œŒ³‚Å‚«‚È‚¢B‚»‚±‚ğİ’è‚µ‚½‚¢‚Ì‚Å‚ ‚ê‚Îˆø”‚Åw’è‚·‚é‚±‚ÆB
+  // ï¿½ï¿½sfenï¿½ï¿½oï¿½Rï¿½ï¿½ï¿½ï¿½Æ’xï¿½ï¿½ï¿½Ì‚Å’ï¿½ï¿½ï¿½packï¿½ï¿½ï¿½ê‚½sfenï¿½ï¿½Zï¿½bï¿½gï¿½ï¿½ï¿½ï¿½Öï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
+  // pos.set(sfen_unpack(data),si,th); ï¿½Æ“ï¿½ï¿½ï¿½ï¿½B
+  // ï¿½nï¿½ï¿½ï¿½ê‚½ï¿½Ç–Ê‚É–ï¿½è‚ªï¿½ï¿½ï¿½ï¿½ï¿½ÄAï¿½Gï¿½ï¿½ï¿½[ï¿½Ì‚Æ‚ï¿½ï¿½Í”ï¿½0ï¿½ï¿½Ô‚ï¿½ï¿½B
+  // PackedSfenï¿½ï¿½gamePlyï¿½ÍŠÜ‚Ü‚È‚ï¿½ï¿½Ì‚Å•ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ’è‚µï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Å‚ï¿½ï¿½ï¿½Îˆï¿½ï¿½ï¿½ï¿½Åwï¿½è‚·ï¿½é‚±ï¿½ÆB
   int set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread* th, bool mirror = false);
 
-  // ”Õ–Ê‚Æè‹îAè”Ô‚ğ—^‚¦‚ÄA‚»‚Ìsfen‚ğ•Ô‚·B
+  // ï¿½Õ–Ê‚Æï¿½ï¿½Aï¿½ï¿½Ô‚ï¿½^ï¿½ï¿½ï¿½ÄAï¿½ï¿½ï¿½ï¿½sfenï¿½ï¿½Ô‚ï¿½ï¿½B
   //static std::string sfen_from_rawdata(Piece board[81], Hand hands[2], Color turn, int gamePly);
 
-  // c‘¤‚Ì‹Ê‚ÌˆÊ’u‚ğ•Ô‚·B
-  Square king_square(Color c) const { return pieceList[make_piece(c, KING)][0]; }
+  // cï¿½ï¿½ï¿½Ì‹Ê‚ÌˆÊ’uï¿½ï¿½Ô‚ï¿½ï¿½B
+  [[nodiscard]] Square king_square(Color c) const { return pieceList[make_piece(c, KING)][0]; }
 #endif // EVAL_LEARN
 
 private:
@@ -222,8 +226,8 @@ private:
   void do_castling(Color us, Square from, Square& to, Square& rfrom, Square& rto);
 
 #if defined(EVAL_NNUE)
-  // ”Õã‚Ìsq‚Ì¡‚É‚ ‚é‹î‚ÌPieceNumber‚ğ•Ô‚·B
-  PieceNumber piece_no_of(Square sq) const;
+  // ï¿½Õï¿½ï¿½sqï¿½Ìï¿½ï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½PieceNumberï¿½ï¿½Ô‚ï¿½ï¿½B
+  [[nodiscard]] PieceNumber piece_no_of(Square sq) const;
 #endif  // defined(EVAL_NNUE)
 
   // Data members
@@ -244,7 +248,7 @@ private:
   bool chess960;
 
 #if defined(EVAL_NNUE) || defined(EVAL_LEARN)
-  // •]‰¿ŠÖ”‚Å—p‚¢‚é‹î‚ÌƒŠƒXƒg
+  // ï¿½]ï¿½ï¿½ï¿½Öï¿½ï¿½Å—pï¿½ï¿½ï¿½ï¿½ï¿½Ìƒï¿½ï¿½Xï¿½g
   Eval::EvalList evalList;
 #endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)
 };

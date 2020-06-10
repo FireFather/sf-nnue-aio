@@ -268,7 +268,7 @@ public:
             exit(EXIT_FAILURE);
         }
 #endif
-        uint8_t* data = (uint8_t*)*baseAddress;
+        auto data = (uint8_t*)*baseAddress;
 
         constexpr uint8_t Magics[][4] = { { 0xD7, 0x66, 0x0C, 0xA5 },
                                           { 0x71, 0xE8, 0x23, 0x5D } };
@@ -410,7 +410,7 @@ class TBTables {
         TBTable<DTZ>* dtz;
 
         template <TBType Type>
-        TBTable<Type>* get() const {
+        [[nodiscard]] TBTable<Type>* get() const {
             return (TBTable<Type>*)(Type == WDL ? (void*)wdl : (void*)dtz);
         }
     };
@@ -462,7 +462,8 @@ public:
         wdlTable.clear();
         dtzTable.clear();
     }
-    size_t size() const { return wdlTable.size(); }
+
+    [[nodiscard]] size_t size() const { return wdlTable.size(); }
     void add(const std::vector<PieceType>& pieces);
 };
 
@@ -530,10 +531,10 @@ int decompress_pairs(PairsData* d, uint64_t idx) {
     //       I(k) = k * d->span + d->span / 2      (1)
 
     // First step is to get the 'k' of the I(k) nearest to our idx, using definition (1)
-    uint32_t k = uint32_t(idx / d->span);
+    auto k = uint32_t(idx / d->span);
 
     // Then we read the corresponding SparseIndex[] entry
-    uint32_t block = number<uint32_t, LittleEndian>(&d->sparseIndex[k].block);
+    auto block = number<uint32_t, LittleEndian>(&d->sparseIndex[k].block);
     int offset     = number<uint16_t, LittleEndian>(&d->sparseIndex[k].offset);
 
     // Now compute the difference idx - I(k). From definition of k we know that
@@ -555,12 +556,12 @@ int decompress_pairs(PairsData* d, uint64_t idx) {
         offset -= d->blockLength[block++] + 1;
 
     // Finally, we find the start address of our block of canonical Huffman symbols
-    uint32_t* ptr = (uint32_t*)(d->data + ((uint64_t)block * d->sizeofBlock));
+    auto ptr = (uint32_t*)(d->data + ((uint64_t)block * d->sizeofBlock));
 
     // Read the first 64 bits in our block, this is a (truncated) sequence of
     // unknown number of symbols of unknown length but we know the first one
     // is at the beginning of this 64 bits sequence.
-    uint64_t buf64 = number<uint64_t, BigEndian>(ptr); ptr += 2;
+    auto buf64 = number<uint64_t, BigEndian>(ptr); ptr += 2;
     int buf64Size = 64;
     Sym sym;
 
@@ -702,7 +703,7 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
 
         // In all the 4 tables, pawns are at the beginning of the piece sequence and
         // their color is the reference one. So we just pick the first one.
-        Piece pc = Piece(entry->get(0, 0)->pieces[0] ^ flipColor);
+        auto pc = Piece(entry->get(0, 0)->pieces[0] ^ flipColor);
 
         assert(type_of(pc) == PAWN);
 

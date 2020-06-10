@@ -30,7 +30,7 @@ namespace Eval
 		// Initialize the mirror and inverse tables.
 
 		// Initialization is limited to once.
-		static bool first = true;
+		static auto first = true;
 		if (!first) return;
 		first = false;
 
@@ -44,7 +44,7 @@ namespace Eval
 		};
 
 		// Insert uninitialized value.
-		for (BonaPiece p = BONA_PIECE_ZERO; p < fe_end; ++p)
+		for (auto p = BONA_PIECE_ZERO; p < fe_end; ++p)
 		{
 			inv_piece_[p] = BONA_PIECE_NOT_INIT;
 
@@ -52,16 +52,16 @@ namespace Eval
 			mir_piece_[p] = (p < f_pawn) ? p : BONA_PIECE_NOT_INIT;
 		}
 
-		for (BonaPiece p = BONA_PIECE_ZERO; p < fe_end; ++p)
+		for (auto p = BONA_PIECE_ZERO; p < fe_end; ++p)
 		{
-			for (int i = 0; i < 32 /* t.size() */; i += 2)
+			for (auto i = 0; i < 32 /* t.size() */; i += 2)
 			{
 				if (t[i] <= p && p < t[i + 1])
 				{
-					Square sq = (Square)(p - t[i]);
+					auto sq = (Square)(p - t[i]);
 
 					// found!!
-					BonaPiece q = (p < fe_hand_end) ? BonaPiece(sq + t[i + 1]) : (BonaPiece)(Inv(sq) + t[i + 1]);
+					auto q = (p < fe_hand_end) ? BonaPiece(sq + t[i + 1]) : (BonaPiece)(Inv(sq) + t[i + 1]);
 					inv_piece_[p] = q;
 					inv_piece_[q] = p;
 
@@ -83,12 +83,12 @@ namespace Eval
 					if (p < fe_hand_end)
 						continue;
 
-					BonaPiece r1 = (BonaPiece)(Mir(sq) + t[i]);
+					auto r1 = (BonaPiece)(Mir(sq) + t[i]);
 					mir_piece_[p] = r1;
 					mir_piece_[r1] = p;
 
-					BonaPiece p2 = (BonaPiece)(sq + t[i + 1]);
-					BonaPiece r2 = (BonaPiece)(Mir(sq) + t[i + 1]);
+					auto p2 = (BonaPiece)(sq + t[i + 1]);
+					auto r2 = (BonaPiece)(Mir(sq) + t[i + 1]);
 					mir_piece_[p2] = r2;
 					mir_piece_[r2] = p2;
 
@@ -100,7 +100,7 @@ namespace Eval
 		if (mir_piece_init_function)
 			mir_piece_init_function();
 
-		for (BonaPiece p = BONA_PIECE_ZERO; p < fe_end; ++p)
+		for (auto p = BONA_PIECE_ZERO; p < fe_end; ++p)
 		{
 			// It remains uninitialized. The initialization code in the table above is incorrect.
 			assert(mir_piece_[p] != BONA_PIECE_NOT_INIT && mir_piece_[p] < fe_end);

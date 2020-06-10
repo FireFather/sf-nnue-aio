@@ -58,7 +58,7 @@ namespace EvalLearningTools
 			{
 				// It seems that the loop variable must be a sign type due to OpenMP restrictions, but
 				// It is really difficult to use.
-				uint64_t index = (uint64_t)index_;
+				auto index = (uint64_t)index_;
 
 				if (g_kk.is_ok(index))
 				{

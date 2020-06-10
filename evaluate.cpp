@@ -171,12 +171,16 @@ namespace {
 	private:
 		template<Color Us> void initialize();
 		template<Color Us, PieceType Pt> Score pieces();
-		template<Color Us> Score king() const;
-		template<Color Us> Score threats() const;
-		template<Color Us> Score passed() const;
-		template<Color Us> Score space() const;
-		ScaleFactor scale_factor(Value eg) const;
-		Score initiative(Score score) const;
+		template<Color Us>
+		[[nodiscard]] Score king() const;
+		template<Color Us>
+		[[nodiscard]] Score threats() const;
+		template<Color Us>
+		[[nodiscard]] Score passed() const;
+		template<Color Us>
+		[[nodiscard]] Score space() const;
+		[[nodiscard]] ScaleFactor scale_factor(Value eg) const;
+		[[nodiscard]] Score initiative(Score score) const;
 
 		const Position& pos;
 		Material::Entry* me;
@@ -387,7 +391,7 @@ namespace {
 
 	// Evaluation::king() assigns bonuses and penalties to a king of a given color
 	template<Tracing T> template<Color Us>
-	Score Evaluation<T>::king() const {
+	[[nodiscard]] Score Evaluation<T>::king() const {
 
 		constexpr Color    Them = ~Us;
 		constexpr Bitboard Camp = (Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
@@ -495,7 +499,7 @@ namespace {
 	// Evaluation::threats() assigns bonuses according to the types of the
 	// attacking and the attacked pieces.
 	template<Tracing T> template<Color Us>
-	Score Evaluation<T>::threats() const {
+	[[nodiscard]] Score Evaluation<T>::threats() const {
 
 		constexpr Color     Them = ~Us;
 		constexpr Direction Up = pawn_push(Us);
@@ -591,7 +595,7 @@ namespace {
 	// pawns of the given color.
 
 	template<Tracing T> template<Color Us>
-	Score Evaluation<T>::passed() const {
+	[[nodiscard]] Score Evaluation<T>::passed() const {
 
 		constexpr Color     Them = ~Us;
 		constexpr Direction Up = pawn_push(Us);
@@ -687,7 +691,7 @@ namespace {
 	// improve play on game opening.
 
 	template<Tracing T> template<Color Us>
-	Score Evaluation<T>::space() const {
+	[[nodiscard]] Score Evaluation<T>::space() const {
 
 		if (pos.non_pawn_material() < SpaceThreshold)
 			return SCORE_ZERO;
@@ -984,7 +988,7 @@ namespace Eval {
 				if (s <= fw && fw < s + SQUARE_NB)
 				{
 					// Since it was found, check whether this piece is at sq.
-					Square sq = (Square)(fw - s);
+					auto sq = (Square)(fw - s);
 					Piece pc2 = pos.piece_on(sq);
 
 					if (pc2 != pc)
@@ -1033,7 +1037,7 @@ namespace Eval {
 				return false;
 			}
 
-			Square actual_square = static_cast<Square>(
+			auto actual_square = static_cast<Square>(
 				bona_piece_white - kpp_board_index[actual_piece].fw);
 			assert(sq == actual_square);
 			if (sq != actual_square) {

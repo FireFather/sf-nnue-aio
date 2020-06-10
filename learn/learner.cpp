@@ -1401,7 +1401,7 @@ namespace Learner
 				for (size_t i = 0; i < size; ++i)
 				{
 					// Delete this pointer on the receiving side.
-					PSVector* ptr = new PSVector();
+					auto ptr = new PSVector();
 					ptr->resize(THREAD_BUFFER_SIZE);
 					memcpy(&((*ptr)[0]), &sfens[i * THREAD_BUFFER_SIZE], sizeof(PackedSfenValue) * THREAD_BUFFER_SIZE);
 
@@ -2394,7 +2394,7 @@ namespace Learner
 
 		// shuffle from buf[0] to buf[size-1]
 		PRNG prng((std::random_device())());
-		uint64_t size = (uint64_t)buf.size();
+		auto size = (uint64_t)buf.size();
 		std::cout << "shuffle buf.size() = " << size << std::endl;
 		for (uint64_t i = 0; i < size; ++i)
 			swap(buf[i], buf[(uint64_t)(prng.rand(size - i) + i)]);

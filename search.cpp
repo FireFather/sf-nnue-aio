@@ -95,8 +95,8 @@ namespace {
   // Skill structure is used to implement strength limit
   struct Skill {
     explicit Skill(int l) : level(l) {}
-    bool enabled() const { return level < 20; }
-    bool time_to_pick(Depth depth) const { return depth == 1 + level; }
+    [[nodiscard]] bool enabled() const { return level < 20; }
+    [[nodiscard]] bool time_to_pick(Depth depth) const { return depth == 1 + level; }
     Move pick_best(size_t multiPV);
 
     int level;

@@ -36,13 +36,12 @@
 /// depth       8 bit
 
 struct TTEntry {
-
-  Move  move()  const { return (Move )move16; }
-  Value value() const { return (Value)value16; }
-  Value eval()  const { return (Value)eval16; }
-  Depth depth() const { return (Depth)depth8 + DEPTH_OFFSET; }
-  bool is_pv()  const { return (bool)(genBound8 & 0x4); }
-  Bound bound() const { return (Bound)(genBound8 & 0x3); }
+	[[nodiscard]] Move  move()  const { return (Move )move16; }
+	[[nodiscard]] Value value() const { return (Value)value16; }
+	[[nodiscard]] Value eval()  const { return (Value)eval16; }
+	[[nodiscard]] Depth depth() const { return (Depth)depth8 + DEPTH_OFFSET; }
+	[[nodiscard]] bool is_pv()  const { return (bool)(genBound8 & 0x4); }
+	[[nodiscard]] Bound bound() const { return (Bound)(genBound8 & 0x3); }
   void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
 
 private:
@@ -78,12 +77,12 @@ public:
  ~TranspositionTable() { aligned_ttmem_free(mem); }
   void new_search() { generation8 += 8; } // Lower 3 bits are used by PV flag and Bound
   TTEntry* probe(const Key key, bool& found) const;
-  int hashfull() const;
+  [[nodiscard]] int hashfull() const;
   void resize(size_t mbSize);
   void clear();
 
   // The 32 lowest order bits of the key are used to get the index of the cluster
-  TTEntry* first_entry(const Key key) const {
+  [[nodiscard]] TTEntry* first_entry(const Key key) const {
     return &table[(uint32_t(key) * uint64_t(clusterCount)) >> 32].entry[0];
   }
 

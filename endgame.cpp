@@ -222,7 +222,7 @@ Value Endgame<KRKB>::operator()(const Position& pos) const {
 	assert(verify_material(pos, strongSide, RookValueMg, 0));
 	assert(verify_material(pos, weakSide, BishopValueMg, 0));
 
-	Value result = Value(push_to_edge(pos.square<KING>(weakSide)));
+	auto result = Value(push_to_edge(pos.square<KING>(weakSide)));
 	return strongSide == pos.side_to_move() ? result : -result;
 }
 
@@ -237,7 +237,7 @@ Value Endgame<KRKN>::operator()(const Position& pos) const {
 
 	Square bksq = pos.square<KING>(weakSide);
 	Square bnsq = pos.square<KNIGHT>(weakSide);
-	Value result = Value(push_to_edge(bksq) + push_away(bksq, bnsq));
+	auto result = Value(push_to_edge(bksq) + push_away(bksq, bnsq));
 	return strongSide == pos.side_to_move() ? result : -result;
 }
 
@@ -256,7 +256,7 @@ Value Endgame<KQKP>::operator()(const Position& pos) const {
 	Square loserKSq = pos.square<KING>(weakSide);
 	Square pawnSq = pos.square<PAWN>(weakSide);
 
-	Value result = Value(push_close(winnerKSq, loserKSq));
+	auto result = Value(push_close(winnerKSq, loserKSq));
 
 	if (relative_rank(weakSide, pawnSq) != RANK_7
 		|| distance(loserKSq, pawnSq) != 1

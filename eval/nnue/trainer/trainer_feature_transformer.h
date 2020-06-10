@@ -69,7 +69,7 @@ namespace Eval {
 			template <typename RNG>
 			void Initialize(RNG& rng) {
 				std::fill(std::begin(weights_), std::end(weights_), +kZero);
-				const double kSigma = 0.1 / std::sqrt(RawFeatures::kMaxActiveDimensions);
+				const auto kSigma = 0.1 / std::sqrt(RawFeatures::kMaxActiveDimensions);
 				auto distribution = std::normal_distribution<double>(0.0, kSigma);
 				for (IndexType i = 0; i < kHalfDimensions * RawFeatures::kDimensions; ++i) {
 					const auto weight = static_cast<LearnFloatType>(distribution(rng));
@@ -91,9 +91,9 @@ namespace Eval {
 				// affine transform
 #pragma omp parallel for
 				for (IndexType b = 0; b < batch.size(); ++b) {
-					const IndexType batch_offset = kOutputDimensions * b;
+					const auto batch_offset = kOutputDimensions * b;
 					for (IndexType c = 0; c < 2; ++c) {
-						const IndexType output_offset = batch_offset + kHalfDimensions * c;
+						const auto output_offset = batch_offset + kHalfDimensions * c;
 #if defined(USE_BLAS)
 						cblas_scopy(kHalfDimensions, biases_, 1, &output_[output_offset], 1);
 						for (const auto& feature : batch[b].training_features[c]) {
@@ -106,7 +106,7 @@ namespace Eval {
 							output_[output_offset + i] = biases_[i];
 						}
 						for (const auto& feature : batch[b].training_features[c]) {
-							const IndexType weights_offset = kHalfDimensions * feature.GetIndex();
+							const auto weights_offset = kHalfDimensions * feature.GetIndex();
 							for (IndexType i = 0; i < kHalfDimensions; ++i) {
 								output_[output_offset + i] +=
 									feature.GetCount() * weights_[weights_offset + i];
@@ -117,13 +117,13 @@ namespace Eval {
 				}
 				// clipped ReLU
 				for (IndexType b = 0; b < batch.size(); ++b) {
-					const IndexType batch_offset = kOutputDimensions * b;
+					const auto batch_offset = kOutputDimensions * b;
 					for (IndexType i = 0; i < kOutputDimensions; ++i) {
-						const IndexType index = batch_offset + i;
+						const auto index = batch_offset + i;
 						min_pre_activation_ = std::min(min_pre_activation_, output_[index]);
 						max_pre_activation_ = std::max(max_pre_activation_, output_[index]);
 						output_[index] = std::max(+kZero, std::min(+kOne, output_[index]));
-						const IndexType t = i % kHalfDimensions;
+						const auto t = i % kHalfDimensions;
 						min_activations_[t] = std::min(min_activations_[t], output_[index]);
 						max_activations_[t] = std::max(max_activations_[t], output_[index]);
 					}
@@ -134,19 +134,19 @@ namespace Eval {
 			// backpropagation
 			void Backpropagate(const LearnFloatType* gradients,
 				LearnFloatType learning_rate) {
-				const LearnFloatType local_learning_rate =
+				const auto local_learning_rate =
 					learning_rate * learning_rate_scale_;
 				for (IndexType b = 0; b < batch_->size(); ++b) {
-					const IndexType batch_offset = kOutputDimensions * b;
+					const auto batch_offset = kOutputDimensions * b;
 					for (IndexType i = 0; i < kOutputDimensions; ++i) {
-						const IndexType index = batch_offset + i;
+						const auto index = batch_offset + i;
 						gradients_[index] = gradients[index] *
 							((output_[index] > kZero) * (output_[index] < kOne));
 					}
 				}
 				// Since the weight matrix updates only the columns corresponding to the features that appeared in the input,
 				// Correct the learning rate and adjust the scale without using momentum
-				const LearnFloatType effective_learning_rate =
+				const auto effective_learning_rate =
 					static_cast<LearnFloatType>(local_learning_rate / (1.0 - momentum_));
 #if defined(USE_BLAS)
 				cblas_sscal(kHalfDimensions, momentum_, biases_diff_, 1);
@@ -190,9 +190,9 @@ namespace Eval {
 					biases_diff_[i] *= momentum_;
 				}
 				for (IndexType b = 0; b < batch_->size(); ++b) {
-					const IndexType batch_offset = kOutputDimensions * b;
+					const auto batch_offset = kOutputDimensions * b;
 					for (IndexType c = 0; c < 2; ++c) {
-						const IndexType output_offset = batch_offset + kHalfDimensions * c;
+						const auto output_offset = batch_offset + kHalfDimensions * c;
 						for (IndexType i = 0; i < kHalfDimensions; ++i) {
 							biases_diff_[i] += gradients_[output_offset + i];
 						}
@@ -202,11 +202,11 @@ namespace Eval {
 					biases_[i] -= local_learning_rate * biases_diff_[i];
 				}
 				for (IndexType b = 0; b < batch_->size(); ++b) {
-					const IndexType batch_offset = kOutputDimensions * b;
+					const auto batch_offset = kOutputDimensions * b;
 					for (IndexType c = 0; c < 2; ++c) {
-						const IndexType output_offset = batch_offset + kHalfDimensions * c;
+						const auto output_offset = batch_offset + kHalfDimensions * c;
 						for (const auto& feature : (*batch_)[b].training_features[c]) {
-							const IndexType weights_offset = kHalfDimensions * feature.GetIndex();
+							const auto weights_offset = kHalfDimensions * feature.GetIndex();
 							const auto scale = static_cast<LearnFloatType>(
 								effective_learning_rate / feature.GetCount());
 							for (IndexType i = 0; i < kHalfDimensions; ++i) {
@@ -258,7 +258,7 @@ namespace Eval {
 					Features::Factorizer<RawFeatures>::AppendTrainingFeatures(
 						j, &training_features);
 					for (IndexType i = 0; i < kHalfDimensions; ++i) {
-						double sum = 0.0;
+						auto sum = 0.0;
 						for (const auto& feature : training_features) {
 							sum += weights_[kHalfDimensions * feature.GetIndex() + i];
 						}
@@ -298,7 +298,7 @@ namespace Eval {
 				std::cout << "INFO: observed " << observed_features.count()
 					<< " (out of " << kInputDimensions << ") features" << std::endl;
 
-				constexpr LearnFloatType kPreActivationLimit =
+				constexpr const auto kPreActivationLimit =
 					std::numeric_limits<typename LayerType::WeightType>::max() /
 					kWeightScale;
 				std::cout << "INFO: (min, max) of pre-activations = "

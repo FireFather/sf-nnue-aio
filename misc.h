@@ -117,7 +117,7 @@ public:
   uint64_t rand(uint64_t n) { return rand<uint64_t>() % n; }
 
   // 内部で使用している乱数seedを返す。
-  uint64_t get_seed() const { return s; }
+  [[nodiscard]] uint64_t get_seed() const { return s; }
 };
 
 // 乱数のseedを表示する。(デバッグ用)
@@ -184,7 +184,7 @@ struct AsyncPRNG
   }
 
   // 内部で使用している乱数seedを返す。
-  uint64_t get_seed() const { return prng.get_seed(); }
+  [[nodiscard]] uint64_t get_seed() const { return prng.get_seed(); }
 
 protected:
   std::mutex mutex;

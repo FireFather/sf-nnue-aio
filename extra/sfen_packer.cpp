@@ -22,10 +22,10 @@ struct BitStream
 	void set_data(uint8_t* data_) { data = data_; reset(); }
 
 	// Get the pointer passed in set_data().
-	uint8_t* get_data() const { return data; }
+	[[nodiscard]] uint8_t* get_data() const { return data; }
 
 	// Get the cursor.
-	int get_cursor() const { return bit_cursor; }
+	[[nodiscard]] int get_cursor() const { return bit_cursor; }
 
 	// reset the cursor
 	void reset() { bit_cursor = 0; }
@@ -248,7 +248,7 @@ struct SfenPacker
 			return NO_PIECE;
 
 		// first and second flag
-		Color c = (Color)stream.read_one_bit();
+		auto c = (Color)stream.read_one_bit();
 
 		return make_piece(c, pr);
 	}
@@ -370,7 +370,7 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread
 
 	// En passant square.Ignore if no pawn capture is possible
 	if (stream.read_one_bit()) {
-		Square ep_square = static_cast<Square>(stream.read_n_bit(6));
+		auto ep_square = static_cast<Square>(stream.read_n_bit(6));
 		if (mirror) {
 			ep_square = Mir(ep_square);
 		}
