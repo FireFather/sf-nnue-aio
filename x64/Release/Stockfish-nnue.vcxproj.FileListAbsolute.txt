@@ -1,1 +1,2 @@
 C:\Stockfish-nnue\x64\Release\Stockfish-nnue.exe
+C:\Stockfish-nnue-git\x64\Release\Stockfish-nnue.exe
