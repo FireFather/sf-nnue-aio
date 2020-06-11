@@ -91,14 +91,14 @@ struct Magic {
   [[nodiscard]] unsigned index(Bitboard occupied) const {
 
     if (HasPext)
-        return unsigned(pext(occupied, mask));
+        return static_cast<unsigned>(pext(occupied, mask));
 
     if (Is64Bit)
-        return unsigned(((occupied & mask) * magic) >> shift);
+        return static_cast<unsigned>(((occupied & mask) * magic) >> shift);
 
-    auto lo = unsigned(occupied) & unsigned(mask);
-    auto hi = unsigned(occupied >> 32) & unsigned(mask >> 32);
-    return (lo * unsigned(magic) ^ hi * unsigned(magic >> 32)) >> shift;
+    auto lo = static_cast<unsigned>(occupied) & static_cast<unsigned>(mask);
+    auto hi = static_cast<unsigned>(occupied >> 32) & static_cast<unsigned>(mask >> 32);
+    return (lo * static_cast<unsigned>(magic) ^ hi * static_cast<unsigned>(magic >> 32)) >> shift;
   }
 };
 
@@ -358,14 +358,14 @@ inline Square lsb(Bitboard b) {
   assert(b);
   unsigned long idx;
   _BitScanForward64(&idx, b);
-  return (Square) idx;
+  return static_cast<Square>(idx);
 }
 
 inline Square msb(Bitboard b) {
   assert(b);
   unsigned long idx;
   _BitScanReverse64(&idx, b);
-  return (Square) idx;
+  return static_cast<Square>(idx);
 }
 
 #else  // MSVC, WIN32

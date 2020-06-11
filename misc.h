@@ -242,9 +242,9 @@ struct Path
 	static std::string GetFileName(const std::string& path)
 	{
 		// "\"か"/"か、どちらを使ってあるかはわからない。
-		auto path_index1 = path.find_last_of("\\") + 1;
-		auto path_index2 = path.find_last_of("/") + 1;
-		auto path_index = std::max(path_index1, path_index2);
+		const auto path_index1 = path.find_last_of("\\") + 1;
+		const auto path_index2 = path.find_last_of("/") + 1;
+		const auto path_index = std::max(path_index1, path_index2);
 
 		return path.substr(path_index);
 	}

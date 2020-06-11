@@ -43,7 +43,7 @@ namespace {
 	// bit 13-14: white pawn file (from FILE_A to FILE_D)
 	// bit 15-17: white pawn RANK_7 - rank (from RANK_7 - RANK_7 to RANK_7 - RANK_2)
 	unsigned index(Color stm, Square bksq, Square wksq, Square psq) {
-		return int(wksq) | (bksq << 6) | (stm << 12) | (file_of(psq) << 13) | ((RANK_7 - rank_of(psq)) << 15);
+		return static_cast<int>(wksq) | (bksq << 6) | (stm << 12) | (file_of(psq) << 13) | ((RANK_7 - rank_of(psq)) << 15);
 	}
 
 	enum Result {
@@ -145,11 +145,11 @@ namespace {
 		// of the current position is DRAW. If all moves lead to positions classified
 		// as WIN, the position is classified as WIN, otherwise the current position is
 		// classified as UNKNOWN.
-		const Result Good = (stm == WHITE ? WIN : DRAW);
-		const Result Bad = (stm == WHITE ? DRAW : WIN);
+		const auto Good = (stm == WHITE ? WIN : DRAW);
+		const auto Bad = (stm == WHITE ? DRAW : WIN);
 
-		Result r = INVALID;
-		Bitboard b = attacks_bb<KING>(ksq[stm]);
+		auto r = INVALID;
+		auto b = attacks_bb<KING>(ksq[stm]);
 
 		while (b)
 			r |= stm == WHITE ? db[index(BLACK, ksq[BLACK], pop_lsb(&b), psq)]

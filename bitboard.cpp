@@ -51,9 +51,9 @@ const std::string Bitboards::pretty(Bitboard b) {
 
 	std::string s = "+---+---+---+---+---+---+---+---+\n";
 
-	for (Rank r = RANK_8; r >= RANK_1; --r)
+	for (auto r = RANK_8; r >= RANK_1; --r)
 	{
-		for (File f = FILE_A; f <= FILE_H; ++f)
+		for (auto f = FILE_A; f <= FILE_H; ++f)
 			s += b & make_square(f, r) ? "| X " : "|   ";
 
 		s += "|\n+---+---+---+---+---+---+---+---+\n";
@@ -71,11 +71,11 @@ void Bitboards::init() {
 	for (unsigned i = 0; i < (1 << 16); ++i)
 		PopCnt16[i] = uint8_t(std::bitset<16>(i).count());
 
-	for (Square s = SQ_A1; s <= SQ_H8; ++s)
+	for (auto s = SQ_A1; s <= SQ_H8; ++s)
 		SquareBB[s] = (1ULL << s);
 
-	for (Square s1 = SQ_A1; s1 <= SQ_H8; ++s1)
-		for (Square s2 = SQ_A1; s2 <= SQ_H8; ++s2)
+	for (auto s1 = SQ_A1; s1 <= SQ_H8; ++s1)
+		for (auto s2 = SQ_A1; s2 <= SQ_H8; ++s2)
 			SquareDistance[s1][s2] = std::max(distance<File>(s1, s2), distance<Rank>(s1, s2));
 
 	Direction RookDirections[] = { NORTH, EAST, SOUTH, WEST };
@@ -84,22 +84,22 @@ void Bitboards::init() {
 	init_magics(RookTable, RookMagics, RookDirections);
 	init_magics(BishopTable, BishopMagics, BishopDirections);
 
-	for (Square s1 = SQ_A1; s1 <= SQ_H8; ++s1)
+	for (auto s1 = SQ_A1; s1 <= SQ_H8; ++s1)
 	{
 		PawnAttacks[WHITE][s1] = pawn_attacks_bb<WHITE>(square_bb(s1));
 		PawnAttacks[BLACK][s1] = pawn_attacks_bb<BLACK>(square_bb(s1));
 
-		for (int step : {-9, -8, -7, -1, 1, 7, 8, 9})
+		for (auto step : {-9, -8, -7, -1, 1, 7, 8, 9})
 			PseudoAttacks[KING][s1] |= safe_destination(s1, step);
 
-		for (int step : {-17, -15, -10, -6, 6, 10, 15, 17})
+		for (auto step : {-17, -15, -10, -6, 6, 10, 15, 17})
 			PseudoAttacks[KNIGHT][s1] |= safe_destination(s1, step);
 
 		PseudoAttacks[QUEEN][s1] = PseudoAttacks[BISHOP][s1] = attacks_bb<BISHOP>(s1, 0);
 		PseudoAttacks[QUEEN][s1] |= PseudoAttacks[ROOK][s1] = attacks_bb<  ROOK>(s1, 0);
 
-		for (PieceType pt : { BISHOP, ROOK })
-			for (Square s2 = SQ_A1; s2 <= SQ_H8; ++s2)
+		for (auto pt : { BISHOP, ROOK })
+			for (auto s2 = SQ_A1; s2 <= SQ_H8; ++s2)
 				if (PseudoAttacks[pt][s1] & s2)
 					LineBB[s1][s2] = (attacks_bb(pt, s1, 0) & attacks_bb(pt, s2, 0)) | s1 | s2;
 	}
@@ -112,9 +112,9 @@ namespace {
 
 		Bitboard attacks = 0;
 
-		for (int i = 0; i < 4; ++i)
+		for (auto i = 0; i < 4; ++i)
 		{
-			Square s = sq;
+			auto s = sq;
 			while (safe_destination(s, directions[i]) && !(occupied & s))
 				attacks |= (s += directions[i]);
 		}
@@ -137,7 +137,7 @@ namespace {
 		Bitboard occupancy[4096], reference[4096], edges, b;
 		int epoch[4096] = {}, cnt = 0, size = 0;
 
-		for (Square s = SQ_A1; s <= SQ_H8; ++s)
+		for (auto s = SQ_A1; s <= SQ_H8; ++s)
 		{
 			// Board edges are not considered in the relevant occupancies
 			edges = ((Rank1BB | Rank8BB) & ~rank_bb(s)) | ((FileABB | FileHBB) & ~file_bb(s));
@@ -147,7 +147,7 @@ namespace {
 			// all the attacks for each possible subset of the mask and so is 2 power
 			// the number of 1s of the mask. Hence we deduce the size of the shift to
 			// apply to the 64 or 32 bits word to get the index.
-			Magic& m = magics[s];
+			auto& m = magics[s];
 			m.mask = sliding_attack(directions, s, 0) & ~edges;
 			m.shift = (Is64Bit ? 64 : 32) - popcount(m.mask);
 
@@ -176,7 +176,7 @@ namespace {
 
 			// Find a magic for square 's' picking up an (almost) random number
 			// until we find the one that passes the verification test.
-			for (int i = 0; i < size; )
+			for (auto i = 0; i < size; )
 			{
 				for (m.magic = 0; popcount((m.magic * m.mask) >> 56) < 6; )
 					m.magic = rng.sparse_rand<Bitboard>();
@@ -189,7 +189,7 @@ namespace {
 				// m.attacks[] after every failed attempt.
 				for (++cnt, i = 0; i < size; ++i)
 				{
-					unsigned idx = m.index(occupancy[i]);
+					const auto idx = m.index(occupancy[i]);
 
 					if (epoch[idx] < cnt)
 					{

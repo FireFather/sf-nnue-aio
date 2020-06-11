@@ -1,4 +1,4 @@
-/*
+ï»¿/*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
@@ -192,7 +192,7 @@ enum Value : int {
 
   MidgameLimit  = 15258, EndgameLimit  = 3915,
 
-  // •]‰¿ŠÖ”‚Ì•Ô‚·’l‚ÌÅ‘å’l(2**14‚®‚ç‚¢‚Éû‚Ü‚Á‚Ä‚¢‚Ä—~‚µ‚¢‚Æ‚±‚ë‚¾‚ª..)
+  // ï¿½]ï¿½ï¿½ï¿½Öï¿½ï¿½Ì•Ô‚ï¿½ï¿½lï¿½ÌÅ‘ï¿½l(2**14ï¿½ï¿½ï¿½ç‚¢ï¿½Éï¿½ï¿½Ü‚ï¿½ï¿½Ä‚ï¿½ï¿½Ä—~ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ë‚¾ï¿½ï¿½..)
   VALUE_MAX_EVAL = 27000,
 };
 
@@ -240,7 +240,7 @@ enum Square : int {
   SQ_NONE,
 
   SQUARE_ZERO = 0, SQUARE_NB = 64,
-  SQUARE_NB_PLUS1 = SQUARE_NB + 1, // ‹Ê‚ª‚¢‚È‚¢ê‡ASQUARE_NB‚ÉˆÚ“®‚µ‚½‚à‚Ì‚Æ‚µ‚Äˆµ‚¤‚½‚ßA”z—ñ‚ğSQUARE_NB+1‚ÅŠm•Û‚µ‚È‚¢‚Æ‚¢‚¯‚È‚¢‚Æ‚«‚ª‚ ‚é‚Ì‚Å‚±‚Ì’è”‚ğ—p‚¢‚éB
+  SQUARE_NB_PLUS1 = SQUARE_NB + 1, // ï¿½Ê‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ASQUARE_NBï¿½ÉˆÚ“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Æ‚ï¿½ï¿½Äˆï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßAï¿½zï¿½ï¿½ï¿½SQUARE_NB+1ï¿½ÅŠmï¿½Û‚ï¿½ï¿½È‚ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Å‚ï¿½ï¿½Ì’è”ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½B
 };
 
 enum Direction : int {
@@ -345,8 +345,7 @@ inline Score operator/(Score s, int i) {
 
 /// Multiplication of a Score by an integer. We check for overflow in debug mode.
 inline Score operator*(Score s, int i) {
-
-  Score result = Score(int(s) * i);
+	const auto result = Score(int(s) * i);
 
   assert(eg_value(result) == (i * eg_value(s)));
   assert(mg_value(result) == (i * mg_value(s)));
@@ -470,18 +469,18 @@ constexpr bool is_ok(Move m) {
   return from_sq(m) != to_sq(m); // Catch MOVE_NULL and MOVE_NONE
 }
 
-// ”Õ–Ê‚ğ180‹‰ñ‚µ‚½‚Æ‚«‚Ì¡–Ú‚ğ•Ô‚·
+// ï¿½Õ–Ê‚ï¿½180ï¿½ï¿½ï¿½ñ‚µ‚ï¿½ï¿½Æ‚ï¿½ï¿½Ìï¿½ï¿½Ú‚ï¿½Ô‚ï¿½
 constexpr Square Inv(Square sq) { return (Square)((SQUARE_NB - 1) - sq); }
 
-// ”Õ–Ê‚ğƒ~ƒ‰[‚µ‚½‚Æ‚«‚Ì¡–Ú‚ğ•Ô‚·
+// ï¿½Õ–Ê‚ï¿½~ï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ìï¿½ï¿½Ú‚ï¿½Ô‚ï¿½
 constexpr Square Mir(Square sq) { return make_square(File(7 - (int)file_of(sq)), rank_of(sq)); }
 
 #if defined(EVAL_NNUE) || defined(EVAL_LEARN)
 // --------------------
-//        ‹î” 
+//        ï¿½î” 
 // --------------------
 
-// PositionƒNƒ‰ƒX‚Å—p‚¢‚éA‹îƒŠƒXƒg(‚Ç‚Ì‹î‚ª‚Ç‚±‚É‚ ‚é‚Ì‚©)‚ğŠÇ—‚·‚é‚Æ‚«‚Ì”Ô†B
+// Positionï¿½Nï¿½ï¿½ï¿½Xï¿½Å—pï¿½ï¿½ï¿½ï¿½Aï¿½îƒŠï¿½Xï¿½g(ï¿½Ç‚Ì‹î‚ªï¿½Ç‚ï¿½ï¿½É‚ï¿½ï¿½ï¿½Ì‚ï¿½)ï¿½ï¿½Ç—ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½Ì”Ôï¿½ï¿½B
 enum PieceNumber : uint8_t
 {
 	PIECE_NUMBER_PAWN = 0,
@@ -491,20 +490,20 @@ enum PieceNumber : uint8_t
 	PIECE_NUMBER_QUEEN = 28,
 	PIECE_NUMBER_KING = 30,
 	PIECE_NUMBER_WKING = 30,
-	PIECE_NUMBER_BKING = 31, // æèAŒãè‚Ì‹Ê‚Ì”Ô†‚ª•K—v‚Èê‡‚Í‚±‚Á‚¿‚ğ—p‚¢‚é
+	PIECE_NUMBER_BKING = 31, // ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½Ì‹Ê‚Ì”Ôï¿½ï¿½ï¿½ï¿½Kï¿½vï¿½Èê‡ï¿½Í‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½pï¿½ï¿½ï¿½ï¿½
 	PIECE_NUMBER_ZERO = 0,
 	PIECE_NUMBER_NB = 32,
 };
 
 inline PieceNumber& operator++(PieceNumber& d) { return d = PieceNumber(int8_t(d) + 1); }
 inline PieceNumber operator++(PieceNumber& d, int) {
-  PieceNumber x = d;
+	const auto x = d;
   d = PieceNumber(int8_t(d) + 1);
   return x;
 }
 inline PieceNumber& operator--(PieceNumber& d) { return d = PieceNumber(int8_t(d) - 1); }
 
-// PieceNumber‚Ì®‡«‚ÌŒŸ¸Bassert—pB
+// PieceNumberï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌŒï¿½ï¿½ï¿½ï¿½Bassertï¿½pï¿½B
 constexpr bool is_ok(PieceNumber pn) { return pn < PIECE_NUMBER_NB; }
 #endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)
 
