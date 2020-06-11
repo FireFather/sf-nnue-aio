@@ -1,4 +1,6 @@
 ﻿// Definition of input features and network structure used in NNUE evaluation function
+#ifndef K_P_256X2_32_32_H
+#define K_P_256X2_32_32_H
 
 #include "../features/feature_set.h"
 #include "../features/k.h"
@@ -29,3 +31,4 @@ namespace Eval::NNUE
 
 	using Network = Layers::OutputLayer;
 } // namespace Eval
+#endif // K_P_256X2_32_32_H

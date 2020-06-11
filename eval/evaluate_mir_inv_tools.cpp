@@ -18,10 +18,10 @@ namespace Eval
 	// --- methods
 
 	// Returns the value when a certain BonaPiece is seen from the other side
-	Eval::BonaPiece inv_piece(Eval::BonaPiece p) { return (Eval::BonaPiece)inv_piece_[p]; }
+	Eval::BonaPiece inv_piece(Eval::BonaPiece p) { return static_cast<Eval::BonaPiece>(inv_piece_[p]); }
 
 	// Returns the one on the board that mirrors a BonaPiece.
-	Eval::BonaPiece mir_piece(Eval::BonaPiece p) { return (Eval::BonaPiece)mir_piece_[p]; }
+	Eval::BonaPiece mir_piece(Eval::BonaPiece p) { return static_cast<Eval::BonaPiece>(mir_piece_[p]); }
 
 	std::function<void()> mir_piece_init_function;
 
@@ -58,10 +58,10 @@ namespace Eval
 			{
 				if (t[i] <= p && p < t[i + 1])
 				{
-					auto sq = (Square)(p - t[i]);
+					auto sq = static_cast<Square>(p - t[i]);
 
 					// found!!
-					auto q = (p < fe_hand_end) ? BonaPiece(sq + t[i + 1]) : (BonaPiece)(Inv(sq) + t[i + 1]);
+					auto q = (p < fe_hand_end) ? BonaPiece(sq + t[i + 1]) : static_cast<BonaPiece>(Inv(sq) + t[i + 1]);
 					inv_piece_[p] = q;
 					inv_piece_[q] = p;
 
@@ -83,12 +83,12 @@ namespace Eval
 					if (p < fe_hand_end)
 						continue;
 
-					auto r1 = (BonaPiece)(Mir(sq) + t[i]);
+					auto r1 = static_cast<BonaPiece>(Mir(sq) + t[i]);
 					mir_piece_[p] = r1;
 					mir_piece_[r1] = p;
 
-					auto p2 = (BonaPiece)(sq + t[i + 1]);
-					auto r2 = (BonaPiece)(Mir(sq) + t[i + 1]);
+					auto p2 = static_cast<BonaPiece>(sq + t[i + 1]);
+					auto r2 = static_cast<BonaPiece>(Mir(sq) + t[i + 1]);
 					mir_piece_[p2] = r2;
 					mir_piece_[r2] = p2;
 

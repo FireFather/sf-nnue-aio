@@ -56,7 +56,7 @@ inline TimePoint now() {
 
 template<class Entry, int Size>
 struct HashTable {
-  Entry* operator[](Key key) { return &table[(uint32_t)key & (Size - 1)]; }
+  Entry* operator[](Key key) { return &table[static_cast<uint32_t>(key) & (Size - 1)]; }
 
 private:
   std::vector<Entry> table = std::vector<Entry>(Size); // Allocate on the heap
@@ -266,7 +266,7 @@ public:
 
   template <typename U> AlignedAllocator(const AlignedAllocator<U>&) {}
 
-  T* allocate(std::size_t n) { return (T*)aligned_malloc(n * sizeof(T), alignof(T)); }
+  T* allocate(std::size_t n) { return static_cast<T*>(aligned_malloc(n * sizeof(T), alignof(T))); }
   void deallocate(T* p, std::size_t n) { aligned_free(p); }
 };
 

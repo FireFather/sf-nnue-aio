@@ -271,19 +271,19 @@ enum Rank : int {
 enum Score : int { SCORE_ZERO };
 
 constexpr Score make_score(int mg, int eg) {
-  return Score((int)((unsigned int)eg << 16) + mg);
+  return Score(static_cast<int>(static_cast<unsigned int>(eg) << 16) + mg);
 }
 
 /// Extracting the signed lower and upper 16 bits is not so trivial because
 /// according to the standard a simple cast to short is implementation defined
 /// and so is a right shift of a signed integer.
 inline Value eg_value(Score s) {
-  union { uint16_t u; int16_t s; } eg = { uint16_t(unsigned(s + 0x8000) >> 16) };
+  union { uint16_t u; int16_t s; } eg = { uint16_t(static_cast<unsigned>(s + 0x8000) >> 16) };
   return Value(eg.s);
 }
 
 inline Value mg_value(Score s) {
-  union { uint16_t u; int16_t s; } mg = { uint16_t(unsigned(s)) };
+  union { uint16_t u; int16_t s; } mg = { uint16_t(static_cast<unsigned>(s)) };
   return Value(mg.s);
 }
 
@@ -323,14 +323,14 @@ ENABLE_BASE_OPERATORS_ON(Score)
 #undef ENABLE_BASE_OPERATORS_ON
 
 /// Additional operators to add integers to a Value
-constexpr Value operator+(Value v, int i) { return Value(int(v) + i); }
-constexpr Value operator-(Value v, int i) { return Value(int(v) - i); }
+constexpr Value operator+(Value v, int i) { return Value(static_cast<int>(v) + i); }
+constexpr Value operator-(Value v, int i) { return Value(static_cast<int>(v) - i); }
 inline Value& operator+=(Value& v, int i) { return v = v + i; }
 inline Value& operator-=(Value& v, int i) { return v = v - i; }
 
 /// Additional operators to add a Direction to a Square
-constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
-constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
+constexpr Square operator+(Square s, Direction d) { return Square(static_cast<int>(s) + static_cast<int>(d)); }
+constexpr Square operator-(Square s, Direction d) { return Square(static_cast<int>(s) - static_cast<int>(d)); }
 inline Square& operator+=(Square& s, Direction d) { return s = s + d; }
 inline Square& operator-=(Square& s, Direction d) { return s = s - d; }
 
@@ -345,7 +345,7 @@ inline Score operator/(Score s, int i) {
 
 /// Multiplication of a Score by an integer. We check for overflow in debug mode.
 inline Score operator*(Score s, int i) {
-	const auto result = Score(int(s) * i);
+	const auto result = Score(static_cast<int>(s) * i);
 
   assert(eg_value(result) == (i * eg_value(s)));
   assert(mg_value(result) == (i * mg_value(s)));
@@ -470,10 +470,10 @@ constexpr bool is_ok(Move m) {
 }
 
 // �Ֆʂ�180���񂵂��Ƃ��̏��ڂ�Ԃ�
-constexpr Square Inv(Square sq) { return (Square)((SQUARE_NB - 1) - sq); }
+constexpr Square Inv(Square sq) { return static_cast<Square>((SQUARE_NB - 1) - sq); }
 
 // �Ֆʂ�~���[�����Ƃ��̏��ڂ�Ԃ�
-constexpr Square Mir(Square sq) { return make_square(File(7 - (int)file_of(sq)), rank_of(sq)); }
+constexpr Square Mir(Square sq) { return make_square(File(7 - static_cast<int>(file_of(sq))), rank_of(sq)); }
 
 #if defined(EVAL_NNUE) || defined(EVAL_LEARN)
 // --------------------

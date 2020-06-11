@@ -36,12 +36,12 @@
 /// depth       8 bit
 
 struct TTEntry {
-	[[nodiscard]] Move  move()  const { return (Move )move16; }
-	[[nodiscard]] Value value() const { return (Value)value16; }
-	[[nodiscard]] Value eval()  const { return (Value)eval16; }
-	[[nodiscard]] Depth depth() const { return (Depth)depth8 + DEPTH_OFFSET; }
-	[[nodiscard]] bool is_pv()  const { return (bool)(genBound8 & 0x4); }
-	[[nodiscard]] Bound bound() const { return (Bound)(genBound8 & 0x3); }
+	[[nodiscard]] Move  move()  const { return static_cast<Move>(move16); }
+	[[nodiscard]] Value value() const { return static_cast<Value>(value16); }
+	[[nodiscard]] Value eval()  const { return static_cast<Value>(eval16); }
+	[[nodiscard]] Depth depth() const { return static_cast<Depth>(depth8) + DEPTH_OFFSET; }
+	[[nodiscard]] bool is_pv()  const { return static_cast<bool>(genBound8 & 0x4); }
+	[[nodiscard]] Bound bound() const { return static_cast<Bound>(genBound8 & 0x3); }
   void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
 
 private:

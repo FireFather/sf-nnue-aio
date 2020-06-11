@@ -391,7 +391,7 @@ namespace {
 
 	// Evaluation::king() assigns bonuses and penalties to a king of a given color
 	template<Tracing T> template<Color Us>
-	[[nodiscard]] Score Evaluation<T>::king() const {
+	[[nodiscard]] [[nodiscard]] Score Evaluation<T>::king() const {
 
 		constexpr Color    Them = ~Us;
 		constexpr Bitboard Camp = (Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
@@ -499,7 +499,7 @@ namespace {
 	// Evaluation::threats() assigns bonuses according to the types of the
 	// attacking and the attacked pieces.
 	template<Tracing T> template<Color Us>
-	[[nodiscard]] Score Evaluation<T>::threats() const {
+	[[nodiscard]] [[nodiscard]] Score Evaluation<T>::threats() const {
 
 		constexpr Color     Them = ~Us;
 		constexpr Direction Up = pawn_push(Us);
@@ -595,7 +595,7 @@ namespace {
 	// pawns of the given color.
 
 	template<Tracing T> template<Color Us>
-	[[nodiscard]] Score Evaluation<T>::passed() const {
+	[[nodiscard]] [[nodiscard]] Score Evaluation<T>::passed() const {
 
 		constexpr Color     Them = ~Us;
 		constexpr Direction Up = pawn_push(Us);
@@ -691,7 +691,7 @@ namespace {
 	// improve play on game opening.
 
 	template<Tracing T> template<Color Us>
-	[[nodiscard]] Score Evaluation<T>::space() const {
+	[[nodiscard]] [[nodiscard]] Score Evaluation<T>::space() const {
 
 		if (pos.non_pawn_material() < SpaceThreshold)
 			return SCORE_ZERO;

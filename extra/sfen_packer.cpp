@@ -162,7 +162,7 @@ struct SfenPacker
 
 		// turn
 		// Side to move.
-		stream.write_one_bit((int)(pos.side_to_move()));
+		stream.write_one_bit(static_cast<int>(pos.side_to_move()));
 
 		// 7-bit positions for leading and trailing balls
 		// White king and black king, 6 bits for each.
@@ -248,7 +248,7 @@ struct SfenPacker
 			return NO_PIECE;
 
 		// first and second flag
-		auto c = (Color)stream.read_one_bit();
+		auto c = static_cast<Color>(stream.read_one_bit());
 
 		return make_piece(c, pr);
 	}
@@ -274,7 +274,7 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread
 	st = si;
 
 	// Active color
-	sideToMove = (Color)stream.read_one_bit();
+	sideToMove = static_cast<Color>(stream.read_one_bit());
 
 	// clear evalList. It is cleared when you clear to zero with memset above...
 	evalList.clear();
@@ -290,7 +290,7 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread
 	if (mirror)
 	{
 		for (auto c : Colors)
-			board[Mir((Square)stream.read_n_bit(6))] = make_piece(c, KING);
+			board[Mir(static_cast<Square>(stream.read_n_bit(6)))] = make_piece(c, KING);
 	}
 	else
 	{

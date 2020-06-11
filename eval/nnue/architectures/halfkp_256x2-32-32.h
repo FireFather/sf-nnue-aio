@@ -1,5 +1,8 @@
 ﻿// Definition of input features and network structure used in NNUE evaluation function
 
+#ifndef HALFKP_256X2_32_32_H
+#define HALFKP_256X2_32_32_H
+
 #include "../features/feature_set.h"
 #include "../features/half_kp.h"
 
@@ -33,3 +36,4 @@ namespace Eval {
 	} // namespace NNUE
 
 } // namespace Eval
+#endif // HALFKP_256X2_32_32_H

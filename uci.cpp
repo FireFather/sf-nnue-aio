@@ -311,7 +311,7 @@ void search_cmd(Position& pos, istringstream& is)
 {
 	string token;
 	int depth = 1;
-	int multi_pv = (int)Options["MultiPV"];
+	int multi_pv = static_cast<int>(Options["MultiPV"]);
 	while (is >> token)
 	{
 		if (token == "depth")
@@ -437,7 +437,7 @@ string UCI::value(Value v) {
 /// UCI::square() converts a Square to a string in algebraic notation (g1, a7, etc.)
 
 std::string UCI::square(Square s) {
-	return std::string{ char('a' + file_of(s)), char('1' + rank_of(s)) };
+	return std::string{ static_cast<char>('a' + file_of(s)), static_cast<char>('1' + rank_of(s)) };
 }
 
 
@@ -475,7 +475,7 @@ string UCI::move(Move m, bool chess960) {
 Move UCI::to_move(const Position& pos, string& str) {
 
 	if (str.length() == 5) // Junior could send promotion piece in uppercase
-		str[4] = char(tolower(str[4]));
+		str[4] = static_cast<char>(tolower(str[4]));
 
 	for (const auto& m : MoveList<LEGAL>(pos))
 		if (str == UCI::move(m, pos.is_chess960()))

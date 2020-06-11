@@ -209,13 +209,12 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
 	st = si;
 
 #if defined(EVAL_NNUE)
-// clear evalList. It is cleared when you clear to zero with memset above...
-evalList.clear();
+	// evalListのclear。上でmemsetでゼロクリアしたときにクリアされているが…。
+	evalList.clear();
 
-// In updating the PieceList, we have to set which piece is where,
-// A counter of how much each piece was used
-
-	auto next_piece_number = PIECE_NUMBER_ZERO;
+	// PieceListを更新する上で、どの駒がどこにあるかを設定しなければならないが、
+	// それぞれの駒をどこまで使ったかのカウンター
+	PieceNumber next_piece_number = PIECE_NUMBER_ZERO;
 #endif  // defined(EVAL_NNUE)
 
 	ss >> std::noskipws;
@@ -824,7 +823,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 		st->rule50 = 0;
 
 #if defined(EVAL_NNUE)
-		dp.dirty_num = 2; // 2 moving pieces
+		dp.dirty_num = 2; // 動いた駒は2個
 
 		dp.pieceNo[1] = piece_no1;
 		dp.changed_piece[1].old_piece = evalList.bona_piece(piece_no1);
