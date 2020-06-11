@@ -116,7 +116,8 @@ class Trainer<Layers::Sum<PreviousLayer>> {
   }
 
   // Set options such as hyperparameters
-  void SendMessage(Message* message) {
+  void SendMessage(Message* message) const
+  {
     previous_layer_trainer_->SendMessage(message);
   }
 
@@ -148,7 +149,8 @@ class Trainer<Layers::Sum<PreviousLayer>> {
 
   // backpropagation
   void Backpropagate(const LearnFloatType* gradients,
-                     LearnFloatType learning_rate) {
+                     LearnFloatType learning_rate) const
+  {
     previous_layer_trainer_->Backpropagate(gradients, learning_rate);
   }
 

@@ -113,7 +113,7 @@ namespace Eval {
 	void RestoreParameters(const std::string& dir_name) {
 		const std::string file_name = Path::Combine(dir_name, NNUE::kFileName);
 		std::ifstream stream(file_name, std::ios::binary);
-		bool result = ReadParameters(stream);
+		const bool result = ReadParameters(stream);
 		assert(result);
 
 		SendMessages({ {"reset"} });
@@ -204,7 +204,7 @@ void CheckHealth() {
 
 // save merit function parameters to a file
 void save_eval(std::string dir_name) {
-	auto eval_dir = Path::Combine(Options["EvalSaveDir"], dir_name);
+	const auto eval_dir = Path::Combine(Options["EvalSaveDir"], dir_name);
 	std::cout << "save_eval() start. folder = " << eval_dir << std::endl;
 
 	// mkdir() will fail if this folder already exists, but

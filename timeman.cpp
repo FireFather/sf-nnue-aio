@@ -34,11 +34,10 @@ TimeManagement Time; // Our global time management object
 //      2) x moves in y seconds (+z increment)
 
 void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
-
-	TimePoint minThinkingTime = TimePoint(Options["Minimum Thinking Time"]);
-	TimePoint moveOverhead = TimePoint(Options["Move Overhead"]);
-	TimePoint slowMover = TimePoint(Options["Slow Mover"]);
-	TimePoint npmsec = TimePoint(Options["nodestime"]);
+	auto minThinkingTime = TimePoint(Options["Minimum Thinking Time"]);
+	auto moveOverhead = TimePoint(Options["Move Overhead"]);
+	auto slowMover = TimePoint(Options["Slow Mover"]);
+	auto npmsec = TimePoint(Options["nodestime"]);
 
 	// opt_scale is a percentage of available time to use for the current move.
 	// max_scale is a multiplier applied to optimumTime.
@@ -62,11 +61,11 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
 	startTime = limits.startTime;
 
 	//Maximum move horizon of 50 moves
-	int mtg = limits.movestogo ? std::min(limits.movestogo, 50) : 50;
+	auto mtg = limits.movestogo ? std::min(limits.movestogo, 50) : 50;
 
 	// Make sure timeLeft is > 0 since we may use it as a divisor
-	TimePoint timeLeft = std::max(TimePoint(1),
-		limits.time[us] + limits.inc[us] * (mtg - 1) - moveOverhead * (2 + mtg));
+	auto timeLeft = std::max(TimePoint(1),
+	                         limits.time[us] + limits.inc[us] * (mtg - 1) - moveOverhead * (2 + mtg));
 
 	// A user may scale time usage by setting UCI option "Slow Mover"
 	// Default is 100 and changing this value will probably lose elo.
@@ -78,7 +77,7 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
 	if (limits.movestogo == 0)
 	{
 		opt_scale = std::min(0.008 + std::pow(ply + 3.0, 0.5) / 250.0,
-			0.2 * limits.time[us] / double(timeLeft));
+			0.2 * limits.time[us] / static_cast<double>(timeLeft));
 		max_scale = 4 + std::min(36, ply) / 12.0;
 	}
 
@@ -86,7 +85,7 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
 	else
 	{
 		opt_scale = std::min((0.8 + ply / 128.0) / mtg,
-			0.8 * limits.time[us] / double(timeLeft));
+			0.8 * limits.time[us] / static_cast<double>(timeLeft));
 		max_scale = std::min(6.3, 1.5 + 0.11 * mtg);
 	}
 

@@ -74,7 +74,7 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
 	for (Bitboard b = pos.checkers(); b; )
 		os << UCI::square(pop_lsb(&b)) << " ";
 
-	if (int(Tablebases::MaxCardinality) >= popcount(pos.pieces())
+	if (static_cast<int>(Tablebases::MaxCardinality) >= popcount(pos.pieces())
 		&& !pos.can_castle(ANY_CASTLING))
 	{
 		StateInfo st;
@@ -261,7 +261,7 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
 		Color c = islower(token) ? BLACK : WHITE;
 		Piece rook = make_piece(c, ROOK);
 
-		token = char(toupper(token));
+		token = static_cast<char>(toupper(token));
 
 		if (token == 'K')
 			for (rsq = relative_square(c, SQ_H1); piece_on(rsq) != rook; --rsq) {}
@@ -407,8 +407,8 @@ Position& Position::set(const string& code, Color c, StateInfo* si) {
 
 	std::transform(sides[c].begin(), sides[c].end(), sides[c].begin(), tolower);
 
-	string fenStr = "8/" + sides[0] + char(8 - sides[0].length() + '0') + "/8/8/8/8/"
-		+ sides[1] + char(8 - sides[1].length() + '0') + "/8 w - - 0 10";
+	string fenStr = "8/" + sides[0] + static_cast<char>(8 - sides[0].length() + '0') + "/8/8/8/8/"
+		+ sides[1] + static_cast<char>(8 - sides[1].length() + '0') + "/8 w - - 0 10";
 
 	return set(fenStr, false, si, nullptr);
 }
@@ -443,16 +443,16 @@ const string Position::fen() const {
 	ss << (sideToMove == WHITE ? " w " : " b ");
 
 	if (can_castle(WHITE_OO))
-		ss << (chess960 ? char('A' + file_of(castling_rook_square(WHITE_OO))) : 'K');
+		ss << (chess960 ? static_cast<char>('A' + file_of(castling_rook_square(WHITE_OO))) : 'K');
 
 	if (can_castle(WHITE_OOO))
-		ss << (chess960 ? char('A' + file_of(castling_rook_square(WHITE_OOO))) : 'Q');
+		ss << (chess960 ? static_cast<char>('A' + file_of(castling_rook_square(WHITE_OOO))) : 'Q');
 
 	if (can_castle(BLACK_OO))
-		ss << (chess960 ? char('a' + file_of(castling_rook_square(BLACK_OO))) : 'k');
+		ss << (chess960 ? static_cast<char>('a' + file_of(castling_rook_square(BLACK_OO))) : 'k');
 
 	if (can_castle(BLACK_OOO))
-		ss << (chess960 ? char('a' + file_of(castling_rook_square(BLACK_OOO))) : 'q');
+		ss << (chess960 ? static_cast<char>('a' + file_of(castling_rook_square(BLACK_OOO))) : 'q');
 
 	if (!can_castle(ANY_CASTLING))
 		ss << '-';
@@ -877,7 +877,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 	if (type_of(pc) == PAWN)
 	{
 		// Set en-passant square if the moved pawn can be captured
-		if ((int(to) ^ int(from)) == 16
+		if ((static_cast<int>(to) ^ static_cast<int>(from)) == 16
 			&& (pawn_attacks_bb(us, to - pawn_push(us)) & pieces(them, PAWN)))
 		{
 			st->epSquare = to - pawn_push(us);
@@ -1274,7 +1274,7 @@ bool Position::see_ge(Move m, Value threshold) const {
 			return (attackers & ~pieces(stm)) ? res ^ 1 : res;
 	}
 
-	return bool(res);
+	return static_cast<bool>(res);
 }
 
 /// Position::is_draw() tests whether the position is drawn by 50-move rule
@@ -1379,7 +1379,7 @@ void Position::flip() {
 	f += token + " ";
 
 	std::transform(f.begin(), f.end(), f.begin(),
-		[](char c) { return char(islower(c) ? toupper(c) : tolower(c)); });
+		[](char c) { return static_cast<char>(islower(c) ? toupper(c) : tolower(c)); });
 
 	ss >> token; // En passant square
 	f += (token == "-" ? token : token.replace(1, 1, token[1] == '3' ? "6" : "3"));

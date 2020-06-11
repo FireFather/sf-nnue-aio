@@ -43,7 +43,7 @@ struct BitStream
 	// Get 1 bit from the stream.
 	int read_one_bit()
 	{
-		int b = (data[bit_cursor / 8] >> (bit_cursor & 7)) & 1;
+		const int b = (data[bit_cursor / 8] >> (bit_cursor & 7)) & 1;
 		++bit_cursor;
 
 		return b;
@@ -174,7 +174,7 @@ struct SfenPacker
 		{
 			for (File f = FILE_A; f <= FILE_H; ++f)
 			{
-				Piece pc = pos.piece_on(make_square(f, r));
+				const Piece pc = pos.piece_on(make_square(f, r));
 				if (type_of(pc) == KING)
 					continue;
 				write_board_piece_to_stream(pc);
@@ -215,8 +215,8 @@ struct SfenPacker
 	void write_board_piece_to_stream(Piece pc)
 	{
 		// piece type
-		PieceType pr = type_of(pc);
-		auto c = huffman_table[pr];
+		const PieceType pr = type_of(pc);
+		const auto c = huffman_table[pr];
 		stream.write_n_bit(c.code, c.bits);
 
 		if (pc == NO_PIECE)
@@ -248,7 +248,7 @@ struct SfenPacker
 			return NO_PIECE;
 
 		// first and second flag
-		auto c = static_cast<Color>(stream.read_one_bit());
+		const auto c = static_cast<Color>(stream.read_one_bit());
 
 		return make_piece(c, pr);
 	}
@@ -328,7 +328,7 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread
 			put_piece(Piece(pc), sq);
 
 			// update evalList
-			PieceNumber piece_no =
+			const PieceNumber piece_no =
 				(pc == B_KING) ? PIECE_NUMBER_BKING : //
 				(pc == W_KING) ? PIECE_NUMBER_WKING : // back ball
 				next_piece_number++; // otherwise
@@ -431,7 +431,7 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread
 void Position::sfen_pack(PackedSfen& sfen)
 {
 	SfenPacker sp;
-	sp.data = (uint8_t*)&sfen;
+	sp.data = reinterpret_cast<uint8_t*>(&sfen);
 	sp.pack(*this);
 }
 

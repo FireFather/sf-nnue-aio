@@ -56,7 +56,7 @@ namespace UCI {
 	void init(OptionsMap& o) {
 
 		// at most 2^32 clusters.
-		constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
+		constexpr auto MaxHashMB = Is64Bit ? 131072 : 2048;
 
 		o["Debug Log File"] << Option("", on_logger);
 		o["Contempt"] << Option(24, -100, 100);
@@ -108,7 +108,7 @@ namespace UCI {
 			for (const auto& it : om)
 				if (it.second.idx == idx)
 				{
-					const Option& o = it.second;
+					const auto& o = it.second;
 					os << "\noption name " << it.first << " type " << o.type;
 
 					if (o.type == "string" || o.type == "check" || o.type == "combo")

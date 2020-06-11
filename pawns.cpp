@@ -45,7 +45,7 @@ namespace {
 
   // Strength of pawn shelter for our king by [distance from edge][rank].
   // RANK_1 = 0 is used for files where we have no pawn, or pawn is behind our king.
-  constexpr Value ShelterStrength[int(FILE_NB) / 2][RANK_NB] = {
+  constexpr Value ShelterStrength[static_cast<int>(FILE_NB) / 2][RANK_NB] = {
     { V( -6), V( 81), V( 93), V( 58), V( 39), V( 18), V(  25) },
     { V(-43), V( 61), V( 35), V(-49), V(-29), V(-11), V( -63) },
     { V(-10), V( 75), V( 23), V( -2), V( 32), V(  3), V( -45) },
@@ -56,7 +56,7 @@ namespace {
   // RANK_1 = 0 is used for files where the enemy has no pawn, or their pawn
   // is behind our king. Note that UnblockedStorm[0][1-2] accommodate opponent pawn
   // on edge, likely blocked by our king.
-  constexpr Value UnblockedStorm[int(FILE_NB) / 2][RANK_NB] = {
+  constexpr Value UnblockedStorm[static_cast<int>(FILE_NB) / 2][RANK_NB] = {
     { V( 85), V(-289), V(-166), V(97), V(50), V( 45), V( 50) },
     { V( 46), V( -25), V( 122), V(45), V(37), V(-10), V( 20) },
     { V( -6), V(  51), V( 168), V(34), V(-2), V(-22), V(-14) },
@@ -72,10 +72,7 @@ namespace {
     constexpr Color     Them = ~Us;
     constexpr Direction Up   = pawn_push(Us);
 
-    Bitboard neighbours, stoppers, support, phalanx, opposed;
-    Bitboard lever, leverPush, blocked;
     Square s;
-    bool backward, passed, doubled;
     Score score = SCORE_ZERO;
     const Square* pl = pos.squares<PAWN>(Us);
 
@@ -97,20 +94,20 @@ namespace {
         Rank r = relative_rank(Us, s);
 
         // Flag the pawn
-        opposed    = theirPawns & forward_file_bb(Us, s);
-        blocked    = theirPawns & (s + Up);
-        stoppers   = theirPawns & passed_pawn_span(Us, s);
-        lever      = theirPawns & pawn_attacks_bb(Us, s);
-        leverPush  = theirPawns & pawn_attacks_bb(Us, s + Up);
-        doubled    = ourPawns   & (s - Up);
-        neighbours = ourPawns   & adjacent_files_bb(s);
-        phalanx    = neighbours & rank_bb(s);
-        support    = neighbours & rank_bb(s - Up);
+        Bitboard opposed = theirPawns & forward_file_bb(Us, s);
+        Bitboard blocked = theirPawns & (s + Up);
+        Bitboard stoppers = theirPawns & passed_pawn_span(Us, s);
+        Bitboard lever = theirPawns & pawn_attacks_bb(Us, s);
+        Bitboard leverPush = theirPawns & pawn_attacks_bb(Us, s + Up);
+        bool doubled = ourPawns & (s - Up);
+        Bitboard neighbours = ourPawns & adjacent_files_bb(s);
+        Bitboard phalanx = neighbours & rank_bb(s);
+        Bitboard support = neighbours & rank_bb(s - Up);
 
         // A pawn is backward when it is behind all pawns of the same color on
         // the adjacent files and cannot safely advance.
-        backward =  !(neighbours & forward_ranks_bb(Them, s + Up))
-                  && (leverPush | blocked);
+        bool backward = !(neighbours & forward_ranks_bb(Them, s + Up))
+	        && (leverPush | blocked);
 
         // Compute additional span if pawn is not backward nor blocked
         if (!backward && !blocked)
@@ -121,11 +118,11 @@ namespace {
         // (b) the only stoppers are the leverPush, but we outnumber them
         // (c) there is only one front stopper which can be levered.
         //     (Refined in Evaluation::passed)
-        passed =   !(stoppers ^ lever)
-                || (   !(stoppers ^ leverPush)
-                    && popcount(phalanx) >= popcount(leverPush))
-                || (   stoppers == blocked && r >= RANK_5
-                    && (shift<Up>(support) & ~(theirPawns | doubleAttackThem)));
+        bool passed = !(stoppers ^ lever)
+	        || (!(stoppers ^ leverPush)
+		        && popcount(phalanx) >= popcount(leverPush))
+	        || (stoppers == blocked && r >= RANK_5
+		        && (shift<Up>(support) & ~(theirPawns | doubleAttackThem)));
 
         passed &= !(forward_file_bb(Us, s) & ourPawns);
 
@@ -137,7 +134,7 @@ namespace {
         // Score this pawn
         if (support | phalanx)
         {
-            int v =  Connected[r] * (4 + 2 * bool(phalanx) - 2 * bool(opposed) - bool(blocked)) / 2
+            int v =  Connected[r] * (4 + 2 * static_cast<bool>(phalanx) - 2 * static_cast<bool>(opposed) - static_cast<bool>(blocked)) / 2
                    + 21 * popcount(support);
 
             score += make_score(v, v * (r - 2) / 4);

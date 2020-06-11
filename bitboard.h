@@ -205,7 +205,7 @@ inline Bitboard adjacent_files_bb(Square s) {
 /// If the given squares are not on a same file/rank/diagonal, return 0.
 
 inline Bitboard between_bb(Square s1, Square s2) {
-	auto b = LineBB[s1][s2] & ((AllSquares << s1) ^ (AllSquares << s2));
+	const auto b = LineBB[s1][s2] & ((AllSquares << s1) ^ (AllSquares << s2));
   return b & (b - 1); //exclude lsb
 }
 
@@ -268,7 +268,7 @@ inline int edge_distance(Rank r) { return std::min(r, Rank(RANK_8 - r)); }
 
 inline Bitboard safe_destination(Square s, int step)
 {
-	auto to = Square(s + step);
+	const auto to = Square(s + step);
     return is_ok(to) && distance(s, to) <= 2 ? square_bb(to) : Bitboard(0);
 }
 

@@ -29,19 +29,19 @@ namespace HalfFloat
 		// --- constructors
 
 		float16() {}
-		float16(int16_t n) { from_float((float)n); }
-		float16(int32_t n) { from_float((float)n); }
+		float16(int16_t n) { from_float(static_cast<float>(n)); }
+		float16(int32_t n) { from_float(static_cast<float>(n)); }
 		float16(float n) { from_float(n); }
-		float16(double n) { from_float((float)n); }
+		float16(double n) { from_float(static_cast<float>(n)); }
 
 		// build from a float
 		void from_float(float f) { *this = to_float16(f); }
 
 		// --- implicit converters
 
-		operator int32_t() const { return (int32_t)to_float(*this); }
+		operator int32_t() const { return static_cast<int32_t>(to_float(*this)); }
 		operator float() const { return to_float(*this); }
-		operator double() const { return double(to_float(*this)); }
+		operator double() const { return static_cast<double>(to_float(*this)); }
 
 		// --- operators
 
@@ -104,26 +104,26 @@ private:
 	{
 		float16 a, b, c, d;
 		a = 1;
-		std::cout << (float)a << std::endl;
+		std::cout << static_cast<float>(a) << std::endl;
 		b = -118.625;
-		std::cout << (float)b << std::endl;
+		std::cout << static_cast<float>(b) << std::endl;
 		c = 2.5;
-		std::cout << (float)c << std::endl;
+		std::cout << static_cast<float>(c) << std::endl;
 		d = a + c;
-		std::cout << (float)d << std::endl;
+		std::cout << static_cast<float>(d) << std::endl;
 
 		c *= 1.5;
-		std::cout << (float)c << std::endl;
+		std::cout << static_cast<float>(c) << std::endl;
 
 		b /= 3;
-		std::cout << (float)b << std::endl;
+		std::cout << static_cast<float>(b) << std::endl;
 
 		float f1 = 1.5;
 		a += f1;
-		std::cout << (float)a << std::endl;
+		std::cout << static_cast<float>(a) << std::endl;
 
-		a += f1 * (float)a;
-		std::cout << (float)a << std::endl;
+		a += f1 * static_cast<float>(a);
+		std::cout << static_cast<float>(a) << std::endl;
 	}
 
 };

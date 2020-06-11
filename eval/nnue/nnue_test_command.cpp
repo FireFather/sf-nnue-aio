@@ -103,7 +103,7 @@ namespace Eval::NNUE
 						break;
 
 					// Randomly choose from the generated moves and advance the phase with the moves.
-					Move m = mg.begin()[prng.rand(mg.size())];
+					const Move m = mg.begin()[prng.rand(mg.size())];
 					pos.do_move(m, state[ply]);
 
 					++num_moves;

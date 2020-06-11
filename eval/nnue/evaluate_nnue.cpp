@@ -224,8 +224,8 @@ namespace Eval {
 
 	// Prepare a function to prefetch.
 	void prefetch_evalhash(const Key key) {
-		constexpr auto mask = ~((uint64_t)0x1f);
-		prefetch((void*)((uint64_t)g_evalTable[key] & mask));
+		constexpr auto mask = ~static_cast<uint64_t>(0x1f);
+		prefetch(reinterpret_cast<void*>(reinterpret_cast<uint64_t>(g_evalTable[key]) & mask));
 	}
 #endif
 
@@ -297,7 +297,7 @@ namespace Eval {
 		}
 #endif
 
-		Value score = NNUE::ComputeScore(pos);
+		const Value score = NNUE::ComputeScore(pos);
 #if defined(USE_EVAL_HASH)
 		// Since it was calculated carefully, save it in the evaluate hash table.
 		entry.key = key;

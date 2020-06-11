@@ -446,8 +446,8 @@ namespace WinProcGroup {
 			return -1;
 
 		// Once we know returnLength, allocate the buffer
-		SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX* buffer, * ptr;
-		ptr = buffer = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)malloc(returnLength);
+		SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX* buffer;
+		SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX* ptr = buffer = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)malloc(returnLength);
 
 		// Second call, now we expect to succeed
 		if (!fun1(RelationAll, buffer, &returnLength))

@@ -166,7 +166,8 @@ namespace Eval {
 			}
 
 			// Set options such as hyperparameters
-			void SendMessage(Message* message) {
+			void SendMessage(Message* message) const
+			{
 				shared_input_trainer_->SendMessage(message);
 			}
 

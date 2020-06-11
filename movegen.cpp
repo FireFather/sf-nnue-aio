@@ -62,8 +62,8 @@ namespace {
 		const Square ksq = pos.square<KING>(Them);
 		Bitboard emptySquares;
 
-		Bitboard pawnsOn7 = pos.pieces(Us, PAWN) & TRank7BB;
-		Bitboard pawnsNotOn7 = pos.pieces(Us, PAWN) & ~TRank7BB;
+		const Bitboard pawnsOn7 = pos.pieces(Us, PAWN) & TRank7BB;
+		const Bitboard pawnsNotOn7 = pos.pieces(Us, PAWN) & ~TRank7BB;
 
 		Bitboard enemies = (Type == EVASIONS ? pos.pieces(Them) & target :
 			Type == CAPTURES ? target : pos.pieces(Them));
@@ -91,11 +91,11 @@ namespace {
 				// if the pawn is not on the same file as the enemy king, because we
 				// don't generate captures. Note that a possible discovery check
 				// promotion has been already generated amongst the captures.
-				Bitboard dcCandidateQuiets = pos.blockers_for_king(Them) & pawnsNotOn7;
+				const Bitboard dcCandidateQuiets = pos.blockers_for_king(Them) & pawnsNotOn7;
 				if (dcCandidateQuiets)
 				{
-					Bitboard dc1 = shift<Up>(dcCandidateQuiets) & emptySquares & ~file_bb(ksq);
-					Bitboard dc2 = shift<Up>(dc1 & TRank3BB) & emptySquares;
+					const Bitboard dc1 = shift<Up>(dcCandidateQuiets) & emptySquares & ~file_bb(ksq);
+					const Bitboard dc2 = shift<Up>(dc1 & TRank3BB) & emptySquares;
 
 					b1 |= dc1;
 					b2 |= dc2;
@@ -104,13 +104,13 @@ namespace {
 
 			while (b1)
 			{
-				Square to = pop_lsb(&b1);
+				const Square to = pop_lsb(&b1);
 				*moveList++ = make_move(to - Up, to);
 			}
 
 			while (b2)
 			{
-				Square to = pop_lsb(&b2);
+				const Square to = pop_lsb(&b2);
 				*moveList++ = make_move(to - Up - Up, to);
 			}
 		}
@@ -146,13 +146,13 @@ namespace {
 
 			while (b1)
 			{
-				Square to = pop_lsb(&b1);
+				const Square to = pop_lsb(&b1);
 				*moveList++ = make_move(to - UpRight, to);
 			}
 
 			while (b2)
 			{
-				Square to = pop_lsb(&b2);
+				const Square to = pop_lsb(&b2);
 				*moveList++ = make_move(to - UpLeft, to);
 			}
 
@@ -227,7 +227,7 @@ namespace {
 			break;
 		case EVASIONS:
 		{
-			Square checksq = lsb(pos.checkers());
+			const Square checksq = lsb(pos.checkers());
 			target = between_bb(pos.square<KING>(Us), checksq) | checksq;
 			break;
 		}
@@ -246,7 +246,7 @@ namespace {
 
 		if (Type != QUIET_CHECKS && Type != EVASIONS)
 		{
-			Square ksq = pos.square<KING>(Us);
+			const Square ksq = pos.square<KING>(Us);
 			Bitboard b = attacks_bb<KING>(ksq) & target;
 			while (b)
 				*moveList++ = make_move(ksq, pop_lsb(&b));
@@ -275,7 +275,7 @@ ExtMove* generate(const Position& pos, ExtMove* moveList) {
 	static_assert(Type == CAPTURES || Type == QUIETS || Type == NON_EVASIONS, "Unsupported type in generate()");
 	assert(!pos.checkers());
 
-	Color us = pos.side_to_move();
+	const Color us = pos.side_to_move();
 
 	return us == WHITE ? generate_all<WHITE, Type>(pos, moveList)
 		: generate_all<BLACK, Type>(pos, moveList);
@@ -294,13 +294,13 @@ ExtMove* generate<QUIET_CHECKS>(const Position& pos, ExtMove* moveList) {
 
 	assert(!pos.checkers());
 
-	Color us = pos.side_to_move();
+	const Color us = pos.side_to_move();
 	Bitboard dc = pos.blockers_for_king(~us) & pos.pieces(us) & ~pos.pieces(PAWN);
 
 	while (dc)
 	{
-		Square from = pop_lsb(&dc);
-		PieceType pt = type_of(pos.piece_on(from));
+		const Square from = pop_lsb(&dc);
+		const PieceType pt = type_of(pos.piece_on(from));
 
 		Bitboard b = attacks_bb(pt, from, pos.pieces()) & ~pos.pieces();
 
@@ -323,8 +323,8 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 
 	assert(pos.checkers());
 
-	Color us = pos.side_to_move();
-	Square ksq = pos.square<KING>(us);
+	const Color us = pos.side_to_move();
+	const Square ksq = pos.square<KING>(us);
 	Bitboard sliderAttacks = 0;
 	Bitboard sliders = pos.checkers() & ~pos.pieces(KNIGHT, PAWN);
 
@@ -352,10 +352,9 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 
 template<>
 ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
-
-	Color us = pos.side_to_move();
-	Bitboard pinned = pos.blockers_for_king(us) & pos.pieces(us);
-	Square ksq = pos.square<KING>(us);
+	const Color us = pos.side_to_move();
+	const Bitboard pinned = pos.blockers_for_king(us) & pos.pieces(us);
+	const Square ksq = pos.square<KING>(us);
 	ExtMove* cur = moveList;
 
 	moveList = pos.checkers() ? generate<EVASIONS    >(pos, moveList)

@@ -194,7 +194,7 @@ namespace {
 void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
-      Reductions[i] = int((24.8 + std::log(Threads.size())) * std::log(i));
+      Reductions[i] = static_cast<int>((24.8 + std::log(Threads.size())) * std::log(i));
 }
 
 
@@ -272,9 +272,9 @@ void MainThread::search() {
   Thread* bestThread = this;
 
   // Check if there are threads with a better score than main thread
-  if (    int(Options["MultiPV"]) == 1
+  if (    static_cast<int>(Options["MultiPV"]) == 1
       && !Limits.depth
-      && !(Skill(Options["Skill Level"]).enabled() || int(Options["UCI_LimitStrength"]))
+      && !(Skill(Options["Skill Level"]).enabled() || static_cast<int>(Options["UCI_LimitStrength"]))
       &&  rootMoves[0].pv[0] != MOVE_NONE)
   {
       std::map<Move, int64_t> votes;
@@ -288,7 +288,7 @@ void MainThread::search() {
       for (Thread* th : Threads)
       {
           votes[th->rootMoves[0].pv[0]] +=
-              (th->rootMoves[0].score - minScore + 14) * int(th->completedDepth);
+              (th->rootMoves[0].score - minScore + 14) * static_cast<int>(th->completedDepth);
 
           if (abs(bestThread->rootMoves[0].score) >= VALUE_TB_WIN_IN_MAX_PLY)
           {
@@ -330,7 +330,7 @@ void Thread::search() {
   // The latter is needed for statScores and killer initialization.
   Stack stack[MAX_PLY+10], *ss = stack+7;
   Move  pv[MAX_PLY+1];
-  Value bestValue, alpha, beta, delta;
+  Value alpha, delta;
   Move  lastBestMove = MOVE_NONE;
   Depth lastBestMoveDepth = 0;
   MainThread* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
@@ -344,8 +344,8 @@ void Thread::search() {
 
   ss->pv = pv;
 
-  bestValue = delta = alpha = -VALUE_INFINITE;
-  beta = VALUE_INFINITE;
+  Value bestValue = delta = alpha = -VALUE_INFINITE;
+  Value beta = VALUE_INFINITE;
 
   if (mainThread)
   {
@@ -370,20 +370,20 @@ void Thread::search() {
   PRNG rng(now());
   double floatLevel = Options["UCI_LimitStrength"] ?
                       Utility::clamp(std::pow((Options["UCI_Elo"] - 1346.6) / 143.4, 1 / 0.806), 0.0, 20.0) :
-                        double(Options["Skill Level"]);
-  int intLevel = int(floatLevel) +
-                 ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
+                        static_cast<double>(Options["Skill Level"]);
+  int intLevel = static_cast<int>(floatLevel) +
+                 ((floatLevel - static_cast<int>(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
   Skill skill(intLevel);
 
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
   if (skill.enabled())
-      multiPV = std::max(multiPV, (size_t)4);
+      multiPV = std::max(multiPV, static_cast<size_t>(4));
 
   multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = TtHitAverageWindow * TtHitAverageResolution / 2;
 
-  int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
+  int ct = static_cast<int>(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
 
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
@@ -864,7 +864,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = (854 + 68 * depth) / 258 + std::min(int(eval - beta) / 192, 3);
+        Depth R = (854 + 68 * depth) / 258 + std::min(static_cast<int>(eval - beta) / 192, 3);
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -1422,13 +1422,9 @@ moves_loop: // When in check, search starts from here
 
     Move pv[MAX_PLY+1];
     StateInfo st;
-    TTEntry* tte;
-    Key posKey;
-    Move ttMove, move, bestMove;
-    Depth ttDepth;
-    Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
-    bool ttHit, pvHit, givesCheck, captureOrPromotion;
-    int moveCount;
+    Move move;
+    Value bestValue, futilityBase, oldAlpha;
+    bool ttHit;
 
     if (PvNode)
     {
@@ -1439,9 +1435,9 @@ moves_loop: // When in check, search starts from here
 
     Thread* thisThread = pos.this_thread();
     (ss+1)->ply = ss->ply + 1;
-    bestMove = MOVE_NONE;
+    Move bestMove = MOVE_NONE;
     ss->inCheck = pos.checkers();
-    moveCount = 0;
+    int moveCount = 0;
 
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
@@ -1453,14 +1449,15 @@ moves_loop: // When in check, search starts from here
     // Decide whether or not to include checks: this fixes also the type of
     // TT entry depth that we are going to use. Note that in qsearch we use
     // only two types of depth in TT: DEPTH_QS_CHECKS or DEPTH_QS_NO_CHECKS.
-    ttDepth = ss->inCheck || depth >= DEPTH_QS_CHECKS ? DEPTH_QS_CHECKS
-                                                  : DEPTH_QS_NO_CHECKS;
+    Depth ttDepth = ss->inCheck || depth >= DEPTH_QS_CHECKS
+	                    ? DEPTH_QS_CHECKS
+	                    : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
-    posKey = pos.key();
-    tte = TT.probe(posKey, ttHit);
-    ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-    ttMove = ttHit ? tte->move() : MOVE_NONE;
-    pvHit = ttHit && tte->is_pv();
+    Key posKey = pos.key();
+    TTEntry* tte = TT.probe(posKey, ttHit);
+    Value ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+    Move ttMove = ttHit ? tte->move() : MOVE_NONE;
+    bool pvHit = ttHit && tte->is_pv();
 
     if (  !PvNode
         && ttHit
@@ -1528,8 +1525,8 @@ moves_loop: // When in check, search starts from here
     {
       assert(is_ok(move));
 
-      givesCheck = pos.gives_check(move);
-      captureOrPromotion = pos.capture_or_promotion(move);
+      bool givesCheck = pos.gives_check(move);
+      bool captureOrPromotion = pos.capture_or_promotion(move);
 
       moveCount++;
 
@@ -1541,7 +1538,7 @@ moves_loop: // When in check, search starts from here
       {
           assert(type_of(move) != ENPASSANT); // Due to !pos.advanced_pawn_push
 
-          futilityValue = futilityBase + PieceValue[EG][pos.piece_on(to_sq(move))];
+          Value futilityValue = futilityBase + PieceValue[EG][pos.piece_on(to_sq(move))];
 
           if (futilityValue <= alpha)
           {
@@ -1584,7 +1581,7 @@ moves_loop: // When in check, search starts from here
 
       // Make and search the move
       pos.do_move(move, st, givesCheck);
-      value = -qsearch<NT>(pos, ss+1, -beta, -alpha, depth - 1);
+      Value value = -qsearch<NT>(pos, ss + 1, -beta, -alpha, depth - 1);
       pos.undo_move(move);
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
@@ -1683,17 +1680,16 @@ moves_loop: // When in check, search starts from here
 
   void update_all_stats(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Square prevSq,
                         Move* quietsSearched, int quietCount, Move* capturesSearched, int captureCount, Depth depth) {
-
-    int bonus1, bonus2;
-    Color us = pos.side_to_move();
+	  Color us = pos.side_to_move();
     Thread* thisThread = pos.this_thread();
     CapturePieceToHistory& captureHistory = thisThread->captureHistory;
     Piece moved_piece = pos.moved_piece(bestMove);
     PieceType captured = type_of(pos.piece_on(to_sq(bestMove)));
 
-    bonus1 = stat_bonus(depth + 1);
-    bonus2 = bestValue > beta + PawnValueMg ? bonus1               // larger bonus
-                                            : stat_bonus(depth);   // smaller bonus
+    int bonus1 = stat_bonus(depth + 1);
+    int bonus2 = bestValue > beta + PawnValueMg
+	                 ? bonus1 // larger bonus
+	                 : stat_bonus(depth);   // smaller bonus
 
     if (!pos.capture_or_promotion(bestMove))
     {
@@ -1787,7 +1783,7 @@ moves_loop: // When in check, search starts from here
     for (size_t i = 0; i < multiPV; ++i)
     {
         // This is our magic formula
-        int push = (  weakness * int(topScore - rootMoves[i].score)
+        int push = (  weakness * static_cast<int>(topScore - rootMoves[i].score)
                     + delta * (rng.rand<unsigned>() % weakness)) / 128;
 
         if (rootMoves[i].score + push >= maxScore)
@@ -1811,7 +1807,7 @@ void MainThread::check_time() {
       return;
 
   // When using nodes, ensure checking rate is not lower than 0.1% of nodes
-  callsCnt = Limits.nodes ? std::min(1024, int(Limits.nodes / 1024)) : 1024;
+  callsCnt = Limits.nodes ? std::min(1024, static_cast<int>(Limits.nodes / 1024)) : 1024;
 
   static TimePoint lastInfoTime = now();
 
@@ -1830,7 +1826,7 @@ void MainThread::check_time() {
 
   if (   (Limits.use_time_management() && (elapsed > Time.maximum() - 10 || stopOnPonderhit))
       || (Limits.movetime && elapsed >= Limits.movetime)
-      || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
+      || (Limits.nodes && Threads.nodes_searched() >= static_cast<uint64_t>(Limits.nodes)))
       Threads.stop = true;
 }
 
@@ -1844,7 +1840,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
   TimePoint elapsed = Time.elapsed() + 1;
   const RootMoves& rootMoves = pos.this_thread()->rootMoves;
   size_t pvIdx = pos.this_thread()->pvIdx;
-  size_t multiPV = std::min((size_t)Options["MultiPV"], rootMoves.size());
+  size_t multiPV = std::min(static_cast<size_t>(Options["MultiPV"]), rootMoves.size());
   uint64_t nodesSearched = Threads.nodes_searched();
   uint64_t tbHits = Threads.tb_hits() + (TB::RootInTB ? rootMoves.size() : 0);
 
@@ -1923,9 +1919,9 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
 void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
 
     RootInTB = false;
-    UseRule50 = bool(Options["Syzygy50MoveRule"]);
-    ProbeDepth = int(Options["SyzygyProbeDepth"]);
-    Cardinality = int(Options["SyzygyProbeLimit"]);
+    UseRule50 = static_cast<bool>(Options["Syzygy50MoveRule"]);
+    ProbeDepth = static_cast<int>(Options["SyzygyProbeDepth"]);
+    Cardinality = static_cast<int>(Options["SyzygyProbeLimit"]);
     bool dtz_available = true;
 
     // Tables with fewer pieces than SyzygyProbeLimit are searched with
@@ -2034,7 +2030,7 @@ namespace Learner
       // Clear all history types. This initialization takes a little time, and the accuracy of the search is rather reduced, so the good and bad are not well understood.
       // th->clear();
 
-      int ct = int(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
+      int ct = static_cast<int>(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
       Color us = pos.side_to_move();
 
       // In analysis mode, adjust contempt in accordance with user preference

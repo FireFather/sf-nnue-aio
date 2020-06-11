@@ -23,7 +23,7 @@ namespace Eval::NNUE::Features
 			epSquare = Inv(epSquare);
 		}
 
-		auto file = file_of(epSquare);
+		const auto file = file_of(epSquare);
 		active->push_back(file);
 	}
 

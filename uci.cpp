@@ -149,7 +149,7 @@ namespace {
 
 		Search::LimitsType limits;
 		string token;
-		bool ponderMode = false;
+		auto ponderMode = false;
 
 		limits.startTime = now(); // As early as possible!
 
@@ -181,12 +181,12 @@ namespace {
 	void bench(Position& pos, istream& args, StateListPtr& states) {
 
 		string token;
-		uint64_t num, nodes = 0, cnt = 1;
+		uint64_t nodes = 0, cnt = 1;
 
-		vector<string> list = setup_bench(pos, args);
-		num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0 || s.find("eval") == 0; });
+		auto list = setup_bench(pos, args);
+		uint64_t num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
-		TimePoint elapsed = now();
+		auto elapsed = now();
 
 		for (const auto& cmd : list)
 		{
@@ -238,7 +238,7 @@ void is_ready(bool skipCorruptCheck)
 
 	auto ended = false;
 	auto th = std::thread([&ended] {
-		int count = 0;
+		auto count = 0;
 		while (!ended)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -310,8 +310,8 @@ void qsearch_cmd(Position& pos)
 void search_cmd(Position& pos, istringstream& is)
 {
 	string token;
-	int depth = 1;
-	int multi_pv = static_cast<int>(Options["MultiPV"]);
+	auto depth = 1;
+	auto multi_pv = static_cast<int>(Options["MultiPV"]);
 	while (is >> token)
 	{
 		if (token == "depth")
@@ -346,7 +346,7 @@ void UCI::loop(int argc, char* argv[]) {
 
 	pos.set(StartFEN, false, &states->back(), Threads.main());
 
-	for (int i = 1; i < argc; ++i)
+	for (auto i = 1; i < argc; ++i)
 		cmd += std::string(argv[i]) + " ";
 
 	do {
@@ -447,9 +447,8 @@ std::string UCI::square(Square s) {
 /// castling moves are always encoded as 'king captures rook'.
 
 string UCI::move(Move m, bool chess960) {
-
-	Square from = from_sq(m);
-	Square to = to_sq(m);
+	auto from = from_sq(m);
+	auto to = to_sq(m);
 
 	if (m == MOVE_NONE)
 		return "(none)";
@@ -460,7 +459,7 @@ string UCI::move(Move m, bool chess960) {
 	if (type_of(m) == CASTLING && !chess960)
 		to = make_square(to > from ? FILE_G : FILE_C, rank_of(from));
 
-	string move = UCI::square(from) + UCI::square(to);
+	auto move = UCI::square(from) + UCI::square(to);
 
 	if (type_of(m) == PROMOTION)
 		move += " pnbrqk"[promotion_type(m)];

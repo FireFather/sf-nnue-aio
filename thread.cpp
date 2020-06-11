@@ -71,8 +71,8 @@ void Thread::clear() {
 	lowPlyHistory.fill(0);
 	captureHistory.fill(0);
 
-	for (bool inCheck : { false, true })
-		for (StatsType c : { NoCaptures, Captures })
+	for (auto inCheck : { false, true })
+		for (auto c : { NoCaptures, Captures })
 		{
 			for (auto& to : continuationHistory[inCheck][c])
 				for (auto& h : to)
@@ -162,7 +162,7 @@ void ThreadPool::set(size_t requested) {
 
 void ThreadPool::clear() {
 
-	for (Thread* th : *this)
+	for (auto th : *this)
 		th->clear();
 
 	main()->callsCnt = 0;
@@ -204,9 +204,9 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
 	// be deduced from a fen string, so set() clears them and to not lose the info
 	// we need to backup and later restore setupStates->back(). Note that setupStates
 	// is shared by threads but is accessed in read-only mode.
-	StateInfo tmp = setupStates->back();
+	auto tmp = setupStates->back();
 
-	for (Thread* th : *this)
+	for (auto th : *this)
 	{
 		th->nodes = th->tbHits = th->nmpMinPly = 0;
 		th->rootDepth = th->completedDepth = 0;

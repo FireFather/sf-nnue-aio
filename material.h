@@ -49,8 +49,8 @@ struct Entry {
   // the position. For instance, in KBP vs K endgames, the scaling function looks
   // for rook pawns and wrong-colored bishops.
   [[nodiscard]] ScaleFactor scale_factor(const Position& pos, Color c) const {
-    ScaleFactor sf = scalingFunction[c] ? (*scalingFunction[c])(pos)
-                                        :  SCALE_FACTOR_NONE;
+	  auto sf = scalingFunction[c] ? (*scalingFunction[c])(pos)
+		            :  SCALE_FACTOR_NONE;
     return sf != SCALE_FACTOR_NONE ? sf : ScaleFactor(factor[c]);
   }
 

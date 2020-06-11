@@ -65,11 +65,11 @@ namespace Eval {
 
 			// proceed with the difference calculation if possible
 			bool UpdateAccumulatorIfPossible(const Position& pos) const {
-				const auto now = pos.state();
+				auto* const now = pos.state();
 				if (now->accumulator.computed_accumulation) {
 					return true;
 				}
-				const auto prev = now->previous;
+				auto* const prev = now->previous;
 				if (prev && prev->accumulator.computed_accumulation) {
 					UpdateAccumulator(pos);
 				return true;
@@ -98,7 +98,7 @@ namespace Eval {
 			for (IndexType p = 0; p < 2; ++p) {
 				const IndexType offset = kHalfDimensions * p;
 #if defined(USE_AVX2)
-				auto out = reinterpret_cast<__m256i*>(&output[offset]);
+				auto* const out = reinterpret_cast<__m256i*>(&output[offset]);
 				for (IndexType j = 0; j < kNumChunks; ++j) {
 					__m256i sum0 =
 #if defined(__MINGW32__) || defined(__MINGW64__)
@@ -192,9 +192,9 @@ sum0 = _mm_add_epi16(sum0, reinterpret_cast<const __m128i*>(
         for (const auto index: active_indices[perspective]) {
           const IndexType offset = kHalfDimensions * index;
 #if defined(USE_AVX2)
-          auto accumulation = reinterpret_cast<__m256i*>(
+          auto* const accumulation = reinterpret_cast<__m256i*>(
               &accumulator.accumulation[perspective][i][0]);
-          auto column = reinterpret_cast<const __m256i*>(&weights_[offset]);
+          const auto* const column = reinterpret_cast<const __m256i*>(&weights_[offset]);
           constexpr IndexType kNumChunks = kHalfDimensions / (kSimdWidth / 2);
           for (IndexType j = 0; j <kNumChunks; ++j) {
 #if defined(__MINGW32__) || defined(__MINGW64__)
@@ -244,7 +244,7 @@ sum0 = _mm_add_epi16(sum0, reinterpret_cast<const __m128i*>(
       for (const auto perspective :Colors) {
 #if defined(USE_AVX2)
         constexpr IndexType kNumChunks = kHalfDimensions / (kSimdWidth / 2);
-        auto accumulation = reinterpret_cast<__m256i*>(
+        auto* const accumulation = reinterpret_cast<__m256i*>(
             &accumulator.accumulation[perspective][i][0]);
 #elif defined(USE_SSE2)
         constexpr IndexType kNumChunks = kHalfDimensions / (kSimdWidth / 2);
@@ -270,7 +270,7 @@ auto accumulation = reinterpret_cast<int16x8_t*>(
           for (const auto index: removed_indices[perspective]) {
             const IndexType offset = kHalfDimensions * index;
 #if defined(USE_AVX2)
-            auto column = reinterpret_cast<const __m256i*>(&weights_[offset]);
+            const auto* const column = reinterpret_cast<const __m256i*>(&weights_[offset]);
             for (IndexType j = 0; j <kNumChunks; ++j) {
               accumulation[j] = _mm256_sub_epi16(accumulation[j], column[j]);
             }
@@ -296,7 +296,7 @@ auto accumulation = reinterpret_cast<int16x8_t*>(
           for (const auto index: added_indices[perspective]) {
             const IndexType offset = kHalfDimensions * index;
 #if defined(USE_AVX2)
-            auto column = reinterpret_cast<const __m256i*>(&weights_[offset]);
+            const auto* const column = reinterpret_cast<const __m256i*>(&weights_[offset]);
             for (IndexType j = 0; j <kNumChunks; ++j) {
               accumulation[j] = _mm256_add_epi16(accumulation[j], column[j]);
             }

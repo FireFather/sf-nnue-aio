@@ -58,10 +58,10 @@ namespace Eval
 			{
 				if (t[i] <= p && p < t[i + 1])
 				{
-					auto sq = static_cast<Square>(p - t[i]);
+					const auto sq = static_cast<Square>(p - t[i]);
 
 					// found!!
-					auto q = (p < fe_hand_end) ? BonaPiece(sq + t[i + 1]) : static_cast<BonaPiece>(Inv(sq) + t[i + 1]);
+					const auto q = (p < fe_hand_end) ? BonaPiece(sq + t[i + 1]) : static_cast<BonaPiece>(Inv(sq) + t[i + 1]);
 					inv_piece_[p] = q;
 					inv_piece_[q] = p;
 
@@ -83,12 +83,12 @@ namespace Eval
 					if (p < fe_hand_end)
 						continue;
 
-					auto r1 = static_cast<BonaPiece>(Mir(sq) + t[i]);
+					const auto r1 = static_cast<BonaPiece>(Mir(sq) + t[i]);
 					mir_piece_[p] = r1;
 					mir_piece_[r1] = p;
 
-					auto p2 = static_cast<BonaPiece>(sq + t[i + 1]);
-					auto r2 = static_cast<BonaPiece>(Mir(sq) + t[i + 1]);
+					const auto p2 = static_cast<BonaPiece>(sq + t[i + 1]);
+					const auto r2 = static_cast<BonaPiece>(Mir(sq) + t[i + 1]);
 					mir_piece_[p2] = r2;
 					mir_piece_[r2] = p2;
 
