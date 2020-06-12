@@ -82,7 +82,7 @@ namespace Eval {
 				if (num_calls_ == 0) {
 					current_operation_ = Operation::kBackPropagate;
 					for (IndexType b = 0; b < batch_size_; ++b) {
-						const IndexType batch_offset = kInputDimensions * b;
+						const auto batch_offset = kInputDimensions * b;
 						for (IndexType i = 0; i < kInputDimensions; ++i) {
 							gradients_[batch_offset + i] = static_cast<LearnFloatType>(0.0);
 						}
@@ -90,7 +90,7 @@ namespace Eval {
 				}
 				assert(current_operation_ == Operation::kBackPropagate);
 				for (IndexType b = 0; b < batch_size_; ++b) {
-					const IndexType batch_offset = kInputDimensions * b;
+					const auto batch_offset = kInputDimensions * b;
 					for (IndexType i = 0; i < kInputDimensions; ++i) {
 						gradients_[batch_offset + i] += gradients[batch_offset + i];
 					}
@@ -186,8 +186,8 @@ namespace Eval {
 				batch_size_ = static_cast<IndexType>(batch.size());
 				const auto input = shared_input_trainer_->Propagate(batch);
 				for (IndexType b = 0; b < batch_size_; ++b) {
-					const IndexType input_offset = kInputDimensions * b;
-					const IndexType output_offset = kOutputDimensions * b;
+					const auto input_offset = kInputDimensions * b;
+					const auto output_offset = kOutputDimensions * b;
 #if defined(USE_BLAS)
 					cblas_scopy(kOutputDimensions, &input[input_offset + Offset], 1,
 						&output_[output_offset], 1);
@@ -204,8 +204,8 @@ namespace Eval {
 			void Backpropagate(const LearnFloatType* gradients,
 				LearnFloatType learning_rate) {
 				for (IndexType b = 0; b < batch_size_; ++b) {
-					const IndexType input_offset = kInputDimensions * b;
-					const IndexType output_offset = kOutputDimensions * b;
+					const auto input_offset = kInputDimensions * b;
+					const auto output_offset = kOutputDimensions * b;
 					for (IndexType i = 0; i < kInputDimensions; ++i) {
 						if (i < Offset || i >= Offset + kOutputDimensions) {
 							gradients_[input_offset + i] = static_cast<LearnFloatType>(0.0);

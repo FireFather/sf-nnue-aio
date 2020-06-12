@@ -225,8 +225,8 @@ namespace Learner
 
 	// So far, only Yaneura King 2018 Otafuku has this stub
 	// If you define EVAL_LEARN, this stub is required.
-	extern Learner::ValueAndPV search(Position& pos, int depth, size_t multiPV = 1, uint64_t NodesLimit = 0);
-	extern Learner::ValueAndPV qsearch(Position& pos);
+	extern ValueAndPV search(Position& pos, int depth, size_t multiPV = 1, uint64_t NodesLimit = 0);
+	extern ValueAndPV qsearch(Position& pos);
 
 	double calc_grad(Value shallow, const PackedSfenValue& psv);
 

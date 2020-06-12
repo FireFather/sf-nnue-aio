@@ -56,7 +56,7 @@ class Trainer<Layers::Sum<FirstPreviousLayer, RemainingPreviousLayers...>>:
                 head_output, 1, output, 1);
 #else
     for (IndexType b = 0; b <batch_size_; ++b) {
-      const IndexType batch_offset = kOutputDimensions * b;
+      const auto batch_offset = kOutputDimensions * b;
       for (IndexType i = 0; i <kOutputDimensions; ++i) {
         output[batch_offset + i] += head_output[batch_offset + i];
       }
@@ -138,7 +138,7 @@ class Trainer<Layers::Sum<PreviousLayer>> {
     cblas_scopy(kOutputDimensions * batch_size_, output, 1, &output_[0], 1);
 #else
     for (IndexType b = 0; b <batch_size_; ++b) {
-      const IndexType batch_offset = kOutputDimensions * b;
+      const auto batch_offset = kOutputDimensions * b;
       for (IndexType i = 0; i <kOutputDimensions; ++i) {
         output_[batch_offset + i] = output[batch_offset + i];
       }

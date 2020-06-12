@@ -69,15 +69,15 @@ namespace {
   template<Color Us>
   Score evaluate(const Position& pos, Pawns::Entry* e) {
 
-    constexpr Color     Them = ~Us;
-    constexpr Direction Up   = pawn_push(Us);
+    constexpr const auto Them = ~Us;
+    constexpr const auto Up   = pawn_push(Us);
 
     Square s;
-    Score score = SCORE_ZERO;
-    const Square* pl = pos.squares<PAWN>(Us);
+    auto score = SCORE_ZERO;
+    auto pl = pos.squares<PAWN>(Us);
 
-    Bitboard ourPawns   = pos.pieces(  Us, PAWN);
-    Bitboard theirPawns = pos.pieces(Them, PAWN);
+    auto ourPawns   = pos.pieces(  Us, PAWN);
+    auto theirPawns = pos.pieces(Them, PAWN);
 
     Bitboard doubleAttackThem = pawn_double_attacks_bb<Them>(theirPawns);
 
@@ -91,22 +91,22 @@ namespace {
     {
         assert(pos.piece_on(s) == make_piece(Us, PAWN));
 
-        Rank r = relative_rank(Us, s);
+        auto r = relative_rank(Us, s);
 
         // Flag the pawn
-        Bitboard opposed = theirPawns & forward_file_bb(Us, s);
-        Bitboard blocked = theirPawns & (s + Up);
-        Bitboard stoppers = theirPawns & passed_pawn_span(Us, s);
-        Bitboard lever = theirPawns & pawn_attacks_bb(Us, s);
-        Bitboard leverPush = theirPawns & pawn_attacks_bb(Us, s + Up);
+        auto opposed = theirPawns & forward_file_bb(Us, s);
+        auto blocked = theirPawns & (s + Up);
+        auto stoppers = theirPawns & passed_pawn_span(Us, s);
+        auto lever = theirPawns & pawn_attacks_bb(Us, s);
+        auto leverPush = theirPawns & pawn_attacks_bb(Us, s + Up);
         bool doubled = ourPawns & (s - Up);
-        Bitboard neighbours = ourPawns & adjacent_files_bb(s);
-        Bitboard phalanx = neighbours & rank_bb(s);
-        Bitboard support = neighbours & rank_bb(s - Up);
+        auto neighbours = ourPawns & adjacent_files_bb(s);
+        auto phalanx = neighbours & rank_bb(s);
+        auto support = neighbours & rank_bb(s - Up);
 
         // A pawn is backward when it is behind all pawns of the same color on
         // the adjacent files and cannot safely advance.
-        bool backward = !(neighbours & forward_ranks_bb(Them, s + Up))
+        auto backward = !(neighbours & forward_ranks_bb(Them, s + Up))
 	        && (leverPush | blocked);
 
         // Compute additional span if pawn is not backward nor blocked
@@ -134,7 +134,7 @@ namespace {
         // Score this pawn
         if (support | phalanx)
         {
-            int v =  Connected[r] * (4 + 2 * static_cast<bool>(phalanx) - 2 * static_cast<bool>(opposed) - static_cast<bool>(blocked)) / 2
+	        auto v =  Connected[r] * (4 + 2 * static_cast<bool>(phalanx) - 2 * static_cast<bool>(opposed) - static_cast<bool>(blocked)) / 2
                    + 21 * popcount(support);
 
             score += make_score(v, v * (r - 2) / 4);
@@ -173,9 +173,8 @@ namespace Pawns {
 /// have to recompute all when the same pawns configuration occurs again.
 
 Entry* probe(const Position& pos) {
-
-  Key key = pos.pawn_key();
-  Entry* e = pos.this_thread()->pawnsTable[key];
+	auto key = pos.pawn_key();
+	auto e = pos.this_thread()->pawnsTable[key];
 
   if (e->key == key)
       return e;
@@ -195,24 +194,24 @@ Entry* probe(const Position& pos) {
 template<Color Us>
 Score Entry::evaluate_shelter(const Position& pos, Square ksq) {
 
-  constexpr Color Them = ~Us;
+  constexpr const auto Them = ~Us;
 
-  Bitboard b = pos.pieces(PAWN) & ~forward_ranks_bb(Them, ksq);
-  Bitboard ourPawns = b & pos.pieces(Us) & ~pawnAttacks[Them];
-  Bitboard theirPawns = b & pos.pieces(Them);
+  auto b = pos.pieces(PAWN) & ~forward_ranks_bb(Them, ksq);
+  auto ourPawns = b & pos.pieces(Us) & ~pawnAttacks[Them];
+  auto theirPawns = b & pos.pieces(Them);
 
-  Score bonus = make_score(5, 5);
+  auto bonus = make_score(5, 5);
 
-  File center = Utility::clamp(file_of(ksq), FILE_B, FILE_G);
-  for (File f = File(center - 1); f <= File(center + 1); ++f)
+  auto center = Utility::clamp(file_of(ksq), FILE_B, FILE_G);
+  for (auto f = File(center - 1); f <= File(center + 1); ++f)
   {
       b = ourPawns & file_bb(f);
-      int ourRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : 0;
+      auto ourRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : 0;
 
       b = theirPawns & file_bb(f);
-      int theirRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : 0;
+      auto theirRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : 0;
 
-      int d = edge_distance(f);
+      auto d = edge_distance(f);
       bonus += make_score(ShelterStrength[d][ourRank], 0);
 
       if (ourRank && (ourRank == theirRank - 1))
@@ -230,8 +229,7 @@ Score Entry::evaluate_shelter(const Position& pos, Square ksq) {
 
 template<Color Us>
 Score Entry::do_king_safety(const Position& pos) {
-
-  Square ksq = pos.square<KING>(Us);
+	auto ksq = pos.square<KING>(Us);
   kingSquares[Us] = ksq;
   castlingRights[Us] = pos.castling_rights(Us);
   auto compare = [](Score a, Score b) { return mg_value(a) < mg_value(b); };
@@ -247,8 +245,8 @@ Score Entry::do_king_safety(const Position& pos) {
       shelter = std::max(shelter, evaluate_shelter<Us>(pos, relative_square(Us, SQ_C1)), compare);
 
   // In endgame we like to bring our king near our closest pawn
-  Bitboard pawns = pos.pieces(Us, PAWN);
-  int minPawnDist = 6;
+	auto pawns = pos.pieces(Us, PAWN);
+	auto minPawnDist = 6;
 
   if (pawns & attacks_bb<KING>(ksq))
       minPawnDist = 1;

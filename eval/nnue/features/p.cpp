@@ -17,7 +17,7 @@ namespace Eval::NNUE::Features
 		const BonaPiece* pieces = (perspective == BLACK) ?
 			pos.eval_list()->piece_list_fb() :
 			pos.eval_list()->piece_list_fw();
-		for (PieceNumber i = PIECE_NUMBER_ZERO; i < PIECE_NUMBER_KING; ++i) {
+		for (auto i = PIECE_NUMBER_ZERO; i < PIECE_NUMBER_KING; ++i) {
 			if (pieces[i] != Eval::BONA_PIECE_ZERO) {
 				active->push_back(pieces[i]);
 			}
@@ -29,7 +29,7 @@ namespace Eval::NNUE::Features
 		const Position& pos, Color perspective,
 		IndexList* removed, IndexList* added) {
 		const auto& dp = pos.state()->dirtyPiece;
-		for (int i = 0; i < dp.dirty_num; ++i) {
+		for (auto i = 0; i < dp.dirty_num; ++i) {
 			if (dp.pieceNo[i] >= PIECE_NUMBER_KING) continue;
 			if (dp.changed_piece[i].old_piece.from[perspective] != Eval::BONA_PIECE_ZERO) {
 				removed->push_back(dp.changed_piece[i].old_piece.from[perspective]);

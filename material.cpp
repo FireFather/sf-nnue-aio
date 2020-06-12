@@ -84,9 +84,9 @@ namespace {
 	template<Color Us>
 	int imbalance(const int pieceCount[][PIECE_TYPE_NB]) {
 
-		constexpr Color Them = ~Us;
+		constexpr const auto Them = ~Us;
 
-		int bonus = 0;
+		auto bonus = 0;
 
 		// Second-degree polynomial material imbalance, by Tord Romstad
 		for (int pt1 = NO_PIECE_TYPE; pt1 <= QUEEN; ++pt1)
@@ -94,7 +94,7 @@ namespace {
 			if (!pieceCount[Us][pt1])
 				continue;
 
-			int v = 0;
+			auto v = 0;
 
 			for (int pt2 = NO_PIECE_TYPE; pt2 <= pt1; ++pt2)
 				v += QuadraticOurs[pt1][pt2] * pieceCount[Us][pt2]
@@ -116,9 +116,8 @@ namespace Material {
 	/// have to recompute all when the same material configuration occurs again.
 
 	Entry* probe(const Position& pos) {
-
-		Key key = pos.material_key();
-		Entry* e = pos.this_thread()->materialTable[key];
+		auto key = pos.material_key();
+		auto e = pos.this_thread()->materialTable[key];
 
 		if (e->key == key)
 			return e;
@@ -127,9 +126,9 @@ namespace Material {
 		e->key = key;
 		e->factor[WHITE] = e->factor[BLACK] = (uint8_t)SCALE_FACTOR_NORMAL;
 
-		Value npm_w = pos.non_pawn_material(WHITE);
-		Value npm_b = pos.non_pawn_material(BLACK);
-		Value npm = Utility::clamp(npm_w + npm_b, EndgameLimit, MidgameLimit);
+		auto npm_w = pos.non_pawn_material(WHITE);
+		auto npm_b = pos.non_pawn_material(BLACK);
+		auto npm = Utility::clamp(npm_w + npm_b, EndgameLimit, MidgameLimit);
 
 		// Map total non-pawn material into [PHASE_ENDGAME, PHASE_MIDGAME]
 		e->gamePhase = Phase(((npm - EndgameLimit) * PHASE_MIDGAME) / (MidgameLimit - EndgameLimit));
@@ -140,7 +139,7 @@ namespace Material {
 		if ((e->evaluationFunction = Endgames::probe<Value>(key)) != nullptr)
 			return e;
 
-		for (Color c : { WHITE, BLACK })
+		for (auto c : { WHITE, BLACK })
 			if (is_KXK(pos, c))
 			{
 				e->evaluationFunction = &EvaluateKXK[c];
@@ -160,7 +159,7 @@ namespace Material {
 		// We didn't find any specialized scaling function, so fall back on generic
 		// ones that refer to more than one material distribution. Note that in this
 		// case we don't return after setting the function.
-		for (Color c : { WHITE, BLACK })
+		for (auto c : { WHITE, BLACK })
 		{
 			if (is_KBPsK(pos, c))
 				e->scalingFunction[c] = &ScaleKBPsK[c];

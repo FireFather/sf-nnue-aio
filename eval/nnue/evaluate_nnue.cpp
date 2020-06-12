@@ -238,13 +238,13 @@ namespace Eval {
 		if (!Options["SkipLoadingEval"])
 		{
 			const std::string dir_name = Options["EvalDir"];
-			const std::string file_name = Path::Combine(dir_name, NNUE::kFileName);
+			const auto file_name = Path::Combine(dir_name, NNUE::kFileName);
 			//{
 			// std::ofstream stream(file_name, std::ios::binary);
 			// NNUE::WriteParameters(stream);
 			//}
 			std::ifstream stream(file_name, std::ios::binary);
-			const bool result = NNUE::ReadParameters(stream);
+			const auto result = NNUE::ReadParameters(stream);
 
 			// ASSERT(result);
 			if (!result)
@@ -288,8 +288,8 @@ namespace Eval {
 
 #if defined(USE_EVAL_HASH)
 		// May be in the evaluate hash table.
-		const Key key = pos.key();
-		ScoreKeyValue entry = *g_evalTable[key];
+		const auto key = pos.key();
+		auto entry = *g_evalTable[key];
 		entry.decode();
 		if (entry.key == key) {
 			// there were!
@@ -297,7 +297,7 @@ namespace Eval {
 		}
 #endif
 
-		const Value score = NNUE::ComputeScore(pos);
+		const auto score = NNUE::ComputeScore(pos);
 #if defined(USE_EVAL_HASH)
 		// Since it was calculated carefully, save it in the evaluate hash table.
 		entry.key = key;

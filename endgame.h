@@ -65,7 +65,7 @@ enum EndgameCode {
 /// Value or a ScaleFactor.
 
 template<EndgameCode E> using
-eg_type = typename std::conditional<(E < SCALING_FUNCTIONS), Value, ScaleFactor>::type;
+eg_type = typename std::conditional<E < SCALING_FUNCTIONS, Value, ScaleFactor>::type;
 
 
 /// Base and derived functors for endgame evaluation and scaling functions

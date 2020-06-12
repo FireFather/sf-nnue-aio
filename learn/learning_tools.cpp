@@ -40,7 +40,7 @@ namespace EvalLearningTools
 		KPP g_kpp;
 		g_kpp.set(SQUARE_NB, Eval::fe_end, g_kkp.max_index());
 
-		uint64_t size = g_kpp.max_index();
+		auto size = g_kpp.max_index();
 		min_index_flag.resize(size);
 
 #pragma omp parallel
@@ -72,40 +72,40 @@ namespace EvalLearningTools
 					// Make sure that the first element of dimension reduction is the same as the original index.
 					assert(a[0].toIndex() == index);
 
-					uint64_t min_index = UINT64_MAX;
+					auto min_index = UINT64_MAX;
 					for (auto& e : a)
 						min_index = std::min(min_index, e.toIndex());
-					min_index_flag[index] = (min_index == index);
+					min_index_flag[index] = min_index == index;
 				}
 				else if (g_kkp.is_ok(index))
 				{
 					assert(g_kkp.fromIndex(index).toIndex() == index);
 
-					KKP x = g_kkp.fromIndex(index);
+					auto x = g_kkp.fromIndex(index);
 					KKP a[KKP_LOWER_COUNT];
 					x.toLowerDimensions(a);
 
 					assert(a[0].toIndex() == index);
 
-					uint64_t min_index = UINT64_MAX;
+					auto min_index = UINT64_MAX;
 					for (auto& e : a)
 						min_index = std::min(min_index, e.toIndex());
-					min_index_flag[index] = (min_index == index);
+					min_index_flag[index] = min_index == index;
 				}
 				else if (g_kpp.is_ok(index))
 				{
 					assert(g_kpp.fromIndex(index).toIndex() == index);
 
-					KPP x = g_kpp.fromIndex(index);
+					auto x = g_kpp.fromIndex(index);
 					KPP a[KPP_LOWER_COUNT];
 					x.toLowerDimensions(a);
 
 					assert(a[0].toIndex() == index);
 
-					uint64_t min_index = UINT64_MAX;
+					auto min_index = UINT64_MAX;
 					for (auto& e : a)
 						min_index = std::min(min_index, e.toIndex());
-					min_index_flag[index] = (min_index == index);
+					min_index_flag[index] = min_index == index;
 				}
 				else
 				{
@@ -136,9 +136,9 @@ namespace EvalLearningTools
 			for (auto p0 = BonaPiece::BONA_PIECE_ZERO; p0 < fe_end; ++p0)
 				for (auto p1 = BonaPiece::BONA_PIECE_ZERO; p1 < fe_end; ++p1)
 				{
-					KPP kpp_org = g_kpp.fromKPP(k, p0, p1);
+					auto kpp_org = g_kpp.fromKPP(k, p0, p1);
 					KPP kpp0;
-					KPP kpp1 = g_kpp.fromKPP(Mir(k), mir_piece(p0), mir_piece(p1));
+					auto kpp1 = g_kpp.fromKPP(Mir(k), mir_piece(p0), mir_piece(p1));
 					KPP kpp_array[2];
 
 					auto index = kpp_org.toIndex();
@@ -173,16 +173,16 @@ namespace EvalLearningTools
 
 		KPPP g_kppp;
 		g_kppp.set(15, Eval::fe_end, 0);
-		uint64_t min_index = g_kppp.min_index();
-		uint64_t max_index = g_kppp.max_index();
+		auto min_index = g_kppp.min_index();
+		auto max_index = g_kppp.max_index();
 
 		// Confirm last element.
 		//KPPP x = KPPP::fromIndex(max_index-1);
 		//std::cout << x << std::endl;
 
-		for (uint64_t index = min_index; index < max_index; ++index)
+		for (auto index = min_index; index < max_index; ++index)
 		{
-			KPPP x = g_kppp.fromIndex(index);
+			auto x = g_kppp.fromIndex(index);
 			//std::cout << x << std::endl;
 
 #if 0
@@ -210,9 +210,9 @@ namespace EvalLearningTools
 		KKPP g_kkpp;
 		g_kkpp.set(SQUARE_NB, 10000, 0);
 		uint64_t n = 0;
-		for (int k = 0; k < SQUARE_NB; ++k)
-			for (int i = 0; i < 10000; ++i) // As a test, assuming a fairly large fe_end, try turning at 10000.
-				for (int j = 0; j < i; ++j)
+		for (auto k = 0; k < SQUARE_NB; ++k)
+			for (auto i = 0; i < 10000; ++i) // As a test, assuming a fairly large fe_end, try turning at 10000.
+				for (auto j = 0; j < i; ++j)
 				{
 					auto kkpp = g_kkpp.fromKKPP(k, (BonaPiece)i, (BonaPiece)j);
 					auto r = kkpp.toRawIndex();
@@ -226,7 +226,7 @@ namespace EvalLearningTools
 	void init()
 	{
 		// Initialization is required only once after startup, so a flag for that.
-		static bool first = true;
+		static auto first = true;
 
 		if (first)
 		{

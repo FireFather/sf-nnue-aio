@@ -36,11 +36,11 @@ TranspositionTable TT; // Our global transposition table
 void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) {
 
 	// Preserve any existing move for the same position
-	if (m || (k >> 48) != key16)
+	if (m || k >> 48 != key16)
 		move16 = (uint16_t)m;
 
 	// Overwrite less valuable entries
-	if ((k >> 48) != key16
+	if (k >> 48 != key16
 		|| d - DEPTH_OFFSET > depth8 - 4
 		|| b == BOUND_EXACT)
 	{
@@ -125,7 +125,7 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
 	for (auto i = 0; i < ClusterSize; ++i)
 		if (!tte[i].key16 || tte[i].key16 == key16)
 		{
-			tte[i].genBound8 = uint8_t(generation8 | (tte[i].genBound8 & 0x7)); // Refresh
+			tte[i].genBound8 = uint8_t(generation8 | tte[i].genBound8 & 0x7); // Refresh
 
 			return found = (bool)tte[i].key16, &tte[i];
 		}
@@ -137,8 +137,8 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
 		// nature we add 263 (256 is the modulus plus 7 to keep the unrelated
 		// lowest three bits from affecting the result) to calculate the entry
 		// age correctly even after generation8 overflows into the next cycle.
-		if (replace->depth8 - ((263 + generation8 - replace->genBound8) & 0xF8)
-	> tte[i].depth8 - ((263 + generation8 - tte[i].genBound8) & 0xF8))
+		if (replace->depth8 - (263 + generation8 - replace->genBound8 & 0xF8)
+	> tte[i].depth8 - (263 + generation8 - tte[i].genBound8 & 0xF8))
 			replace = &tte[i];
 
 	return found = false, replace;

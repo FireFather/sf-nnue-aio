@@ -43,7 +43,7 @@ struct BitStream
 	// Get 1 bit from the stream.
 	int read_one_bit()
 	{
-		const int b = (data[bit_cursor / 8] >> (bit_cursor & 7)) & 1;
+		const auto b = (data[bit_cursor / 8] >> (bit_cursor & 7)) & 1;
 		++bit_cursor;
 
 		return b;
@@ -53,7 +53,7 @@ struct BitStream
 	// The data shall be written out from the lower order of d.
 	void write_n_bit(int d, int n)
 	{
-		for (int i = 0; i < n; ++i)
+		for (auto i = 0; i < n; ++i)
 			write_one_bit(d & (1 << i));
 	}
 
@@ -61,8 +61,8 @@ struct BitStream
 	// Reverse conversion of write_n_bit().
 	int read_n_bit(int n)
 	{
-		int result = 0;
-		for (int i = 0; i < n; ++i)
+		auto result = 0;
+		for (auto i = 0; i < n; ++i)
 			result |= read_one_bit() ? (1 << i) : 0;
 
 		return result;
@@ -170,11 +170,11 @@ struct SfenPacker
 			stream.write_n_bit(pos.king_square(c), 6);
 
 		// Write the pieces on the board other than the kings.
-		for (Rank r = RANK_8; r >= RANK_1; --r)
+		for (auto r = RANK_8; r >= RANK_1; --r)
 		{
-			for (File f = FILE_A; f <= FILE_H; ++f)
+			for (auto f = FILE_A; f <= FILE_H; ++f)
 			{
-				const Piece pc = pos.piece_on(make_square(f, r));
+				const auto pc = pos.piece_on(make_square(f, r));
 				if (type_of(pc) == KING)
 					continue;
 				write_board_piece_to_stream(pc);
@@ -215,7 +215,7 @@ struct SfenPacker
 	void write_board_piece_to_stream(Piece pc)
 	{
 		// piece type
-		const PieceType pr = type_of(pc);
+		const auto pr = type_of(pc);
 		const auto c = huffman_table[pr];
 		stream.write_n_bit(c.code, c.bits);
 
@@ -229,8 +229,8 @@ struct SfenPacker
 	// Read one board piece from stream
 	Piece read_board_piece_from_stream()
 	{
-		PieceType pr = NO_PIECE_TYPE;
-		int code = 0, bits = 0;
+		auto pr = NO_PIECE_TYPE;
+		auto code = 0, bits = 0;
 		while (true)
 		{
 			code |= stream.read_one_bit() << bits;
@@ -281,7 +281,7 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread
 
 	// In updating the PieceList, we have to set which piece is where,
 	// A counter of how much each piece was used
-	PieceNumber next_piece_number = PIECE_NUMBER_ZERO;
+	auto next_piece_number = PIECE_NUMBER_ZERO;
 
 	pieceList[W_KING][0] = SQUARE_NB;
 	pieceList[B_KING][0] = SQUARE_NB;
@@ -299,9 +299,9 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread
 	}
 
 	// Piece placement
-	for (Rank r = RANK_8; r >= RANK_1; --r)
+	for (auto r = RANK_8; r >= RANK_1; --r)
 	{
-		for (File f = FILE_A; f <= FILE_H; ++f)
+		for (auto f = FILE_A; f <= FILE_H; ++f)
 		{
 			auto sq = make_square(f, r);
 			if (mirror) {
@@ -328,7 +328,7 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread
 			put_piece(Piece(pc), sq);
 
 			// update evalList
-			const PieceNumber piece_no =
+			const auto piece_no =
 				(pc == B_KING) ? PIECE_NUMBER_BKING : //
 				(pc == W_KING) ? PIECE_NUMBER_WKING : // back ball
 				next_piece_number++; // otherwise

@@ -39,7 +39,7 @@ namespace Eval {
 
 				// Hash value embedded in the evaluation function file
 				static constexpr std::uint32_t GetHashValue() {
-					std::uint32_t hash_value = 0xCC03DAE4u;
+					auto hash_value = 0xCC03DAE4u;
 					hash_value += kOutputDimensions;
 					hash_value ^= PreviousLayer::GetHashValue() >> 1;
 					hash_value ^= PreviousLayer::GetHashValue() << 31;
@@ -84,7 +84,7 @@ namespace Eval {
 					const auto output = reinterpret_cast<OutputType*>(buffer);
 #if defined(USE_AVX2)
 					constexpr IndexType kNumChunks = kPaddedInputDimensions / kSimdWidth;
-					const __m256i kOnes = _mm256_set1_epi16(1);
+					const auto kOnes = _mm256_set1_epi16(1);
 					const auto input_vector = reinterpret_cast<const __m256i*>(input);
 #elif defined(USE_SSE41)
 					constexpr IndexType kNumChunks = kPaddedInputDimensions / kSimdWidth;
@@ -95,12 +95,12 @@ namespace Eval {
 					const auto input_vector = reinterpret_cast<const int8x8_t*>(input);
 #endif
 					for (IndexType i = 0; i < kOutputDimensions; ++i) {
-						const IndexType offset = i * kPaddedInputDimensions;
+						const auto offset = i * kPaddedInputDimensions;
 #if defined(USE_AVX2)
 						__m256i sum = _mm256_set_epi32(0, 0, 0, 0, 0, 0, 0, biases_[i]);
 						const auto row = reinterpret_cast<const __m256i*>(&weights_[offset]);
 						for (IndexType j = 0; j < kNumChunks; ++j) {
-							__m256i product = _mm256_maddubs_epi16(
+							auto product = _mm256_maddubs_epi16(
 #if defined(__MINGW32__) || defined(__MINGW64__)
 								// HACK: Use _mm256_loadu_si256() instead of _mm256_load_si256. Because the binary
 								// compiled with g++ in MSYS2 crashes here because the output memory is not aligned
@@ -115,8 +115,8 @@ namespace Eval {
 						}
 						sum = _mm256_hadd_epi32(sum, sum);
 						sum = _mm256_hadd_epi32(sum, sum);
-						const __m128i lo = _mm256_extracti128_si256(sum, 0);
-						const __m128i hi = _mm256_extracti128_si256(sum, 1);
+						const auto lo = _mm256_extracti128_si256(sum, 0);
+						const auto hi = _mm256_extracti128_si256(sum, 1);
 						output[i] = _mm_cvtsi128_si32(lo) + _mm_cvtsi128_si32(hi);
 #elif defined(USE_SSE41)
 						__m128i sum = _mm_cvtsi32_si128(biases_[i]);

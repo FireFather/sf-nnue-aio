@@ -124,7 +124,7 @@ namespace EvalLearningTools
 			// g2 = g2 + g^2
 			// v = v-ηg/sqrt(g2)
 
-			constexpr double epsilon = 0.000001;
+			constexpr const auto epsilon = 0.000001;
 
 			if (g == LearnFloatType(0))
 				return;
@@ -212,8 +212,8 @@ namespace EvalLearningTools
 		//Evaluate your turn, eta 1/8.
 		template <typename T> void updateFV(std::array<T, 2>& v) { w[0].updateFV(v[0], 1.0); w[1].updateFV(v[1], 1.0 / 8.0); }
 
-		template <typename T> void set_grad(const std::array<T, 2>& g) { for (int i = 0; i < 2; ++i) w[i].set_grad(g[i]); }
-		template <typename T> void add_grad(const std::array<T, 2>& g) { for (int i = 0; i < 2; ++i) w[i].add_grad(g[i]); }
+		template <typename T> void set_grad(const std::array<T, 2>& g) { for (auto i = 0; i < 2; ++i) w[i].set_grad(g[i]); }
+		template <typename T> void add_grad(const std::array<T, 2>& g) { for (auto i = 0; i < 2; ++i) w[i].add_grad(g[i]); }
 
 		[[nodiscard]] std::array<LearnFloatType, 2> get_grad() const { return std::array<LearnFloatType, 2>{w[0].get_grad(), w[1].get_grad()}; }
 	};
@@ -304,9 +304,9 @@ namespace EvalLearningTools
 		// builder that creates KK object from raw_index (number starting from 0, not serial number)
 		[[nodiscard]] KK fromRawIndex(uint64_t raw_index) const
 		{
-			int king1 = (int)(raw_index % SQUARE_NB);
+			auto king1 = (int)(raw_index % SQUARE_NB);
 			raw_index /= SQUARE_NB;
-			int king0 = (int)(raw_index /* %SQUARE_NB */);
+			auto king0 = (int)(raw_index /* %SQUARE_NB */);
 			assert(king0 < SQUARE_NB);
 			return fromKK((Square)king0, (Square)king1, false);
 		}
@@ -404,11 +404,11 @@ namespace EvalLearningTools
 		// builder that creates KKP object from raw_index (number starting from 0, not serial number)
 		[[nodiscard]] KKP fromRawIndex(uint64_t raw_index) const
 		{
-			int piece = (int)(raw_index % Eval::fe_end);
+			auto piece = (int)(raw_index % Eval::fe_end);
 			raw_index /= Eval::fe_end;
-			int king1 = (int)(raw_index % SQUARE_NB);
+			auto king1 = (int)(raw_index % SQUARE_NB);
 			raw_index /= SQUARE_NB;
-			int king0 = (int)(raw_index /* %SQUARE_NB */);
+			auto king0 = (int)(raw_index /* %SQUARE_NB */);
 			assert(king0 < SQUARE_NB);
 			return fromKKP((Square)king0, (Square)king1, (Eval::BonaPiece)piece, false);
 		}
@@ -521,7 +521,7 @@ namespace EvalLearningTools
 		// A builder that creates KPP objects from raw_index (a number that starts from 0, not a serial number)
 		[[nodiscard]] KPP fromRawIndex(uint64_t raw_index) const
 		{
-			const uint64_t triangle_fe_end = (uint64_t)fe_end_ * ((uint64_t)fe_end_ + 1) / 2;
+			const auto triangle_fe_end = (uint64_t)fe_end_ * ((uint64_t)fe_end_ + 1) / 2;
 
 #if !defined(USE_TRIANGLE_WEIGHT_ARRAY)
 			int piece1 = (int)(raw_index % fe_end_);
@@ -529,7 +529,7 @@ namespace EvalLearningTools
 			int piece0 = (int)(raw_index % fe_end_);
 			raw_index /= fe_end_;
 #else
-			uint64_t index2 = raw_index % triangle_fe_end;
+			auto index2 = raw_index % triangle_fe_end;
 
 			// Write the formula to find piece0, piece1 from index2 here.
 			// This is the inverse function of index2 = i * (i+1) / 2 + j.
@@ -538,8 +538,8 @@ namespace EvalLearningTools
 			// After i is converted into an integer, j can be calculated as j = index2-i * (i + 1) / 2.
 
 			// BonaPiece assumes 32bit (may not fit in 16bit), so this multiplication must be 64bit.
-			int piece1 = int(sqrt(8 * index2 + 1) - 1) / 2;
-			int piece0 = int(index2 - (uint64_t)piece1 * ((uint64_t)piece1 + 1) / 2);
+			auto piece1 = int(sqrt(8 * index2 + 1) - 1) / 2;
+			auto piece0 = int(index2 - (uint64_t)piece1 * ((uint64_t)piece1 + 1) / 2);
 
 			assert(piece1 < (int)fe_end_);
 			assert(piece0 < (int)fe_end_);
@@ -547,7 +547,7 @@ namespace EvalLearningTools
 
 			raw_index /= triangle_fe_end;
 #endif
-			int king = (int)(raw_index /* %SQUARE_NB */);
+			auto king = (int)(raw_index /* %SQUARE_NB */);
 			assert(king < max_king_sq_);
 			return fromKPP((Square)king, (Eval::BonaPiece)piece0, (Eval::BonaPiece)piece1);
 		}
@@ -732,7 +732,7 @@ namespace EvalLearningTools
 		// A builder that creates KPPP objects from raw_index (a number that starts from 0, not a serial number)
 		[[nodiscard]] KPPP fromRawIndex(uint64_t raw_index) const
 		{
-			uint64_t index2 = raw_index % triangle_fe_end;
+			auto index2 = raw_index % triangle_fe_end;
 
 			// Write the expression to find piece0, piece1, piece2 from index2 here.
 			// This is the inverse function of index2 = i(i-1)(i-2)/6-1 + j(j+1)/2 + k.
@@ -768,7 +768,7 @@ namespace EvalLearningTools
 				// Add deltas to prevent a slight calculation error when rounding.
 				// If it is too large, it may increase by 1 so adjustment is necessary.
 
-				const double delta = 0.000000001;
+				const auto delta = 0.000000001;
 
 				piece0 = int(t / pow(3.0, 2.0 / 3) + 1.0 / (pow(3.0, 1.0 / 3) * t) + delta) + 1;
 				// Uuu. Is it really this kind of thing? ('Ω`)
@@ -778,10 +778,10 @@ namespace EvalLearningTools
 			// j(j+1)/2 = index2-a
 			// This is from the solution formula of the quadratic equation..
 
-			uint64_t a = (uint64_t)piece0 * ((uint64_t)piece0 - 1) * ((uint64_t)piece0 - 2) / 6;
-			int piece1 = int((1 + sqrt(8.0 * (index2 - a) + 1)) / 2);
-			uint64_t b = (uint64_t)piece1 * (piece1 - 1) / 2;
-			int piece2 = int(index2 - a - b);
+			auto a = (uint64_t)piece0 * ((uint64_t)piece0 - 1) * ((uint64_t)piece0 - 2) / 6;
+			auto piece1 = int((1 + sqrt(8.0 * (index2 - a) + 1)) / 2);
+			auto b = (uint64_t)piece1 * (piece1 - 1) / 2;
+			auto piece2 = int(index2 - a - b);
 
 #if 0
 			if (!((piece0 > piece1 && piece1 > piece2)))
@@ -798,7 +798,7 @@ namespace EvalLearningTools
 
 			raw_index /= triangle_fe_end;
 
-			int king = (int)(raw_index /* %SQUARE_NB */);
+			auto king = (int)(raw_index /* %SQUARE_NB */);
 			assert(king < max_king_sq_);
 
 			// Propagate king_sq and fe_end.
@@ -940,15 +940,15 @@ namespace EvalLearningTools
 		// A builder that creates a KKPP object from raw_index (a number that starts from 0, not a serial number)
 		[[nodiscard]] KKPP fromRawIndex(uint64_t raw_index) const
 		{
-			uint64_t index2 = raw_index % triangle_fe_end;
+			auto index2 = raw_index % triangle_fe_end;
 
 			// Write the expression to find piece0, piece1, piece2 from index2 here.
 			// This is the inverse function of index2 = i(i-1)/2 + j.
 			// Use the formula of the solution of the quadratic equation with j=0.
 			// When index2=0, it is a multiple root, but the smaller one does not satisfy i>j and is ignored.
 
-			int piece0 = (int(sqrt(8 * index2 + 1)) + 1) / 2;
-			int piece1 = int(index2 - piece0 * (piece0 - 1) / 2);
+			auto piece0 = (int(sqrt(8 * index2 + 1)) + 1) / 2;
+			auto piece1 = int(index2 - piece0 * (piece0 - 1) / 2);
 
 			assert(piece0 > piece1);
 
@@ -957,7 +957,7 @@ namespace EvalLearningTools
 
 			raw_index /= triangle_fe_end;
 
-			int king = (int)(raw_index /* %SQUARE_NB */);
+			auto king = (int)(raw_index /* %SQUARE_NB */);
 			assert(king < max_king_sq_);
 			// Propagate king_sq and fe_end.
 			return fromKKPP(king, (Eval::BonaPiece)piece0, (Eval::BonaPiece)piece1);

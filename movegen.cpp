@@ -52,21 +52,21 @@ namespace {
 	template<Color Us, GenType Type>
 	ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard target) {
 
-		constexpr Color     Them = ~Us;
-		constexpr Bitboard  TRank7BB = (Us == WHITE ? Rank7BB : Rank2BB);
-		constexpr Bitboard  TRank3BB = (Us == WHITE ? Rank3BB : Rank6BB);
-		constexpr Direction Up = pawn_push(Us);
-		constexpr Direction UpRight = (Us == WHITE ? NORTH_EAST : SOUTH_WEST);
-		constexpr Direction UpLeft = (Us == WHITE ? NORTH_WEST : SOUTH_EAST);
+		constexpr auto Them = ~Us;
+		constexpr auto TRank7BB = (Us == WHITE ? Rank7BB : Rank2BB);
+		constexpr auto TRank3BB = (Us == WHITE ? Rank3BB : Rank6BB);
+		constexpr auto Up = pawn_push(Us);
+		constexpr auto UpRight = (Us == WHITE ? NORTH_EAST : SOUTH_WEST);
+		constexpr auto UpLeft = (Us == WHITE ? NORTH_WEST : SOUTH_EAST);
 
-		const Square ksq = pos.square<KING>(Them);
+		const auto ksq = pos.square<KING>(Them);
 		Bitboard emptySquares;
 
-		const Bitboard pawnsOn7 = pos.pieces(Us, PAWN) & TRank7BB;
-		const Bitboard pawnsNotOn7 = pos.pieces(Us, PAWN) & ~TRank7BB;
+		const auto pawnsOn7 = pos.pieces(Us, PAWN) & TRank7BB;
+		const auto pawnsNotOn7 = pos.pieces(Us, PAWN) & ~TRank7BB;
 
-		Bitboard enemies = (Type == EVASIONS ? pos.pieces(Them) & target :
-			Type == CAPTURES ? target : pos.pieces(Them));
+		auto enemies = (Type == EVASIONS ? pos.pieces(Them) & target :
+			                Type == CAPTURES ? target : pos.pieces(Them));
 
 		// Single and double pawn pushes, no promotions
 		if (Type != CAPTURES)
@@ -91,7 +91,7 @@ namespace {
 				// if the pawn is not on the same file as the enemy king, because we
 				// don't generate captures. Note that a possible discovery check
 				// promotion has been already generated amongst the captures.
-				const Bitboard dcCandidateQuiets = pos.blockers_for_king(Them) & pawnsNotOn7;
+				const auto dcCandidateQuiets = pos.blockers_for_king(Them) & pawnsNotOn7;
 				if (dcCandidateQuiets)
 				{
 					const Bitboard dc1 = shift<Up>(dcCandidateQuiets) & emptySquares & ~file_bb(ksq);
@@ -104,13 +104,13 @@ namespace {
 
 			while (b1)
 			{
-				const Square to = pop_lsb(&b1);
+				const auto to = pop_lsb(&b1);
 				*moveList++ = make_move(to - Up, to);
 			}
 
 			while (b2)
 			{
-				const Square to = pop_lsb(&b2);
+				const auto to = pop_lsb(&b2);
 				*moveList++ = make_move(to - Up - Up, to);
 			}
 		}
@@ -146,13 +146,13 @@ namespace {
 
 			while (b1)
 			{
-				const Square to = pop_lsb(&b1);
+				const auto to = pop_lsb(&b1);
 				*moveList++ = make_move(to - UpRight, to);
 			}
 
 			while (b2)
 			{
-				const Square to = pop_lsb(&b2);
+				const auto to = pop_lsb(&b2);
 				*moveList++ = make_move(to - UpLeft, to);
 			}
 
@@ -184,9 +184,9 @@ namespace {
 
 		static_assert(Pt != KING && Pt != PAWN, "Unsupported piece type in generate_moves()");
 
-		const Square* pl = pos.squares<Pt>(Us);
+		auto pl = pos.squares<Pt>(Us);
 
-		for (Square from = *pl; from != SQ_NONE; from = *++pl)
+		for (auto from = *pl; from != SQ_NONE; from = *++pl)
 		{
 			if (Checks)
 			{
@@ -213,7 +213,7 @@ namespace {
 
 	template<Color Us, GenType Type>
 	ExtMove* generate_all(const Position& pos, ExtMove* moveList) {
-		constexpr bool Checks = Type == QUIET_CHECKS; // Reduce template instantations
+		constexpr auto Checks = Type == QUIET_CHECKS; // Reduce template instantations
 		Bitboard target;
 
 		switch (Type)
@@ -227,7 +227,7 @@ namespace {
 			break;
 		case EVASIONS:
 		{
-			const Square checksq = lsb(pos.checkers());
+			const auto checksq = lsb(pos.checkers());
 			target = between_bb(pos.square<KING>(Us), checksq) | checksq;
 			break;
 		}
@@ -246,13 +246,13 @@ namespace {
 
 		if (Type != QUIET_CHECKS && Type != EVASIONS)
 		{
-			const Square ksq = pos.square<KING>(Us);
-			Bitboard b = attacks_bb<KING>(ksq) & target;
+			const auto ksq = pos.square<KING>(Us);
+			auto b = attacks_bb<KING>(ksq) & target;
 			while (b)
 				*moveList++ = make_move(ksq, pop_lsb(&b));
 
 			if ((Type != CAPTURES) && pos.can_castle(Us & ANY_CASTLING))
-				for (CastlingRights cr : { Us& KING_SIDE, Us& QUEEN_SIDE })
+				for (auto cr : { Us& KING_SIDE, Us& QUEEN_SIDE })
 					if (!pos.castling_impeded(cr) && pos.can_castle(cr))
 						*moveList++ = make<CASTLING>(ksq, pos.castling_rook_square(cr));
 		}
@@ -275,7 +275,7 @@ ExtMove* generate(const Position& pos, ExtMove* moveList) {
 	static_assert(Type == CAPTURES || Type == QUIETS || Type == NON_EVASIONS, "Unsupported type in generate()");
 	assert(!pos.checkers());
 
-	const Color us = pos.side_to_move();
+	const auto us = pos.side_to_move();
 
 	return us == WHITE ? generate_all<WHITE, Type>(pos, moveList)
 		: generate_all<BLACK, Type>(pos, moveList);
@@ -294,15 +294,15 @@ ExtMove* generate<QUIET_CHECKS>(const Position& pos, ExtMove* moveList) {
 
 	assert(!pos.checkers());
 
-	const Color us = pos.side_to_move();
-	Bitboard dc = pos.blockers_for_king(~us) & pos.pieces(us) & ~pos.pieces(PAWN);
+	const auto us = pos.side_to_move();
+	auto dc = pos.blockers_for_king(~us) & pos.pieces(us) & ~pos.pieces(PAWN);
 
 	while (dc)
 	{
-		const Square from = pop_lsb(&dc);
-		const PieceType pt = type_of(pos.piece_on(from));
+		const auto from = pop_lsb(&dc);
+		const auto pt = type_of(pos.piece_on(from));
 
-		Bitboard b = attacks_bb(pt, from, pos.pieces()) & ~pos.pieces();
+		auto b = attacks_bb(pt, from, pos.pieces()) & ~pos.pieces();
 
 		if (pt == KING)
 			b &= ~attacks_bb<QUEEN>(pos.square<KING>(~us));
@@ -323,10 +323,10 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 
 	assert(pos.checkers());
 
-	const Color us = pos.side_to_move();
-	const Square ksq = pos.square<KING>(us);
+	const auto us = pos.side_to_move();
+	const auto ksq = pos.square<KING>(us);
 	Bitboard sliderAttacks = 0;
-	Bitboard sliders = pos.checkers() & ~pos.pieces(KNIGHT, PAWN);
+	auto sliders = pos.checkers() & ~pos.pieces(KNIGHT, PAWN);
 
 	// Find all the squares attacked by slider checkers. We will remove them from
 	// the king evasions in order to skip known illegal moves, which avoids any
@@ -335,7 +335,7 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 		sliderAttacks |= LineBB[ksq][pop_lsb(&sliders)] & ~pos.checkers();
 
 	// Generate evasions for king, capture and non capture moves
-	Bitboard b = attacks_bb<KING>(ksq) & ~pos.pieces(us) & ~sliderAttacks;
+	auto b = attacks_bb<KING>(ksq) & ~pos.pieces(us) & ~sliderAttacks;
 	while (b)
 		*moveList++ = make_move(ksq, pop_lsb(&b));
 
@@ -352,10 +352,10 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 
 template<>
 ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
-	const Color us = pos.side_to_move();
-	const Bitboard pinned = pos.blockers_for_king(us) & pos.pieces(us);
-	const Square ksq = pos.square<KING>(us);
-	ExtMove* cur = moveList;
+	const auto us = pos.side_to_move();
+	const auto pinned = pos.blockers_for_king(us) & pos.pieces(us);
+	const auto ksq = pos.square<KING>(us);
+	auto cur = moveList;
 
 	moveList = pos.checkers() ? generate<EVASIONS    >(pos, moveList)
 		: generate<NON_EVASIONS>(pos, moveList);

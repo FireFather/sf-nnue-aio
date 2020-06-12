@@ -14,7 +14,7 @@ namespace Eval::NNUE::Features
 		// do nothing if array size is small to avoid compiler warning
 		if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 
-		const int castling_rights = pos.state()->castlingRights;
+		const auto castling_rights = pos.state()->castlingRights;
 		int relative_castling_rights;
 		if (perspective == WHITE) {
 			relative_castling_rights = castling_rights;
@@ -25,7 +25,7 @@ namespace Eval::NNUE::Features
 				& ((castling_rights >> 2) & 3);
 		}
 
-		for (int i = 0; i < kDimensions; ++i) {
+		for (auto i = 0; i < kDimensions; ++i) {
 			if (relative_castling_rights & (i << 1)) {
 				active->push_back(i);
 			}
@@ -36,8 +36,8 @@ namespace Eval::NNUE::Features
 	void CastlingRight::AppendChangedIndices(
 		const Position& pos, Color perspective,
 		IndexList* removed, IndexList* added) {
-		const int previous_castling_rights = pos.state()->previous->castlingRights;
-		const int current_castling_rights = pos.state()->castlingRights;
+		const auto previous_castling_rights = pos.state()->previous->castlingRights;
+		const auto current_castling_rights = pos.state()->castlingRights;
 		int relative_previous_castling_rights;
 		int relative_current_castling_rights;
 		if (perspective == WHITE) {
@@ -52,7 +52,7 @@ namespace Eval::NNUE::Features
 				& ((current_castling_rights >> 2) & 3);
 		}
 
-		for (int i = 0; i < kDimensions; ++i) {
+		for (auto i = 0; i < kDimensions; ++i) {
 			if ((relative_previous_castling_rights & (i << 1)) &&
 				(relative_current_castling_rights & (i << 1)) == 0) {
 				removed->push_back(i);

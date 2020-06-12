@@ -85,8 +85,8 @@ namespace Eval {
 			const auto& accumulation = pos.state()->accumulator.accumulation;
 #if defined(USE_AVX2)
 			constexpr IndexType kNumChunks = kHalfDimensions / kSimdWidth;
-			constexpr int kControl = 0b11011000;
-			const __m256i kZero = _mm256_setzero_si256();
+			constexpr const auto kControl = 0b11011000;
+			const auto kZero = _mm256_setzero_si256();
 #elif defined(USE_SSE41)
 			constexpr IndexType kNumChunks = kHalfDimensions / kSimdWidth;
 			const __m128i kZero = _mm_setzero_si128();
@@ -96,11 +96,11 @@ namespace Eval {
 #endif
 			const Color perspectives[2] = { pos.side_to_move(), ~pos.side_to_move() };
 			for (IndexType p = 0; p < 2; ++p) {
-				const IndexType offset = kHalfDimensions * p;
+				const auto offset = kHalfDimensions * p;
 #if defined(USE_AVX2)
 				auto* const out = reinterpret_cast<__m256i*>(&output[offset]);
 				for (IndexType j = 0; j < kNumChunks; ++j) {
-					__m256i sum0 =
+					auto sum0 =
 #if defined(__MINGW32__) || defined(__MINGW64__)
 						// HACK: Use _mm256_loadu_si256() instead of _mm256_load_si256. Because the binary
 						// compiled with g++ in MSYS2 crashes here because the output memory is not aligned
@@ -111,7 +111,7 @@ namespace Eval {
 #endif
 						(&reinterpret_cast<const __m256i*>(
 							accumulation[perspectives[p]][0])[j * 2 + 0]);
-					__m256i sum1 =
+					auto sum1 =
 #if defined(__MINGW32__) || defined(__MINGW64__)
 						_mm256_loadu_si256
 #else
@@ -190,7 +190,7 @@ sum0 = _mm_add_epi16(sum0, reinterpret_cast<const __m128i*>(
                       kHalfDimensions * sizeof(BiasType));
         }
         for (const auto index: active_indices[perspective]) {
-          const IndexType offset = kHalfDimensions * index;
+          const auto offset = kHalfDimensions * index;
 #if defined(USE_AVX2)
           auto* const accumulation = reinterpret_cast<__m256i*>(
               &accumulator.accumulation[perspective][i][0]);
@@ -268,7 +268,7 @@ auto accumulation = reinterpret_cast<int16x8_t*>(
                       prev_accumulator.accumulation[perspective][i],
                       kHalfDimensions * sizeof(BiasType));
           for (const auto index: removed_indices[perspective]) {
-            const IndexType offset = kHalfDimensions * index;
+            const auto offset = kHalfDimensions * index;
 #if defined(USE_AVX2)
             const auto* const column = reinterpret_cast<const __m256i*>(&weights_[offset]);
             for (IndexType j = 0; j <kNumChunks; ++j) {
@@ -294,7 +294,7 @@ auto accumulation = reinterpret_cast<int16x8_t*>(
         }
         {// Difference calculation for features that changed from 0 to 1
           for (const auto index: added_indices[perspective]) {
-            const IndexType offset = kHalfDimensions * index;
+            const auto offset = kHalfDimensions * index;
 #if defined(USE_AVX2)
             const auto* const column = reinterpret_cast<const __m256i*>(&weights_[offset]);
             for (IndexType j = 0; j <kNumChunks; ++j) {

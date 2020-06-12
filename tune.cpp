@@ -120,7 +120,7 @@ void BoolConditions::set() {
 	static auto startup = true; // To workaround fishtest bench
 
 	for (size_t i = 0; i < binary.size(); i++)
-		binary[i] = !startup && (values[i] + static_cast<int>(rng.rand<unsigned>() % variance) > threshold);
+		binary[i] = !startup && values[i] + static_cast<int>(rng.rand<unsigned>() % variance) > threshold;
 
 	startup = false;
 

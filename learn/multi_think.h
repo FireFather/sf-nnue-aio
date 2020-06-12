@@ -137,7 +137,7 @@ protected:
 		std::unique_lock<std::mutex> lk(task_mutex);
 		if (tasks.size() == 0)
 			return nullptr;
-		Task task = *tasks.rbegin();
+		auto task = *tasks.rbegin();
 		tasks.pop_back();
 		return task;
 	}

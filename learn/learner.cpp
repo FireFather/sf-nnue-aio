@@ -243,9 +243,9 @@ namespace Learner
 							fs.close();
 
 							// Sequential number attached to the file
-							int n = (int)(sfen_write_count / save_every);
+							auto n = (int)(sfen_write_count / save_every);
 							// Rename the file and open it again. Add ios::app in consideration of overwriting. (Depending on the operation, it may not be necessary..)
-							string filename = filename_ + "_" + std::to_string(n);
+							auto filename = filename_ + "_" + std::to_string(n);
 							fs.open(filename, ios::out | ios::binary | ios::app);
 							cout << endl << "output sfen file = " << filename << endl;
 						}
@@ -369,17 +369,17 @@ namespace Learner
 	void MultiThinkGenSfen::thread_worker(size_t thread_id)
 	{
 		// For the time being, it will be treated as a draw at the maximum number of steps to write.
-		const int MAX_PLY2 = write_maxply;
+		const auto MAX_PLY2 = write_maxply;
 
 		//Proceed StateInfo to maximum number of steps + Search PV to advance to leaf buffer
 		std::vector<StateInfo, AlignedAllocator<StateInfo>> states(MAX_PLY2 + MAX_PLY /* == search_depth + α */);
 		StateInfo si;
 
 		// This move. Use this move to advance the stage.
-		Move m = MOVE_NONE;
+		auto m = MOVE_NONE;
 
 		// end flag
-		bool quit = false;
+		auto quit = false;
 
 		// Repeat until the specified number of times
 		while (!quit)
@@ -417,7 +417,7 @@ namespace Learner
 			// Return value: true when it ends because the specified number of phases has already been reached.
 			auto flush_psv = [&](int8_t lastTurnIsWin)
 			{
-				int8_t isWin = lastTurnIsWin;
+				auto isWin = lastTurnIsWin;
 
 				// From the final stage (one step before) to the first stage, give information on the outcome of the game for each stage.
 				// The phases stored in a_psv are assumed to be continuous (in order).
@@ -463,7 +463,7 @@ namespace Learner
 
 				// random_move_minply ,random_move_maxply is specified by 1 origin,
 				// Note that we are handling 0 origin here.
-				for (int i = std::max(random_move_minply - 1, 0); i < random_move_maxply; ++i)
+				for (auto i = std::max(random_move_minply - 1, 0); i < random_move_maxply; ++i)
 					a.push_back(i);
 
 				// In case of Apery random move, insert() may be called random_move_count times.
@@ -471,7 +471,7 @@ namespace Learner
 				random_move_flag.resize((size_t)random_move_maxply + random_move_count);
 
 				// A random move that exceeds the size() of a[] cannot be applied, so limit it.
-				for (int i = 0; i < std::min(random_move_count, (int)a.size()); ++i)
+				for (auto i = 0; i < std::min(random_move_count, (int)a.size()); ++i)
 				{
 					swap(a[i], a[prng.rand((uint64_t)a.size() - i) + i]);
 					random_move_flag[a[i]] = true;
@@ -480,16 +480,16 @@ namespace Learner
 
 			// A counter that keeps track of the number of random moves
 			// When random_move_minply == -1, random moves are performed continuously, so use it at this time.
-			int random_move_c = 0;
+			auto random_move_c = 0;
 
 			// ply: steps from the initial stage
-			for (int ply = 0; ; ++ply)
+			for (auto ply = 0; ; ++ply)
 			{
 				//cout << pos << endl;
 
 				// Current search depth
 				// Go to goto, so declare it first.
-				int depth = search_depth + (int)prng.rand(search_depth2 - search_depth + 1);
+				auto depth = search_depth + (int)prng.rand(search_depth2 - search_depth + 1);
 
 				// has it reached the length
 				if (ply >= MAX_PLY2)
@@ -587,7 +587,7 @@ namespace Learner
 					{
 						auto rootColor = pos.side_to_move();
 
-						int ply2 = ply;
+						auto ply2 = ply;
 						for (auto m : pv)
 						{
 							// As a verification for debugging, make sure there are no illegal players in the middle.
@@ -703,7 +703,7 @@ namespace Learner
 
 						// Take out the PV first hand. This should be present unless depth 0.
 						assert(pv_value1.second.size() >= 1);
-						Move pv_move1 = pv_value1.second[0];
+						auto pv_move1 = pv_value1.second[0];
 						psv.move = pv_move1;
 					}
 
@@ -747,7 +747,7 @@ namespace Learner
 						else {
 							// if you can move the ball, move the ball
 							Move moves[8]; // Near 8
-							Move* p = &moves[0];
+							auto p = &moves[0];
 							for (auto& m : list)
 								if (type_of(pos.moved_piece(m)) == KING)
 									*(p++) = m;
@@ -779,7 +779,7 @@ namespace Learner
 
 						auto& rm = pos.this_thread()->rootMoves;
 
-						uint64_t s = min((uint64_t)rm.size(), (uint64_t)random_multi_pv);
+						auto s = min((uint64_t)rm.size(), (uint64_t)random_multi_pv);
 						for (uint64_t i = 1; i < s; ++i)
 						{
 							// The difference from the evaluation value of rm[0] must be within the range of random_multi_pv_diff.
@@ -824,33 +824,33 @@ namespace Learner
 	void gen_sfen(Position&, istringstream& is)
 	{
 		// number of threads (given by USI setoption)
-		uint32_t thread_num = (uint32_t)Options["Threads"];
+		auto thread_num = (uint32_t)Options["Threads"];
 
 		// Number of generated game records default = 8 billion phases (Ponanza specification)
-		uint64_t loop_max = 8000000000UL;
+		auto loop_max = 8000000000UL;
 
 		// Stop the generation when the evaluation value reaches this value.
-		int eval_limit = 3000;
+		auto eval_limit = 3000;
 
 		// search depth
-		int search_depth = 3;
-		int search_depth2 = INT_MIN;
+		auto search_depth = 3;
+		auto search_depth2 = INT_MIN;
 
 		// minimum ply and maximum ply and number of random moves
-		int random_move_minply = 1;
-		int random_move_maxply = 24;
-		int random_move_count = 5;
+		auto random_move_minply = 1;
+		auto random_move_maxply = 24;
+		auto random_move_count = 5;
 		// A function that mainly moves balls like Random Move like Apery
 		// If this is set to 3, the ball will move with a probability of 1/3.
-		int random_move_like_apery = 0;
+		auto random_move_like_apery = 0;
 		// If you search with multipv instead of random move and select from among them randomly, set to a number greater than random_multi_pv = 1.
-		int random_multi_pv = 0;
-		int random_multi_pv_diff = 32000;
-		int random_multi_pv_depth = INT_MIN;
+		auto random_multi_pv = 0;
+		auto random_multi_pv_diff = 32000;
+		auto random_multi_pv_depth = INT_MIN;
 
 		// The minimum and maximum ply (number of steps from the initial phase) of the phase to write out.
-		int write_minply = 16;
-		int write_maxply = 400;
+		auto write_minply = 16;
+		auto write_maxply = 400;
 
 		// File name to write
 		string output_file_name = "generated_kifu.bin";
@@ -861,14 +861,14 @@ namespace Learner
 		// When eval_limit is set small, eval_limit will be exceeded each time in the initial phase, and phase generation will not proceed.
 		// Therefore, eval hash needs to be disabled.
 		// After that, when the hash of eval hash collides, a strange evaluation value is used, and it may be unpleasant to use it for the teacher.
-		bool use_eval_hash = false;
+		auto use_eval_hash = false;
 
 		// Save to file in this unit.
 		// File names are serialized like file_1.bin, file_2.bin.
-		uint64_t save_every = UINT64_MAX;
+		auto save_every = UINT64_MAX;
 
 		// Add a random number to the end of the file name.
-		bool random_file_name = false;
+		auto random_file_name = false;
 
 		while (true)
 		{
@@ -937,7 +937,7 @@ namespace Learner
 			std::random_device seed_gen;
 			PRNG r(seed_gen());
 			// Just in case, reassign the random numbers.
-			for (int i = 0; i < 10; ++i)
+			for (auto i = 0; i < 10; ++i)
 				r.rand(1);
 			auto to_hex = [](uint64_t u) {
 				std::stringstream ss;
@@ -1112,19 +1112,19 @@ namespace Learner
 		// elmo (WCSC27) method
 		// Correct based on the actual game win/loss.
 
-		const double eval_winrate = winning_percentage(shallow);
-		const double teacher_winrate = winning_percentage(deep);
+		const auto eval_winrate = winning_percentage(shallow);
+		const auto teacher_winrate = winning_percentage(deep);
 
 		// Use 1 as the corrective term, 1 if you have won the expected win rate, 0 if you have lost it, and 0.5 if you have drawn.
 		// game_result = 1,0,-1 so add 1 and divide by 2.
-		const double t = double(psv.game_result + 1) / 2;
+		const auto t = double(psv.game_result + 1) / 2;
 
 		// If the evaluation value in deep search exceeds ELMO_LAMBDA_LIMIT, apply ELMO_LAMBDA2 instead of ELMO_LAMBDA.
-		const double lambda = (abs(deep) >= ELMO_LAMBDA_LIMIT) ? ELMO_LAMBDA2 : ELMO_LAMBDA;
+		const auto lambda = (abs(deep) >= ELMO_LAMBDA_LIMIT) ? ELMO_LAMBDA2 : ELMO_LAMBDA;
 
 		// The actual winning percentage is used as a correction term.
 		// This is the idea of ​​elmo (WCSC27), modern O-parts.
-		const double grad = (1 - lambda) * (eval_winrate - t) + lambda * (eval_winrate - teacher_winrate);
+		const auto grad = (1 - lambda) * (eval_winrate - t) + lambda * (eval_winrate - teacher_winrate);
 
 		return grad;
 	}
@@ -1135,16 +1135,16 @@ namespace Learner
 		double& cross_entropy_eval, double& cross_entropy_win, double& cross_entropy,
 		double& entropy_eval, double& entropy_win, double& entropy)
 	{
-		const double p /* teacher_winrate */ = winning_percentage(deep);
-		const double q /* eval_winrate */ = winning_percentage(shallow);
-		const double t = double(psv.game_result + 1) / 2;
+		const auto p /* teacher_winrate */ = winning_percentage(deep);
+		const auto q /* eval_winrate */ = winning_percentage(shallow);
+		const auto t = double(psv.game_result + 1) / 2;
 
-		constexpr double epsilon = 0.000001;
+		constexpr const auto epsilon = 0.000001;
 
 		// If the evaluation value in deep search exceeds ELMO_LAMBDA_LIMIT, apply ELMO_LAMBDA2 instead of ELMO_LAMBDA.
-		const double lambda = (abs(deep) >= ELMO_LAMBDA_LIMIT) ? ELMO_LAMBDA2 : ELMO_LAMBDA;
+		const auto lambda = (abs(deep) >= ELMO_LAMBDA_LIMIT) ? ELMO_LAMBDA2 : ELMO_LAMBDA;
 
-		const double m = (1.0 - lambda) * t + lambda * p;
+		const auto m = (1.0 - lambda) * t + lambda * p;
 
 		cross_entropy_eval =
 			(-p * std::log(q + epsilon) - (1.0 - p) * std::log(1.0 - q + epsilon));
@@ -1208,7 +1208,7 @@ namespace Learner
 		void read_for_mse()
 		{
 			auto th = Threads.main();
-			Position& pos = th->rootPos;
+			auto& pos = th->rootPos;
 			for (uint64_t i = 0; i < sfen_for_mse_size; ++i)
 			{
 				PackedSfenValue ps;
@@ -1337,7 +1337,7 @@ namespace Learner
 					return false;
 
 				// Get the next file name.
-				string filename = *filenames.rbegin();
+				auto filename = *filenames.rbegin();
 				filenames.pop_back();
 
 				fs.open(filename, ios::in | ios::binary);
@@ -1603,24 +1603,17 @@ namespace Learner
 #endif
 
 #if defined (LOSS_FUNCTION_IS_ELMO_METHOD)
-		// For calculation of verification data loss
-		atomic<double> test_sum_cross_entropy_eval, test_sum_cross_entropy_win, test_sum_cross_entropy;
-		atomic<double> test_sum_entropy_eval, test_sum_entropy_win, test_sum_entropy;
-		test_sum_cross_entropy_eval = 0;
-		test_sum_cross_entropy_win = 0;
-		test_sum_cross_entropy = 0;
-		test_sum_entropy_eval = 0;
-		test_sum_entropy_win = 0;
-		test_sum_entropy = 0;
+		atomic<double> test_sum_cross_entropy_eval = 0;
+		atomic<double> test_sum_cross_entropy_win = 0;
+		atomic<double> test_sum_cross_entropy = 0;
+		atomic<double> test_sum_entropy_eval = 0;
+		atomic<double> test_sum_entropy_win = 0;
+		atomic<double> test_sum_entropy = 0;
 
-		// norm for learning
-		atomic<double> sum_norm;
-		sum_norm = 0;
+		atomic<double> sum_norm = 0;
 #endif
 
-		// The number of times the first move of the deep search pv matches the first move of the search(1) pv.
-		atomic<int> move_accord_count;
-		move_accord_count = 0;
+		atomic<int> move_accord_count = 0;
 
 		// Display the value of eval() in the initial stage of Hirate and see the shaking.
 		auto th = Threads[thread_id];
@@ -1634,9 +1627,7 @@ namespace Learner
 		// It is better to parallelize here, but it is a bit troublesome because the search before slave has not finished.
 		// I created a mechanism to call task, so I will use it.
 
-		// The number of tasks to do.
-		atomic<int> task_count;
-		task_count = (int)sr.sfen_for_mse.size();
+		atomic<int> task_count = (int)sr.sfen_for_mse.size();
 		task_dispatcher.task_reserve(task_count);
 
 		// Create a task to search for the situation and give it to each thread.
@@ -1867,7 +1858,7 @@ namespace Learner
 						sr.save_count = 0;
 
 						//During this time, I feel that the value becomes too large as the gradient calculation proceeds, so I stop other threads.
-						const bool converged = save();
+						const auto converged = save();
 						if (converged)
 						{
 							stop_flag = true;
@@ -1885,7 +1876,7 @@ namespace Learner
 						loss_output_count = 0;
 
 						// Number of cases processed this time
-						uint64_t done = sr.total_done - sr.last_done;
+						auto done = sr.total_done - sr.last_done;
 
 						// loss calculation
 						calc_loss(thread_id, done);
@@ -1938,7 +1929,7 @@ namespace Learner
 #endif
 			// ↑ Since it is slow when passing through sfen, I made a dedicated function.
 			StateInfo si;
-			const bool mirror = prng.rand(100) < mirror_percentage;
+			const auto mirror = prng.rand(100) < mirror_percentage;
 			if (pos.set_from_packed_sfen(ps.sfen, &si, th, mirror) != 0)
 			{
 				// I got a weird sfen. Should be debugged!
@@ -2009,7 +2000,7 @@ namespace Learner
 			// dbg_hit_on(true);
 #endif
 
-			int ply = 0;
+			auto ply = 0;
 
 			// A helper function that adds the gradient to the current phase.
 			auto pos_add_grad = [&]() {
@@ -2019,7 +2010,7 @@ namespace Learner
 				// I don't think this is a very desirable property, as the aspect that gives the gradient will be different.
 				// I have turned off the substitution table, but I haven't updated the pv array in case of one stumbling block etc...
 
-				Value shallow_value = (rootColor == pos.side_to_move()) ? Eval::evaluate(pos) : -Eval::evaluate(pos);
+				auto shallow_value = (rootColor == pos.side_to_move()) ? Eval::evaluate(pos) : -Eval::evaluate(pos);
 
 #if defined (LOSS_FUNCTION_IS_ELMO_METHOD)
 				// Calculate loss for learning data
@@ -2048,7 +2039,7 @@ namespace Learner
 				// Update based on gradient later.
 				Eval::add_grad(pos, rootColor, dj_dw, freeze);
 #else
-				const double example_weight =
+				const auto example_weight =
 					(discount_rate != 0 && ply != (int)pv.size()) ? discount_rate : 1.0;
 				Eval::NNUE::AddExample(pos, rootColor, ps, example_weight);
 #endif
@@ -2058,7 +2049,7 @@ namespace Learner
 			};
 
 			StateInfo state[MAX_PLY]; // PV of qsearch cannot be so long.
-			bool illegal_move = false;
+			auto illegal_move = false;
 			for (auto m : pv)
 			{
 				// I shouldn't be an illegal player.
@@ -2125,13 +2116,13 @@ namespace Learner
 			return true;
 		}
 		else {
-			static int dir_number = 0;
-			const std::string dir_name = std::to_string(dir_number++);
+			static auto dir_number = 0;
+			const auto dir_name = std::to_string(dir_number++);
 			Eval::save_eval(dir_name);
 #if defined(EVAL_NNUE)
 			if (newbob_decay != 1.0 && latest_loss_count > 0) {
-				static int trials = newbob_num_trials;
-				const double latest_loss = latest_loss_sum / latest_loss_count;
+				static auto trials = newbob_num_trials;
+				const auto latest_loss = latest_loss_sum / latest_loss_count;
 				latest_loss_sum = 0.0;
 				latest_loss_count = 0;
 				cout << "loss: " << latest_loss;
@@ -2338,7 +2329,7 @@ namespace Learner
 		PRNG prng((std::random_device())());
 
 		// number of files
-		size_t file_count = filenames.size();
+		auto file_count = filenames.size();
 
 		// number of teacher positions stored in each file in filenames
 		vector<uint64_t> a_count(file_count);
@@ -2353,12 +2344,12 @@ namespace Learner
 
 			fs.open(filename, ios::in | ios::binary);
 			fs.seekg(0, fstream::end);
-			uint64_t eofPos = (uint64_t)fs.tellg();
+			auto eofPos = (uint64_t)fs.tellg();
 			fs.clear(); // Otherwise, the next seek may fail.
 			fs.seekg(0, fstream::beg);
-			uint64_t begPos = (uint64_t)fs.tellg();
-			uint64_t file_size = eofPos - begPos;
-			uint64_t sfen_count = file_size / sizeof(PackedSfenValue);
+			auto begPos = (uint64_t)fs.tellg();
+			auto file_size = eofPos - begPos;
+			auto sfen_count = file_size / sizeof(PackedSfenValue);
 			a_count[i] = sfen_count;
 
 			// Output the number of sfen stored in each file.
@@ -2386,7 +2377,7 @@ namespace Learner
 			read_file_to_memory(filename, [&buf](uint64_t size) {
 				assert((size % sizeof(PackedSfenValue)) == 0);
 				// Expand the buffer and read after the last time.
-				uint64_t last = buf.size();
+				auto last = buf.size();
 				buf.resize(last + size / sizeof(PackedSfenValue));
 				return (void*)&buf[last];
 				});
@@ -2512,7 +2503,7 @@ namespace Learner
 		auto mini_batch_size = LEARN_MINI_BATCH_SIZE;
 
 		// Number of loops (read the game record file this number of times)
-		int loop = 1;
+		auto loop = 1;
 
 		// Game file storage folder (get game file with relative path from here)
 		string base_dir;
@@ -2520,9 +2511,9 @@ namespace Learner
 		string target_dir;
 
 		// If 0, it will be default value.
-		double eta1 = 0.0;
-		double eta2 = 0.0;
-		double eta3 = 0.0;
+		auto eta1 = 0.0;
+		auto eta2 = 0.0;
+		auto eta3 = 0.0;
 		uint64_t eta1_epoch = 0; // eta2 is not applied by default
 		uint64_t eta2_epoch = 0; // eta3 is not applied by default
 
@@ -2538,28 +2529,28 @@ namespace Learner
 		// --- Function that only shuffles the teacher stage
 
 		// normal shuffle
-		bool shuffle_normal = false;
+		auto shuffle_normal = false;
 		uint64_t buffer_size = 20000000;
 		// fast shuffling assuming each file is shuffled
-		bool shuffle_quick = false;
+		auto shuffle_quick = false;
 		// A function to read the entire file in memory and shuffle it. (Required, file size memory)
-		bool shuffle_on_memory = false;
+		auto shuffle_on_memory = false;
 		// Conversion of packed sfen. In plain, it consists of sfen(string), evaluation value (integer), move (eg 7g7f, string), and result (loss-1, win 1, win 0)
-		bool use_convert_plain = false;
+		auto use_convert_plain = false;
 		// Convert plain format teacher to Yaneura King's bin
-		bool use_convert_bin = false;
+		auto use_convert_bin = false;
 		// File name to write in those cases (default is "shuffled_sfen.bin")
 		string output_file_name = "shuffled_sfen.bin";
 
 		// If the absolute value of the evaluation value in the deep search of the teacher phase exceeds this value, discard that phase.
-		int eval_limit = 32000;
+		auto eval_limit = 32000;
 
 		// Flag to save the evaluation function file only once near the end.
-		bool save_only_once = false;
+		auto save_only_once = false;
 
 		// Shuffle what you are reading ahead of the teacher aspect. (Shuffle of about 10 million phases)
 		// Turn on if you want to pass a pre-shuffled file.
-		bool no_shuffle = false;
+		auto no_shuffle = false;
 
 #if defined (LOSS_FUNCTION_IS_ELMO_METHOD)
 		// elmo lambda
@@ -2574,19 +2565,19 @@ namespace Learner
 		// if (gamePly <rand(reduction_gameply)) continue;
 		// An option to exclude the early stage from the learning target moderately like 
 		// If set to 1, rand(1)==0, so nothing is excluded.
-		int reduction_gameply = 1;
+		auto reduction_gameply = 1;
 
 		// Optional item that does not let you learn KK/KKP/KPP/KPPP
 		array<bool, 4> freeze = {};
 
 #if defined(EVAL_NNUE)
 		uint64_t nn_batch_size = 1000;
-		double newbob_decay = 1.0;
-		int newbob_num_trials = 2;
+		auto newbob_decay = 1.0;
+		auto newbob_num_trials = 2;
 		string nn_options;
 #endif
 
-		uint64_t eval_save_interval = LEARN_EVAL_SAVE_INTERVAL;
+		auto eval_save_interval = LEARN_EVAL_SAVE_INTERVAL;
 		uint64_t loss_output_interval = 0;
 		uint64_t mirror_percentage = 0;
 
@@ -2695,7 +2686,7 @@ namespace Learner
 		// Display learning game file
 		if (target_dir != "")
 		{
-			string kif_base_dir = Path::Combine(base_dir, target_dir);
+			auto kif_base_dir = Path::Combine(base_dir, target_dir);
 
 			// Remove this folder. Make it relative to base_dir.
 #if defined(_MSC_VER)
@@ -2798,7 +2789,7 @@ namespace Learner
 		cout << "no_shuffle        : " << (no_shuffle ? "true" : "false") << endl;
 
 		// Insert the file name for the number of loops.
-		for (int i = 0; i < loop; ++i)
+		for (auto i = 0; i < loop; ++i)
 			// sfen reader, I'll read in reverse order so I'll reverse here. I'm sorry.
 			for (auto it = filenames.rbegin(); it != filenames.rend(); ++it)
 				sr.filenames.push_back(Path::Combine(base_dir, *it));

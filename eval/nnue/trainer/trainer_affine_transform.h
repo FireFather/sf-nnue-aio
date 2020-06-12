@@ -62,10 +62,10 @@ namespace Eval {
 				else {
 					// Assuming the distribution of inputs is unit-mean 0.5, equal variance,
 					// Initialize the output distribution so that each unit has a mean of 0.5 and has the same variance as the input
-					const double kSigma = 1.0 / std::sqrt(kInputDimensions);
+					const auto kSigma = 1.0 / std::sqrt(kInputDimensions);
 					auto distribution = std::normal_distribution<double>(0.0, kSigma);
 					for (IndexType i = 0; i < kOutputDimensions; ++i) {
-						double sum = 0.0;
+						auto sum = 0.0;
 						for (IndexType j = 0; j < kInputDimensions; ++j) {
 							const auto weight = static_cast<LearnFloatType>(distribution(rng));
 							weights_[kInputDimensions * i + j] = weight;
@@ -97,12 +97,12 @@ namespace Eval {
 					1.0, &output_[0], kOutputDimensions);
 #else
 				for (IndexType b = 0; b < batch_size_; ++b) {
-					const IndexType input_batch_offset = kInputDimensions * b;
-					const IndexType output_batch_offset = kOutputDimensions * b;
+					const auto input_batch_offset = kInputDimensions * b;
+					const auto output_batch_offset = kOutputDimensions * b;
 					for (IndexType i = 0; i < kOutputDimensions; ++i) {
 						double sum = biases_[i];
 						for (IndexType j = 0; j < kInputDimensions; ++j) {
-							const IndexType index = kInputDimensions * i + j;
+							const auto index = kInputDimensions * i + j;
 							sum += weights_[index] * batch_input_[input_batch_offset + j];
 						}
 						output_[output_batch_offset + i] = static_cast<LearnFloatType>(sum);
@@ -115,7 +115,7 @@ namespace Eval {
 			// backpropagation
 			void Backpropagate(const LearnFloatType* gradients,
 				LearnFloatType learning_rate) {
-				const LearnFloatType local_learning_rate =
+				const auto local_learning_rate =
 					learning_rate * learning_rate_scale_;
 #if defined(USE_BLAS)
 				// backpropagate
@@ -143,12 +143,12 @@ namespace Eval {
 #else
 				// backpropagate
 				for (IndexType b = 0; b < batch_size_; ++b) {
-					const IndexType input_batch_offset = kInputDimensions * b;
-					const IndexType output_batch_offset = kOutputDimensions * b;
+					const auto input_batch_offset = kInputDimensions * b;
+					const auto output_batch_offset = kOutputDimensions * b;
 					for (IndexType j = 0; j < kInputDimensions; ++j) {
-						double sum = 0.0;
+						auto sum = 0.0;
 						for (IndexType i = 0; i < kOutputDimensions; ++i) {
-							const IndexType index = kInputDimensions * i + j;
+							const auto index = kInputDimensions * i + j;
 							sum += weights_[index] * gradients[output_batch_offset + i];
 						}
 						gradients_[input_batch_offset + j] = static_cast<LearnFloatType>(sum);
@@ -162,14 +162,14 @@ namespace Eval {
 					weights_diff_[i] *= momentum_;
 				}
 				for (IndexType b = 0; b < batch_size_; ++b) {
-					const IndexType input_batch_offset = kInputDimensions * b;
-					const IndexType output_batch_offset = kOutputDimensions * b;
+					const auto input_batch_offset = kInputDimensions * b;
+					const auto output_batch_offset = kOutputDimensions * b;
 					for (IndexType i = 0; i < kOutputDimensions; ++i) {
 						biases_diff_[i] += gradients[output_batch_offset + i];
 					}
 					for (IndexType i = 0; i < kOutputDimensions; ++i) {
 						for (IndexType j = 0; j < kInputDimensions; ++j) {
-							const IndexType index = kInputDimensions * i + j;
+							const auto index = kInputDimensions * i + j;
 							weights_diff_[index] += gradients[output_batch_offset + i] *
 								batch_input_[input_batch_offset + j];
 						}

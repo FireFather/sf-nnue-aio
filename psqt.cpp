@@ -106,13 +106,13 @@ namespace PSQT {
 	// tables are initialized by flipping and changing the sign of the white scores.
 	void init() {
 
-		for (Piece pc = W_PAWN; pc <= W_KING; ++pc)
+		for (auto pc = W_PAWN; pc <= W_KING; ++pc)
 		{
-			Score score = make_score(PieceValue[MG][pc], PieceValue[EG][pc]);
+			auto score = make_score(PieceValue[MG][pc], PieceValue[EG][pc]);
 
-			for (Square s = SQ_A1; s <= SQ_H8; ++s)
+			for (auto s = SQ_A1; s <= SQ_H8; ++s)
 			{
-				File f = File(edge_distance(file_of(s)));
+				auto f = File(edge_distance(file_of(s)));
 				psq[pc][s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
 					: Bonus[pc][rank_of(s)][f]);
 				psq[~pc][flip_rank(s)] = -psq[pc][s];

@@ -167,7 +167,7 @@ v = PIECE_NUMBER_NB;
 bool is_valid(const Position& pos);
 
 // Set that the BonaPiece of the piece_no piece on sq on the board is fb, fw.
-inline void set_piece_on_board(PieceNumber piece_no, BonaPiece fw, BonaPiece fb, Square sq)
+void set_piece_on_board(PieceNumber piece_no, BonaPiece fw, BonaPiece fb, Square sq)
 {
 assert(is_ok(piece_no));
 pieceListFw[piece_no] = fw;

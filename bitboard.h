@@ -256,7 +256,8 @@ inline bool aligned(Square s1, Square s2, Square s3) {
 /// distance() functions return the distance between x and y, defined as the
 /// number of steps for a king in x to reach y.
 
-template<typename T1 = Square> inline int distance(Square x, Square y);
+template<typename T1 = Square>
+int distance(Square x, Square y);
 template<> inline int distance<File>(Square x, Square y) { return std::abs(file_of(x) - file_of(y)); }
 template<> inline int distance<Rank>(Square x, Square y) { return std::abs(rank_of(x) - rank_of(y)); }
 template<> inline int distance<Square>(Square x, Square y) { return SquareDistance[x][y]; }
@@ -276,7 +277,7 @@ inline Bitboard safe_destination(Square s, int step)
 /// assuming an empty board.
 
 template<PieceType Pt>
-inline Bitboard attacks_bb(Square s) {
+Bitboard attacks_bb(Square s) {
 
   assert((Pt != PAWN) && (is_ok(s)));
 
@@ -288,7 +289,7 @@ inline Bitboard attacks_bb(Square s) {
 /// Sliding piece attacks do not continue passed an occupied square.
 
 template<PieceType Pt>
-inline Bitboard attacks_bb(Square s, Bitboard occupied) {
+Bitboard attacks_bb(Square s, Bitboard occupied) {
 
   assert((Pt != PAWN) && (is_ok(s)));
 

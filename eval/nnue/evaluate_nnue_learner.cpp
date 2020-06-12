@@ -111,9 +111,9 @@ namespace Eval {
 
 	// Reread the evaluation function parameters for learning from the file
 	void RestoreParameters(const std::string& dir_name) {
-		const std::string file_name = Path::Combine(dir_name, NNUE::kFileName);
+		const auto file_name = Path::Combine(dir_name, NNUE::kFileName);
 		std::ifstream stream(file_name, std::ios::binary);
-		const bool result = ReadParameters(stream);
+		const auto result = ReadParameters(stream);
 		assert(result);
 
 		SendMessages({ {"reset"} });
@@ -186,7 +186,7 @@ void UpdateParameters(uint64_t epoch) {
 			const auto shallow = static_cast<Value>(Round<std::int32_t>(
 				batch[b].sign * network_output[b] * kPonanzaConstant));
 			const auto& psv = batch[b].psv;
-			const double gradient = batch[b].sign * Learner::calc_grad(shallow, psv);
+			const auto gradient = batch[b].sign * Learner::calc_grad(shallow, psv);
 			gradients[b] = static_cast<LearnFloatType>(gradient * batch[b].weight);
 		}
 
@@ -216,9 +216,9 @@ void save_eval(std::string dir_name) {
 		NNUE::SendMessages({ {"clear_unobserved_feature_weights"} });
 	}
 
-	const std::string file_name = Path::Combine(eval_dir, NNUE::kFileName);
+	const auto file_name = Path::Combine(eval_dir, NNUE::kFileName);
 	std::ofstream stream(file_name, std::ios::binary);
-	const bool result = NNUE::WriteParameters(stream);
+	const auto result = NNUE::WriteParameters(stream);
 	assert(result);
 
 	std::cout << "save_eval() finished. folder = " << eval_dir << std::endl;

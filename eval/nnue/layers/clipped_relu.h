@@ -37,7 +37,7 @@ namespace Eval {
 
 				// Hash value embedded in the evaluation function file
 				static constexpr std::uint32_t GetHashValue() {
-					std::uint32_t hash_value = 0x538D24C7u;
+					auto hash_value = 0x538D24C7u;
 					hash_value += PreviousLayer::GetHashValue();
 					return hash_value;
 				}
@@ -67,40 +67,40 @@ namespace Eval {
 					const auto output = reinterpret_cast<OutputType*>(buffer);
 #if defined(USE_AVX2)
 					constexpr IndexType kNumChunks = kInputDimensions / kSimdWidth;
-					const __m256i kZero = _mm256_setzero_si256();
-					const __m256i kOffsets = _mm256_set_epi32(7, 3, 6, 2, 5, 1, 4, 0);
+					const auto kZero = _mm256_setzero_si256();
+					const auto kOffsets = _mm256_set_epi32(7, 3, 6, 2, 5, 1, 4, 0);
 					const auto in = reinterpret_cast<const __m256i*>(input);
 					const auto out = reinterpret_cast<__m256i*>(output);
 					for (IndexType i = 0; i < kNumChunks; ++i) {
-						const __m256i words0 = _mm256_srai_epi16(_mm256_packs_epi32(
+						const auto words0 = _mm256_srai_epi16(_mm256_packs_epi32(
 #if defined(__MINGW32__) || defined(__MINGW64__)
-							// HACK: Use _mm256_loadu_si256() instead of _mm256_load_si256. Because the binary
-							//       compiled with g++ in MSYS2 crashes here because the output memory is not aligned
+							                                      // HACK: Use _mm256_loadu_si256() instead of _mm256_load_si256. Because the binary
+							                                      //       compiled with g++ in MSYS2 crashes here because the output memory is not aligned
 							//       even though alignas is specified.
 							_mm256_loadu_si256
 #else
-							_mm256_load_si256
+							                                      _mm256_load_si256
 #endif
-							(&in[i * 4 + 0]),
+							                                      (&in[i * 4 + 0]),
 #if defined(__MINGW32__) || defined(__MINGW64__)
 							_mm256_loadu_si256
 #else
-							_mm256_load_si256
+							                                      _mm256_load_si256
 #endif
-							(&in[i * 4 + 1])), kWeightScaleBits);
-						const __m256i words1 = _mm256_srai_epi16(_mm256_packs_epi32(
+							                                      (&in[i * 4 + 1])), kWeightScaleBits);
+						const auto words1 = _mm256_srai_epi16(_mm256_packs_epi32(
 #if defined(__MINGW32__) || defined(__MINGW64__)
 							_mm256_loadu_si256
 #else
-							_mm256_load_si256
+							                                      _mm256_load_si256
 #endif
-							(&in[i * 4 + 2]),
+							                                      (&in[i * 4 + 2]),
 #if defined(__MINGW32__) || defined(__MINGW64__)
 							_mm256_loadu_si256
 #else
-							_mm256_load_si256
+							                                      _mm256_load_si256
 #endif
-							(&in[i * 4 + 3])), kWeightScaleBits);
+							                                      (&in[i * 4 + 3])), kWeightScaleBits);
 #if defined(__MINGW32__) || defined(__MINGW64__)
 						_mm256_storeu_si256
 #else
@@ -142,7 +142,7 @@ namespace Eval {
 #else
 					constexpr IndexType kStart = 0;
 #endif
-					for (IndexType i = kStart; i < kInputDimensions; ++i) {
+					for (auto i = kStart; i < kInputDimensions; ++i) {
 						output[i] = static_cast<OutputType>(
 							std::max(0, std::min(127, input[i] >> kWeightScaleBits)));
 					}

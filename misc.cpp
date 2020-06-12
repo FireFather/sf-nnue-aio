@@ -318,7 +318,7 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
 	LUID luid{ };
 	void* mem = nullptr;
 
-	const size_t largePageSize = GetLargePageMinimum();
+	const auto largePageSize = GetLargePageMinimum();
 	if (!largePageSize)
 		return nullptr;
 
@@ -359,7 +359,7 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
 
 void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
 
-	static bool firstCall = true;
+	static auto firstCall = true;
 
 	// try to allocate large pages
 	mem = aligned_ttmem_alloc_large_pages(allocSize);
@@ -400,7 +400,7 @@ void aligned_ttmem_free(void* mem) {
 
 	if (mem && !VirtualFree(mem, 0, MEM_RELEASE))
 	{
-		DWORD err = GetLastError();
+		auto err = GetLastError();
 		std::cerr << "Failed to free transposition table. Error code: 0x" <<
 			std::hex << err << std::dec << std::endl;
 		exit(EXIT_FAILURE);
@@ -428,15 +428,14 @@ namespace WinProcGroup {
 	/// code from Texel by Peter Österlund.
 
 	int best_group(size_t idx) {
-
-		int threads = 0;
-		int nodes = 0;
-		int cores = 0;
+		auto threads = 0;
+		auto nodes = 0;
+		auto cores = 0;
 		DWORD returnLength = 0;
 		DWORD byteOffset = 0;
 
 		// Early exit if the needed API is not available at runtime
-		HMODULE k32 = GetModuleHandle("Kernel32.dll");
+		auto k32 = GetModuleHandle("Kernel32.dll");
 		auto fun1 = (fun1_t)(void(*)())GetProcAddress(k32, "GetLogicalProcessorInformationEx");
 		if (!fun1)
 			return -1;
@@ -447,7 +446,7 @@ namespace WinProcGroup {
 
 		// Once we know returnLength, allocate the buffer
 		SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX* buffer;
-		SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX* ptr = buffer = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)malloc(returnLength);
+		auto ptr = buffer = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)malloc(returnLength);
 
 		// Second call, now we expect to succeed
 		if (!fun1(RelationAll, buffer, &returnLength))
@@ -478,14 +477,14 @@ namespace WinProcGroup {
 
 		// Run as many threads as possible on the same node until core limit is
 		// reached, then move on filling the next node.
-		for (int n = 0; n < nodes; n++)
-			for (int i = 0; i < cores / nodes; i++)
+		for (auto n = 0; n < nodes; n++)
+			for (auto i = 0; i < cores / nodes; i++)
 				groups.push_back(n);
 
 		// In case a core has more than one logical processor (we assume 2) and we
 		// have still threads to allocate, then spread them evenly across available
 		// nodes.
-		for (int t = 0; t < threads - cores; t++)
+		for (auto t = 0; t < threads - cores; t++)
 			groups.push_back(t % nodes);
 
 		// If we still have more threads than the total number of logical processors
@@ -499,13 +498,13 @@ namespace WinProcGroup {
 	void bindThisThread(size_t idx) {
 
 		// Use only local variables to be thread-safe
-		int group = best_group(idx);
+		auto group = best_group(idx);
 
 		if (group == -1)
 			return;
 
 		// Early exit if the needed API are not available at runtime
-		HMODULE k32 = GetModuleHandle("Kernel32.dll");
+		auto k32 = GetModuleHandle("Kernel32.dll");
 		auto fun2 = (fun2_t)(void(*)())GetProcAddress(k32, "GetNumaNodeProcessorMaskEx");
 		auto fun3 = (fun3_t)(void(*)())GetProcAddress(k32, "SetThreadGroupAffinity");
 
@@ -549,7 +548,7 @@ void sleep(int ms)
 
 void* aligned_malloc(size_t size, size_t align)
 {
-	void* p = _mm_malloc(size, align);
+	auto p = _mm_malloc(size, align);
 	if (p == nullptr)
 	{
 		std::cout << "info string can't allocate memory. sise = " << size << std::endl;
@@ -565,16 +564,16 @@ int read_file_to_memory(std::string filename, std::function<void* (uint64_t)> ca
 		return 1;
 
 	fs.seekg(0, fstream::end);
-	uint64_t eofPos = (uint64_t)fs.tellg();
+	auto eofPos = (uint64_t)fs.tellg();
 	fs.clear(); // Otherwise, the next seek may fail.
 	fs.seekg(0, fstream::beg);
-	uint64_t begPos = (uint64_t)fs.tellg();
-	uint64_t file_size = eofPos - begPos;
+	auto begPos = (uint64_t)fs.tellg();
+	auto file_size = eofPos - begPos;
 	//std::cout << "filename = "<< filename << ", file_size = "<< file_size << endl;
 
 	// I know the file size, so call callback_func to get a buffer for this,
 	// Get the pointer.
-	void* ptr = callback_func(file_size);
+	auto ptr = callback_func(file_size);
 
 	// If the buffer could not be allocated, or if the file size is different from the expected file size,
 	// It should return nullptr. At this time, reading is interrupted and an error is returned.
@@ -587,7 +586,7 @@ int read_file_to_memory(std::string filename, std::function<void* (uint64_t)> ca
 	for (uint64_t pos = 0; pos < file_size; pos += block_size)
 	{
 		// size to read this time
-		uint64_t read_size = (pos + block_size < file_size) ? block_size : (file_size - pos);
+		auto read_size = (pos + block_size < file_size) ? block_size : (file_size - pos);
 		fs.read((char*)ptr + pos, read_size);
 
 		// Read error occurred in the middle of the file.
@@ -611,7 +610,7 @@ int write_memory_to_file(std::string filename, void* ptr, uint64_t size)
 	for (uint64_t pos = 0; pos < size; pos += block_size)
 	{
 		// Memory size to write this time
-		uint64_t write_size = (pos + block_size < size) ? block_size : (size - pos);
+		auto write_size = (pos + block_size < size) ? block_size : (size - pos);
 		fs.write((char*)ptr + pos, write_size);
 		//cout << ".";
 	}

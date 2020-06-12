@@ -23,7 +23,7 @@ namespace Eval::NNUE
 			const std::uint64_t num_games = 1000;
 			StateInfo si;
 			pos.set(StartFEN, false, &si, Threads.main());
-			const int MAX_PLY = 256; // test up to 256 hands
+			const auto MAX_PLY = 256; // test up to 256 hands
 
 			StateInfo state[MAX_PLY]; // StateInfo for maximum number of steps
 			int ply; // Trouble from the initial phase
@@ -152,7 +152,7 @@ namespace Eval::NNUE
 
 				std::uint32_t hash_value;
 				std::string architecture;
-				const bool success = [&]() {
+				const auto success = [&]() {
 					std::ifstream file_stream(file_name, std::ios::binary);
 					if (!file_stream) return false;
 					if (!ReadHeader(file_stream, &hash_value, &architecture)) return false;

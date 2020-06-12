@@ -135,7 +135,7 @@ namespace UCI {
 
 	Option::Option(bool v, OnChange f) : type("check"), min(0), max(0), on_change(f)
 	{
-		defaultValue = currentValue = (v ? "true" : "false");
+		defaultValue = currentValue = v ? "true" : "false";
 	}
 
 	Option::Option(OnChange f) : type("button"), min(0), max(0), on_change(f)
@@ -153,7 +153,7 @@ namespace UCI {
 
 	Option::operator double() const {
 		assert(type == "check" || type == "spin");
-		return (type == "spin" ? stof(currentValue) : currentValue == "true");
+		return type == "spin" ? stof(currentValue) : currentValue == "true";
 	}
 
 	Option::operator std::string() const {
@@ -187,9 +187,9 @@ namespace UCI {
 
 		assert(!type.empty());
 
-		if ((type != "button" && v.empty())
-			|| (type == "check" && v != "true" && v != "false")
-			|| (type == "spin" && (stof(v) < min || stof(v) > max)))
+		if (type != "button" && v.empty()
+			|| type == "check" && v != "true" && v != "false"
+			|| type == "spin" && (stof(v) < min || stof(v) > max))
 			return *this;
 
 		if (type == "combo")

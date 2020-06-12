@@ -19,7 +19,7 @@ namespace Eval::NNUE::Features
 			pos.eval_list()->piece_list_fw();
 		assert(pieces[PIECE_NUMBER_BKING] != BONA_PIECE_ZERO);
 		assert(pieces[PIECE_NUMBER_WKING] != BONA_PIECE_ZERO);
-		for (PieceNumber i = PIECE_NUMBER_KING; i < PIECE_NUMBER_NB; ++i) {
+		for (auto i = PIECE_NUMBER_KING; i < PIECE_NUMBER_NB; ++i) {
 			active->push_back(pieces[i] - fe_end);
 		}
 	}

@@ -51,9 +51,9 @@ namespace Eval {
 			const auto input = previous_layer_trainer_->Propagate(batch);
 			batch_size_ = static_cast<IndexType>(batch.size());
 			for (IndexType b = 0; b < batch_size_; ++b) {
-				const IndexType batch_offset = kOutputDimensions * b;
+				const auto batch_offset = kOutputDimensions * b;
 				for (IndexType i = 0; i < kOutputDimensions; ++i) {
-					const IndexType index = batch_offset + i;
+					const auto index = batch_offset + i;
 					output_[index] = std::max(+kZero, std::min(+kOne, input[index]));
 					min_activations_[i] = std::min(min_activations_[i], output_[index]);
 					max_activations_[i] = std::max(max_activations_[i], output_[index]);
@@ -66,9 +66,9 @@ namespace Eval {
 		void Backpropagate(const LearnFloatType* gradients,
 			LearnFloatType learning_rate) {
 			for (IndexType b = 0; b < batch_size_; ++b) {
-				const IndexType batch_offset = kOutputDimensions * b;
+				const auto batch_offset = kOutputDimensions * b;
 				for (IndexType i = 0; i < kOutputDimensions; ++i) {
-					const IndexType index = batch_offset + i;
+					const auto index = batch_offset + i;
 					gradients_[index] = gradients[index] *
 						(output_[index] > kZero) * (output_[index] < kOne);
 				}

@@ -112,11 +112,11 @@ vector<string> setup_bench(const Position& current, istream& is) {
 	string go, token;
 
 	// Assign default values to missing arguments
-	string ttSize = (is >> token) ? token : "16";
-	string threads = (is >> token) ? token : "1";
-	string limit = (is >> token) ? token : "13";
-	string fenFile = (is >> token) ? token : "default";
-	string limitType = (is >> token) ? token : "depth";
+	auto ttSize = is >> token ? token : "16";
+	auto threads = is >> token ? token : "1";
+	auto limit = is >> token ? token : "13";
+	auto fenFile = is >> token ? token : "default";
+	auto limitType = is >> token ? token : "depth";
 
 	go = limitType == "eval" ? "eval" : "go " + limitType + " " + limit;
 
@@ -148,7 +148,7 @@ vector<string> setup_bench(const Position& current, istream& is) {
 	list.emplace_back("setoption name Hash value " + ttSize);
 	list.emplace_back("ucinewgame");
 
-	for (const string& fen : fens)
+	for (const auto& fen : fens)
 		if (fen.find("setoption") != string::npos)
 			list.emplace_back(fen);
 		else

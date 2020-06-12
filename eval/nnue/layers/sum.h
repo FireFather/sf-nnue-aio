@@ -41,7 +41,7 @@ class Sum :public Sum<RemainingPreviousLayers...> {
 
   // Hash value embedded in the evaluation function file
   static constexpr std::uint32_t GetHashValue() {
-    std::uint32_t hash_value = 0xBCE400B4u;
+	auto hash_value = 0xBCE400B4u;
     hash_value ^= Head::GetHashValue() >> 1;
     hash_value ^= Head::GetHashValue() << 31;
     hash_value ^= Tail::GetHashValue() >> 2;
@@ -111,7 +111,7 @@ class Sum<PreviousLayer> {
 
   // Hash value embedded in the evaluation function file
   static constexpr std::uint32_t GetHashValue() {
-    std::uint32_t hash_value = 0xBCE400B4u;
+	auto hash_value = 0xBCE400B4u;
     hash_value ^= PreviousLayer::GetHashValue() >> 1;
     hash_value ^= PreviousLayer::GetHashValue() << 31;
     return hash_value;
