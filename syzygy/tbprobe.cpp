@@ -96,7 +96,7 @@ void swap_endian(T& x)
 {
     static_assert(std::is_unsigned<T>::value, "Argument of swap_endian not unsigned");
 
-    uint8_t tmp, *c = reinterpret_cast<uint8_t*>(&x);
+    uint8_t tmp, *c = (uint8_t*)&x;
     for (auto i = 0; i < Half; ++i)
         tmp = c[i], c[i] = c[End - i], c[End - i] = tmp;
 }
@@ -514,7 +514,7 @@ void TBTables::add(const std::vector<PieceType>& pieces) {
 int decompress_pairs(PairsData* d, uint64_t idx) {
 
     // Special case where all table positions store the same value
-    if (d->flags & SingleValue)
+    if (d->flags & TBFlag::SingleValue)
         return d->minSymLen;
 
     // First we need to locate the right block that stores the value at index "idx".
@@ -627,7 +627,7 @@ bool check_dtz_stm(TBTable<WDL>*, int, File) { return true; }
 bool check_dtz_stm(TBTable<DTZ>* entry, int stm, File f) {
 
     auto flags = entry->get(stm, f)->flags;
-    return   (flags & STM) == stm
+    return   (flags & TBFlag::STM) == stm
           || entry->key == entry->key2 && !entry->hasPawns;
 }
 
@@ -645,8 +645,8 @@ int map_score(TBTable<DTZ>* entry, File f, int value, WDLScore wdl) {
 
     auto* map = entry->map;
     auto* idx = entry->get(0, f)->map_idx;
-    if (flags & Mapped) {
-        if (flags & Wide)
+    if (flags & TBFlag::Mapped) {
+        if (flags & TBFlag::Wide)
             value = reinterpret_cast<uint16_t*>(map)[idx[WDLMap[wdl + 2]] + value];
         else
             value = map[idx[WDLMap[wdl + 2]] + value];
@@ -654,8 +654,8 @@ int map_score(TBTable<DTZ>* entry, File f, int value, WDLScore wdl) {
 
     // DTZ tables store distance to zero in number of moves or plies. We
     // want to return plies, so we have convert to plies when needed.
-    if (   wdl == WDLWin  && !(flags & WinPlies)
-        || wdl == WDLLoss && !(flags & LossPlies)
+    if (   wdl == WDLWin  && !(flags & TBFlag::WinPlies)
+        || wdl == WDLLoss && !(flags & TBFlag::LossPlies)
         ||  wdl == WDLCursedWin
         ||  wdl == WDLBlessedLoss)
         value *= 2;
@@ -972,7 +972,7 @@ uint8_t* set_sizes(PairsData* d, uint8_t* data) {
 
     d->flags = *data++;
 
-    if (d->flags & SingleValue) {
+    if (d->flags & TBFlag::SingleValue) {
         d->blocksNum = d->blockLengthSize = 0;
         d->span = d->sparseIndexSize = 0; // Broken MSVC zero-init
         d->minSymLen = *data++; // Here we store the single value
@@ -1041,8 +1041,8 @@ uint8_t* set_dtz_map(TBTable<DTZ>& e, uint8_t* data, File maxFile) {
 
     for (auto f = FILE_A; f <= maxFile; ++f) {
         auto flags = e.get(0, f)->flags;
-        if (flags & Mapped) {
-            if (flags & Wide) {
+        if (flags & TBFlag::Mapped) {
+            if (flags & TBFlag::Wide) {
                 data += reinterpret_cast<uintptr_t>(data) & 1;  // Word alignment, we may have a mixed table
                 for (auto& i : e.get(0, f)->map_idx)
                 { // Sequence like 3,x,x,x,1,x,0,2,x,x

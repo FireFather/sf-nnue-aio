@@ -34,11 +34,11 @@ namespace EvalLearningTools
 		// Not involved in KPPP.
 
 		KK g_kk;
-		g_kk.set(SQUARE_NB, fe_end, 0);
+		g_kk.set(SQUARE_NB, Eval::fe_end, 0);
 		KKP g_kkp;
-		g_kkp.set(SQUARE_NB, fe_end, g_kk.max_index());
+		g_kkp.set(SQUARE_NB, Eval::fe_end, g_kk.max_index());
 		KPP g_kpp;
-		g_kpp.set(SQUARE_NB, fe_end, g_kkp.max_index());
+		g_kpp.set(SQUARE_NB, Eval::fe_end, g_kkp.max_index());
 
 		auto size = g_kpp.max_index();
 		min_index_flag.resize(size);
@@ -123,18 +123,18 @@ namespace EvalLearningTools
 		// Determine if it is correct.
 
 		KK g_kk;
-		g_kk.set(SQUARE_NB, fe_end, 0);
+		g_kk.set(SQUARE_NB, Eval::fe_end, 0);
 		KKP g_kkp;
-		g_kkp.set(SQUARE_NB, fe_end, g_kk.max_index());
+		g_kkp.set(SQUARE_NB, Eval::fe_end, g_kk.max_index());
 		KPP g_kpp;
-		g_kpp.set(SQUARE_NB, fe_end, g_kkp.max_index());
+		g_kpp.set(SQUARE_NB, Eval::fe_end, g_kkp.max_index());
 
 		std::vector<bool> f;
 		f.resize(g_kpp.max_index() - g_kpp.min_index());
 
 		for (auto k = SQUARE_ZERO; k < SQUARE_NB; ++k)
-			for (auto p0 = BONA_PIECE_ZERO; p0 < fe_end; ++p0)
-				for (auto p1 = BONA_PIECE_ZERO; p1 < fe_end; ++p1)
+			for (auto p0 = BonaPiece::BONA_PIECE_ZERO; p0 < fe_end; ++p0)
+				for (auto p1 = BonaPiece::BONA_PIECE_ZERO; p1 < fe_end; ++p1)
 				{
 					auto kpp_org = g_kpp.fromKPP(k, p0, p1);
 					KPP kpp0;
@@ -172,7 +172,7 @@ namespace EvalLearningTools
 		// test KPPP calculation for omissions
 
 		KPPP g_kppp;
-		g_kppp.set(15, fe_end, 0);
+		g_kppp.set(15, Eval::fe_end, 0);
 		auto min_index = g_kppp.min_index();
 		auto max_index = g_kppp.max_index();
 

@@ -84,17 +84,17 @@ namespace EvalLearningTools
 		// Set eta according to epoch.
 		static void calc_eta(uint64_t epoch)
 		{
-			if (eta1_epoch == 0) // Exclude eta2
-				eta = eta1;
-			else if (epoch < eta1_epoch)
+			if (Weight::eta1_epoch == 0) // Exclude eta2
+				Weight::eta = Weight::eta1;
+			else if (epoch < Weight::eta1_epoch)
 				// apportion
-				eta = eta1 + (eta2 - eta1) * epoch / eta1_epoch;
-			else if (eta2_epoch == 0) // Exclude eta3
-				eta = eta2;
-			else if (epoch < eta2_epoch)
-				eta = eta2 + (eta3 - eta2) * (epoch - eta1_epoch) / (eta2_epoch - eta1_epoch);
+				Weight::eta = Weight::eta1 + (Weight::eta2 - Weight::eta1) * epoch / Weight::eta1_epoch;
+			else if (Weight::eta2_epoch == 0) // Exclude eta3
+				Weight::eta = Weight::eta2;
+			else if (epoch < Weight::eta2_epoch)
+				Weight::eta = Weight::eta2 + (Weight::eta3 - Weight::eta2) * (epoch - Weight::eta1_epoch) / (Weight::eta2_epoch - Weight::eta1_epoch);
 			else
-				eta = eta3;
+				Weight::eta = Weight::eta3;
 		}
 
 		template <typename T> void updateFV(T& v) { updateFV(v, 1.0); }

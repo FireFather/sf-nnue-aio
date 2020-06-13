@@ -774,7 +774,7 @@ namespace Learner
 					}
 					else {
 						// Since the logic becomes complicated, I'm sorry, I will search again with MultiPV here.
-						search(pos, random_multi_pv_depth, random_multi_pv);
+						Learner::search(pos, random_multi_pv_depth, random_multi_pv);
 						// Select one from the top N hands of root Moves
 
 						auto& rm = pos.this_thread()->rootMoves;
@@ -2699,7 +2699,7 @@ namespace Learner
 			sys::path p(kif_base_dir); // Origin of enumeration
 			std::for_each(sys::directory_iterator(p), sys::directory_iterator(),
 				[&](const sys::path& p) {
-					if (is_regular_file(p))
+					if (sys::is_regular_file(p))
 						filenames.push_back(Path::Combine(target_dir, p.filename().generic_string()));
 				});
 #pragma warning(pop)

@@ -9,19 +9,19 @@ namespace Eval
 	// Value when a certain BonaPiece is seen from the other side
 	// BONA_PIECE_INIT is -1, so it must be a signed type.
 	// Even if KPPT is expanded, BonaPiece will not exceed 2^15 for the time being, so int16_t is good.
-	int16_t inv_piece_[fe_end];
+	int16_t inv_piece_[Eval::fe_end];
 
 	// Returns the one on the board that mirrors a BonaPiece.
-	int16_t mir_piece_[fe_end];
+	int16_t mir_piece_[Eval::fe_end];
 
 
 	// --- methods
 
 	// Returns the value when a certain BonaPiece is seen from the other side
-	BonaPiece inv_piece(BonaPiece p) { return static_cast<BonaPiece>(inv_piece_[p]); }
+	Eval::BonaPiece inv_piece(Eval::BonaPiece p) { return static_cast<Eval::BonaPiece>(inv_piece_[p]); }
 
 	// Returns the one on the board that mirrors a BonaPiece.
-	BonaPiece mir_piece(BonaPiece p) { return static_cast<BonaPiece>(mir_piece_[p]); }
+	Eval::BonaPiece mir_piece(Eval::BonaPiece p) { return static_cast<Eval::BonaPiece>(mir_piece_[p]); }
 
 	std::function<void()> mir_piece_init_function;
 

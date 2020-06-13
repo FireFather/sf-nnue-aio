@@ -81,8 +81,8 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
 		Position p;
 		p.set(pos.fen(), pos.is_chess960(), &st, pos.this_thread());
 		Tablebases::ProbeState s1, s2;
-		auto wdl = probe_wdl(p, &s1);
-		auto dtz = probe_dtz(p, &s2);
+		auto wdl = Tablebases::probe_wdl(p, &s1);
+		auto dtz = Tablebases::probe_dtz(p, &s2);
 		os << "\nTablebases WDL: " << std::setw(4) << wdl << " (" << s1 << ")"
 			<< "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
 	}

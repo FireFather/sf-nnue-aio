@@ -384,7 +384,7 @@ namespace {
 			}
 		}
 		if (T)
-			add(Pt, Us, score);
+			Trace::add(Pt, Us, score);
 
 		return score;
 	}
@@ -490,7 +490,7 @@ namespace {
 		score -= FlankAttacks * kingFlankAttack;
 
 		if (T)
-			add(KING, Us, score);
+			Trace::add(KING, Us, score);
 
 		return score;
 	}
@@ -586,7 +586,7 @@ namespace {
 		}
 
 		if (T)
-			add(THREAT, Us, score);
+			Trace::add(THREAT, Us, score);
 
 		return score;
 	}
@@ -677,7 +677,7 @@ namespace {
 		}
 
 		if (T)
-			add(PASSED, Us, score);
+			Trace::add(PASSED, Us, score);
 
 		return score;
 	}
@@ -717,7 +717,7 @@ namespace {
 		const auto score = make_score(bonus * weight * weight / 16, 0);
 
 		if (T)
-			add(SPACE, Us, score);
+			Trace::add(SPACE, Us, score);
 
 		return score;
 	}
@@ -762,7 +762,7 @@ namespace {
 		const auto v = ((eg > 0) - (eg < 0)) * std::max(complexity, -abs(eg));
 
 		if (T)
-			add(INITIATIVE, make_score(u, v));
+			Trace::add(INITIATIVE, make_score(u, v));
 
 		return make_score(u, v);
 	}
@@ -857,11 +857,11 @@ namespace {
 		// In case of tracing add all remaining individual evaluation terms
 		if (T)
 		{
-			add(MATERIAL, pos.psq_score());
-			add(IMBALANCE, me->imbalance());
-			add(PAWN, pe->pawn_score(WHITE), pe->pawn_score(BLACK));
-			add(MOBILITY, mobility[WHITE], mobility[BLACK]);
-			add(TOTAL, score);
+			Trace::add(MATERIAL, pos.psq_score());
+			Trace::add(IMBALANCE, me->imbalance());
+			Trace::add(PAWN, pe->pawn_score(WHITE), pe->pawn_score(BLACK));
+			Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
+			Trace::add(TOTAL, score);
 		}
 
 		// Side to move point of view
@@ -966,7 +966,7 @@ namespace Eval {
 			const auto fw = pieceListFw[i];
 			// Go to the Position class to see if this fw really exists.
 
-			if (fw == BONA_PIECE_ZERO) {
+			if (fw == Eval::BONA_PIECE_ZERO) {
 				continue;
 			}
 

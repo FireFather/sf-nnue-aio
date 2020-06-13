@@ -459,7 +459,7 @@ string UCI::move(Move m, bool chess960) {
 	if (type_of(m) == CASTLING && !chess960)
 		to = make_square(to > from ? FILE_G : FILE_C, rank_of(from));
 
-	auto move = square(from) + square(to);
+	auto move = UCI::square(from) + UCI::square(to);
 
 	if (type_of(m) == PROMOTION)
 		move += " pnbrqk"[promotion_type(m)];
@@ -477,7 +477,7 @@ Move UCI::to_move(const Position& pos, string& str) {
 		str[4] = static_cast<char>(tolower(str[4]));
 
 	for (const auto& m : MoveList<LEGAL>(pos))
-		if (str == move(m, pos.is_chess960()))
+		if (str == UCI::move(m, pos.is_chess960()))
 			return m;
 
 	return MOVE_NONE;
