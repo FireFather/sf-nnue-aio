@@ -21,8 +21,7 @@ Stockfish NNUE (efficiently updateable neural network)
 ﻿-Solution Stockfish-nnue.sln
 -Redundant declaration [readability-redundant-declaration]
 
--Modernized from c++14 to c++17
--Fully translated to English
+Modernized from c++14 to c++17 & fully translated to English
 
 Please see
 README.txt
