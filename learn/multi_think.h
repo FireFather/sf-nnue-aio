@@ -115,7 +115,7 @@ struct TaskDispatcher
 	}
 
 	// Stack [ASYNC] task.
-	void push_task_async(Task task)
+	void push_task_async(const Task& task)
 	{
 		std::unique_lock<std::mutex> lk(task_mutex);
 		tasks.push_back(task);
@@ -135,7 +135,7 @@ protected:
 	Task get_task_async()
 	{
 		std::unique_lock<std::mutex> lk(task_mutex);
-		if (tasks.size() == 0)
+		if (tasks.empty())
 			return nullptr;
 		auto task = *tasks.rbegin();
 		tasks.pop_back();

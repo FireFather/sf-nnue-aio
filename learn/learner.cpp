@@ -119,7 +119,7 @@ namespace Learner
 	struct SfenWriter
 	{
 		// File name to write and number of threads to create
-		SfenWriter(string filename, int thread_num)
+		SfenWriter(const string& filename, int thread_num)
 		{
 			sfen_buffers_pool.reserve((size_t)thread_num * 10);
 			sfen_buffers.resize(thread_num);
@@ -139,7 +139,7 @@ namespace Learner
 			fs.close();
 
 			// All buffers should be empty since file_worker_thread has written all..
-			for (auto p : sfen_buffers) { assert(p == nullptr); }
+			for (auto* p : sfen_buffers) { assert(p == nullptr); }
 			assert(sfen_buffers_pool.empty());
 		}
 
@@ -187,7 +187,7 @@ namespace Learner
 			auto& buf = sfen_buffers[thread_id];
 
 			// There is a case where buf==nullptr, so that check is necessary.
-			if (buf && buf->size() != 0)
+			if (buf && !buf->empty())
 				sfen_buffers_pool.push_back(buf);
 
 			buf = nullptr;
@@ -211,7 +211,7 @@ namespace Learner
 				fs.flush();
 			};
 
-			while (!finished || sfen_buffers_pool.size())
+			while (!finished || !sfen_buffers_pool.empty())
 			{
 				vector<PSVector*> buffers;
 				{
@@ -222,11 +222,11 @@ namespace Learner
 				}
 
 				// sleep() if you didn't get anything
-				if (!buffers.size())
+				if (buffers.empty())
 					sleep(100);
 				else
 				{
-					for (auto ptr : buffers)
+					for (auto* ptr : buffers)
 					{
 						fs.write((const char*)&((*ptr)[0]), sizeof(PackedSfenValue) * ptr->size());
 
@@ -387,7 +387,7 @@ namespace Learner
 			// Dependent thread must be set for Position.
 			// When parallelizing, Threads (since this is a vector<Thread*>,
 			// Do the same for up to Threads[0]...Threads[thread_num-1].
-			auto th = Threads[thread_id];
+			auto* th = Threads[thread_id];
 
 			auto& pos = th->rootPos;
 			pos.set(StartFEN, false, &si, th);
@@ -561,7 +561,7 @@ namespace Learner
 					}
 
 					// Verification of a strange move
-					if (pv1.size() > 0
+					if (!pv1.empty()
 						&& (pv1[0] == MOVE_NONE || pv1[0] == MOVE_NULL)
 						)
 					{
@@ -702,7 +702,7 @@ namespace Learner
 						psv.gamePly = ply;
 
 						// Take out the PV first hand. This should be present unless depth 0.
-						assert(pv_value1.second.size() >= 1);
+						assert(!pv_value1.second.empty());
 						auto pv_move1 = pv_value1.second[0];
 						psv.move = pv_move1;
 					}
@@ -711,7 +711,7 @@ namespace Learner
 
 					// PV could not be obtained for some reason (hit the substitution table etc. and got stuck?) so go to the next game.
 					// It's a rare case, so you can ignore it.
-					if (pv1.size() == 0)
+					if (pv1.empty())
 						break;
 
 					// search_depth Advance the phase by hand reading.
@@ -747,8 +747,8 @@ namespace Learner
 						else {
 							// if you can move the ball, move the ball
 							Move moves[8]; // Near 8
-							auto p = &moves[0];
-							for (auto& m : list)
+							auto* p = &moves[0];
+							for (const auto& m : list)
 								if (type_of(pos.moved_piece(m)) == KING)
 									*(p++) = m;
 							size_t n = p - &moves[0];
@@ -874,7 +874,7 @@ namespace Learner
 		{
 			token = "";
 			is >> token;
-			if (token == "")
+			if (token.empty())
 				break;
 
 			if (token == "depth")
@@ -1193,9 +1193,9 @@ namespace Learner
 			if (file_worker_thread.joinable())
 				file_worker_thread.join();
 
-			for (auto p : packed_sfens)
+			for (auto* p : packed_sfens)
 				delete p;
-			for (auto p : packed_sfens_pool)
+			for (auto* p : packed_sfens_pool)
 				delete p;
 		}
 
@@ -1207,7 +1207,7 @@ namespace Learner
 		// Load the phase for calculation such as mse.
 		void read_for_mse()
 		{
-			auto th = Threads.main();
+			auto* th = Threads.main();
 			auto& pos = th->rootPos;
 			for (uint64_t i = 0; i < sfen_for_mse_size; ++i)
 			{
@@ -1226,7 +1226,7 @@ namespace Learner
 			}
 		}
 
-		void read_validation_set(const string file_name, int eval_limit)
+		void read_validation_set(const string& file_name, int eval_limit)
 		{
 			ifstream fs(file_name, ios::binary);
 
@@ -1265,7 +1265,7 @@ namespace Learner
 			auto& thread_ps = packed_sfens[thread_id];
 
 			// Fill the read buffer if there isn't any buffer left, but if it doesn't even exist, we're done.
-			if ((thread_ps == nullptr || thread_ps->size() == 0) // If the buffer is empty, fill it.
+			if ((thread_ps == nullptr || thread_ps->empty()) // If the buffer is empty, fill it.
 				&& !read_to_thread_buffer_impl(thread_id))
 				return false;
 
@@ -1277,7 +1277,7 @@ namespace Learner
 			thread_ps->pop_back();
 
 			// If you've run out of buffers, call delete yourself to free this buffer.
-			if (thread_ps->size() == 0)
+			if (thread_ps->empty())
 			{
 				delete thread_ps;
 				thread_ps = nullptr;
@@ -1294,7 +1294,7 @@ namespace Learner
 				{
 					std::unique_lock<std::mutex> lk(mutex);
 					// If you can fill from the file buffer, that's fine.
-					if (packed_sfens_pool.size() != 0)
+					if (!packed_sfens_pool.empty())
 					{
 						// It seems that filling is possible, so fill and finish.
 
@@ -1333,7 +1333,7 @@ namespace Learner
 					fs.close();
 
 				// no more
-				if (filenames.size() == 0)
+				if (filenames.empty())
 					return false;
 
 				// Get the next file name.
@@ -1401,7 +1401,7 @@ namespace Learner
 				for (size_t i = 0; i < size; ++i)
 				{
 					// Delete this pointer on the receiving side.
-					auto ptr = new PSVector();
+					auto* ptr = new PSVector();
 					ptr->resize(THREAD_BUFFER_SIZE);
 					memcpy(&((*ptr)[0]), &sfens[i * THREAD_BUFFER_SIZE], sizeof(PackedSfenValue) * THREAD_BUFFER_SIZE);
 
@@ -1616,7 +1616,7 @@ namespace Learner
 		atomic<int> move_accord_count = 0;
 
 		// Display the value of eval() in the initial stage of Hirate and see the shaking.
-		auto th = Threads[thread_id];
+		auto* th = Threads[thread_id];
 		auto& pos = th->rootPos;
 		StateInfo si;
 		pos.set(StartFEN, false, &si, th);
@@ -1638,7 +1638,7 @@ namespace Learner
 			auto task = [&ps, &test_sum_cross_entropy_eval, &test_sum_cross_entropy_win, &test_sum_cross_entropy, &test_sum_entropy_eval, &test_sum_entropy_win, &test_sum_entropy, &sum_norm, &task_count, &move_accord_count](size_t thread_id)
 			{
 				// Does C++ properly capture a new ps instance for each loop?
-				auto th = Threads[thread_id];
+				auto* th = Threads[thread_id];
 				auto& pos = th->rootPos;
 				StateInfo si;
 				if (pos.set_from_packed_sfen(ps.sfen, &si, th) != 0)
@@ -1745,7 +1745,7 @@ namespace Learner
 		// learn_cross_entropy may be called train cross entropy in the world of machine learning,
 		// When I abbreviate the acronym, I am happy to be able to distinguish it from test cross entropy (tce) by writing lce.
 
-		if (sr.sfen_for_mse.size() && done)
+		if (!sr.sfen_for_mse.empty() && done)
 		{
 		cout
 			<< " , test_cross_entropy_eval = "  << test_sum_cross_entropy_eval / sr.sfen_for_mse.size()
@@ -1791,7 +1791,7 @@ namespace Learner
 		omp_set_num_threads((int)Options["Threads"]);
 #endif
 
-		auto th = Threads[thread_id];
+		auto* th = Threads[thread_id];
 		auto& pos = th->rootPos;
 
 		while (true)
@@ -2367,7 +2367,7 @@ namespace Learner
 
 	// Subcontracting the teacher shuffle "learn shufflem" command.
 	// Read the whole memory and write it out with the specified file name.
-	void shuffle_files_on_memory(const vector<string>& filenames, const string output_file_name)
+	void shuffle_files_on_memory(const vector<string>& filenames, const string& output_file_name)
 	{
 		PSVector buf;
 
@@ -2401,7 +2401,7 @@ namespace Learner
 	void convert_bin(const vector<string>& filenames, const string& output_file_name)
 	{
 		std::fstream fs;
-		auto th = Threads.main();
+		auto* th = Threads.main();
 		auto& tpos = th->rootPos;
 		// convert plain rag to packed sfenvalue for Yaneura king
 		fs.open(output_file_name, ios::app | ios::binary);
@@ -2589,7 +2589,7 @@ namespace Learner
 			string option;
 			is >> option;
 
-			if (option == "")
+			if (option.empty())
 				break;
 
 			// specify the number of phases of mini-batch
@@ -2684,7 +2684,7 @@ namespace Learner
 #endif
 
 		// Display learning game file
-		if (target_dir != "")
+		if (!target_dir.empty())
 		{
 			auto kif_base_dir = Path::Combine(base_dir, target_dir);
 

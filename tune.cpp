@@ -124,8 +124,8 @@ void BoolConditions::set() {
 
 	startup = false;
 
-	for (size_t i = 0; i < binary.size(); i++)
-		sync_cout << binary[i] << sync_endl;
+	for (int i : binary)
+	sync_cout << i << sync_endl;
 }
 
 

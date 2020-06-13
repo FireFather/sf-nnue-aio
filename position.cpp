@@ -1,4 +1,4 @@
-/*
+﻿/*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
@@ -940,7 +940,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 	auto end = std::min(st->rule50, st->pliesFromNull);
 	if (end >= 4)
 	{
-		auto stp = st->previous->previous;
+		auto* stp = st->previous->previous;
 		for (auto i = 4; i <= end; i += 2)
 		{
 			stp = stp->previous->previous;
@@ -1293,7 +1293,7 @@ bool Position::is_draw(int ply) const {
 // of positions since the last capture or pawn move.
 
 bool Position::has_repeated() const {
-	auto stc = st;
+	auto* stc = st;
 	auto end = std::min(st->rule50, st->pliesFromNull);
 	while (end-- >= 4)
 	{
@@ -1319,7 +1319,7 @@ bool Position::has_game_cycle(int ply) const {
 		return false;
 
 	auto originalKey = st->key;
-	auto stp = st->previous;
+	auto* stp = st->previous;
 
 	for (auto i = 3; i <= end; i += 2)
 	{

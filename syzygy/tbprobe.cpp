@@ -235,8 +235,8 @@ public:
         }
 #else
         // Note FILE_FLAG_RANDOM_ACCESS is only a hint to Windows and as such may get ignored.
-        auto fd = CreateFile(fname.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
-                             OPEN_EXISTING, FILE_FLAG_RANDOM_ACCESS, nullptr);
+        auto* fd = CreateFile(fname.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+                              OPEN_EXISTING, FILE_FLAG_RANDOM_ACCESS, nullptr);
 
         if (fd == INVALID_HANDLE_VALUE)
             return *baseAddress = nullptr, nullptr;
@@ -250,7 +250,7 @@ public:
             exit(EXIT_FAILURE);
         }
 
-        auto mmap = CreateFileMapping(fd, nullptr, PAGE_READONLY, size_high, size_low, nullptr);
+        auto* mmap = CreateFileMapping(fd, nullptr, PAGE_READONLY, size_high, size_low, nullptr);
         CloseHandle(fd);
 
         if (!mmap)
@@ -269,7 +269,7 @@ public:
             exit(EXIT_FAILURE);
         }
 #endif
-        auto data = static_cast<uint8_t*>(*baseAddress);
+        auto* data = static_cast<uint8_t*>(*baseAddress);
 
         constexpr uint8_t Magics[][4] = { { 0xD7, 0x66, 0x0C, 0xA5 },
                                           { 0x71, 0xE8, 0x23, 0x5D } };
@@ -557,7 +557,7 @@ int decompress_pairs(PairsData* d, uint64_t idx) {
         offset -= d->blockLength[block++] + 1;
 
     // Finally, we find the start address of our block of canonical Huffman symbols
-    auto ptr = (uint32_t*)(d->data + static_cast<uint64_t>(block) * d->sizeofBlock);
+    auto* ptr = (uint32_t*)(d->data + static_cast<uint64_t>(block) * d->sizeofBlock);
 
     // Read the first 64 bits in our block, this is a (truncated) sequence of
     // unknown number of symbols of unknown length but we know the first one
@@ -643,8 +643,8 @@ int map_score(TBTable<DTZ>* entry, File f, int value, WDLScore wdl) {
 
     auto flags = entry->get(0, f)->flags;
 
-    auto map = entry->map;
-    auto idx = entry->get(0, f)->map_idx;
+    auto* map = entry->map;
+    auto* idx = entry->get(0, f)->map_idx;
     if (flags & TBFlag::Mapped) {
         if (flags & TBFlag::Wide)
             value = ((uint16_t *)map)[idx[WDLMap[wdl + 2]] + value];
@@ -854,7 +854,7 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
 
 encode_remaining:
     idx *= d->groupIdx[0];
-    auto groupSq = squares + d->groupLen[0];
+    auto* groupSq = squares + d->groupLen[0];
 
     // Encode remainig pawns then pieces according to square, in ascending order
     bool remainingPawns = entry->hasPawns && entry->pawnCount[1];
@@ -1044,14 +1044,16 @@ uint8_t* set_dtz_map(TBTable<DTZ>& e, uint8_t* data, File maxFile) {
         if (flags & TBFlag::Mapped) {
             if (flags & TBFlag::Wide) {
                 data += (uintptr_t)data & 1;  // Word alignment, we may have a mixed table
-                for (auto i = 0; i < 4; ++i) { // Sequence like 3,x,x,x,1,x,0,2,x,x
-                    e.get(0, f)->map_idx[i] = static_cast<uint16_t>((uint16_t*)data - (uint16_t*)e.map + 1);
+                for (unsigned short& i : e.get(0, f)->map_idx)
+                { // Sequence like 3,x,x,x,1,x,0,2,x,x
+	                i = static_cast<uint16_t>((uint16_t*)data - (uint16_t*)e.map + 1);
                     data += 2 * number<uint16_t, LittleEndian>(data) + 2;
                 }
             }
             else {
-                for (auto i = 0; i < 4; ++i) {
-                    e.get(0, f)->map_idx[i] = static_cast<uint16_t>(data - e.map + 1);
+                for (unsigned short& i : e.get(0, f)->map_idx)
+                {
+	                i = static_cast<uint16_t>(data - e.map + 1);
                     data += *data + 1;
                 }
             }

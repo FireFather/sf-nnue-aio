@@ -75,8 +75,9 @@ namespace Eval {
 					const auto weight = static_cast<LearnFloatType>(distribution(rng));
 					weights_[i] = weight;
 				}
-				for (IndexType i = 0; i < kHalfDimensions; ++i) {
-					biases_[i] = static_cast<LearnFloatType>(0.5);
+				for (float& biase : biases_)
+				{
+					biase = static_cast<LearnFloatType>(0.5);
 				}
 				QuantizeParameters();
 			}
@@ -186,8 +187,9 @@ namespace Eval {
 					}
 				}
 #else
-				for (IndexType i = 0; i < kHalfDimensions; ++i) {
-					biases_diff_[i] *= momentum_;
+				for (float& i : biases_diff_)
+				{
+					i *= momentum_;
 				}
 				for (IndexType b = 0; b < batch_->size(); ++b) {
 					const auto batch_offset = kOutputDimensions * b;
@@ -217,9 +219,10 @@ namespace Eval {
 					}
 				}
 #endif
-				for (IndexType b = 0; b < batch_->size(); ++b) {
+				for (const auto& b : *batch_)
+				{
 					for (IndexType c = 0; c < 2; ++c) {
-						for (const auto& feature : (*batch_)[b].training_features[c]) {
+						for (const auto& feature : b.training_features[c]) {
 							observed_features.set(feature.GetIndex());
 						}
 					}

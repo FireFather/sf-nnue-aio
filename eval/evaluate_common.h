@@ -60,7 +60,7 @@ namespace Eval
 
 	// Save the evaluation function parameters in a file.
 	// You can specify the extension added to the end of the file.
-	void save_eval(std::string suffix);
+	void save_eval(const std::string& suffix);
 
 	// Get the current eta.
 	double get_eta();

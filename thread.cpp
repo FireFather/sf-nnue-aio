@@ -162,7 +162,7 @@ void ThreadPool::set(size_t requested) {
 
 void ThreadPool::clear() {
 
-	for (auto th : *this)
+	for (auto* th : *this)
 		th->clear();
 
 	main()->callsCnt = 0;
@@ -206,7 +206,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
 	// is shared by threads but is accessed in read-only mode.
 	auto tmp = setupStates->back();
 
-	for (auto th : *this)
+	for (auto* th : *this)
 	{
 		th->nodes = th->tbHits = th->nmpMinPly = 0;
 		th->rootDepth = th->completedDepth = 0;

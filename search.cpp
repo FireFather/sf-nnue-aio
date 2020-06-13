@@ -121,7 +121,7 @@ namespace {
        if (location)
        {
           // See if another already marked this location, if not, mark it ourselves
-          auto tmp = (*location).thread.load(std::memory_order_relaxed);
+          auto* tmp = (*location).thread.load(std::memory_order_relaxed);
           if (tmp == nullptr)
           {
               (*location).thread.store(thisThread, std::memory_order_relaxed);
@@ -236,7 +236,7 @@ void MainThread::search() {
   }
   else
   {
-      for (auto th : Threads)
+      for (auto* th : Threads)
       {
           th->bestMoveChanges = 0;
           if (th != this)
@@ -260,7 +260,7 @@ void MainThread::search() {
   Threads.stop = true;
 
   // Wait until all threads have finished
-  for (auto th : Threads)
+  for (auto* th : Threads)
       if (th != this)
           th->wait_for_search_finished();
 
@@ -281,11 +281,11 @@ void MainThread::search() {
       auto minScore = this->rootMoves[0].score;
 
       // Find minimum score
-      for (auto th: Threads)
+      for (auto* th: Threads)
           minScore = std::min(minScore, th->rootMoves[0].score);
 
       // Vote according to score and depth, and select the best thread
-      for (auto th : Threads)
+      for (auto* th : Threads)
       {
           votes[th->rootMoves[0].pv[0]] +=
               (th->rootMoves[0].score - minScore + 14) * static_cast<int>(th->completedDepth);
@@ -333,7 +333,7 @@ void Thread::search() {
   Value alpha, delta;
   auto lastBestMove = MOVE_NONE;
   auto lastBestMoveDepth = 0;
-  auto mainThread = (this == Threads.main() ? Threads.main() : nullptr);
+  auto* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
   double timeReduction = 1, totBestMoveChanges = 0;
   auto us = rootPos.side_to_move();
   auto iterIdx = 0;
@@ -350,11 +350,11 @@ void Thread::search() {
   if (mainThread)
   {
       if (mainThread->bestPreviousScore == VALUE_INFINITE)
-          for (auto i = 0; i < 4; ++i)
-              mainThread->iterValue[i] = VALUE_ZERO;
+          for (auto& i : mainThread->iterValue)
+	          i = VALUE_ZERO;
       else
-          for (auto i = 0; i < 4; ++i)
-              mainThread->iterValue[i] = mainThread->bestPreviousScore;
+          for (auto& i : mainThread->iterValue)
+	          i = mainThread->bestPreviousScore;
   }
 
   std::copy(&lowPlyHistory[2][0], &lowPlyHistory.back().back() + 1, &lowPlyHistory[0][0]);
@@ -549,7 +549,7 @@ void Thread::search() {
 	      auto reduction = (1.41 + mainThread->previousTimeReduction) / (2.27 * timeReduction);
 
           // Use part of the gained time from a previous stable move for the current move
-          for (auto th : Threads)
+          for (auto* th : Threads)
           {
               totBestMoveChanges += th->bestMoveChanges;
               th->bestMoveChanges = 0;
@@ -638,7 +638,7 @@ namespace {
     int moveCount, captureCount, quietCount;
 
     // Step 1. Initialize node
-    auto thisThread = pos.this_thread();
+    auto* thisThread = pos.this_thread();
     ss->inCheck = pos.checkers();
     priorCapture = pos.captured_piece();
     auto us = pos.side_to_move();
@@ -1318,7 +1318,7 @@ moves_loop: // When in check, search starts from here
 
               assert((ss+1)->pv);
 
-              for (auto m = (ss+1)->pv; *m != MOVE_NONE; ++m)
+              for (auto* m = (ss+1)->pv; *m != MOVE_NONE; ++m)
                   rm.pv.push_back(*m);
 
               // We record how often the best move has been changed in each
@@ -1433,7 +1433,7 @@ moves_loop: // When in check, search starts from here
         ss->pv[0] = MOVE_NONE;
     }
 
-    auto thisThread = pos.this_thread();
+    auto* thisThread = pos.this_thread();
     (ss+1)->ply = ss->ply + 1;
     auto bestMove = MOVE_NONE;
     ss->inCheck = pos.checkers();
@@ -1454,7 +1454,7 @@ moves_loop: // When in check, search starts from here
 	                    : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
     auto posKey = pos.key();
-    auto tte = TT.probe(posKey, ttHit);
+    auto* tte = TT.probe(posKey, ttHit);
     auto ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     auto ttMove = ttHit ? tte->move() : MOVE_NONE;
     auto pvHit = ttHit && tte->is_pv();
@@ -1681,7 +1681,7 @@ moves_loop: // When in check, search starts from here
   void update_all_stats(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Square prevSq,
                         Move* quietsSearched, int quietCount, Move* capturesSearched, int captureCount, Depth depth) {
 	  auto us = pos.side_to_move();
-	  auto thisThread = pos.this_thread();
+	  auto* thisThread = pos.this_thread();
 	  auto& captureHistory = thisThread->captureHistory;
 	  auto moved_piece = pos.moved_piece(bestMove);
 	  auto captured = type_of(pos.piece_on(to_sq(bestMove)));
@@ -1746,7 +1746,7 @@ moves_loop: // When in check, search starts from here
     }
 
     auto us = pos.side_to_move();
-    auto thisThread = pos.this_thread();
+    auto* thisThread = pos.this_thread();
     thisThread->mainHistory[us][from_to(move)] << bonus;
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
 
@@ -1903,7 +1903,7 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
         return false;
 
     pos.do_move(pv[0], st);
-    auto tte = TT.probe(pos.key(), ttHit);
+    auto* tte = TT.probe(pos.key(), ttHit);
 
     if (ttHit)
     {
@@ -2018,7 +2018,7 @@ namespace Learner
 
     // Regarding this_thread.
     {
-      auto th = pos.this_thread();
+	    auto* th = pos.this_thread();
 
       th->completedDepth = 0;
       th->selDepth = 0;
@@ -2109,7 +2109,7 @@ namespace Learner
 
     // Return the PV obtained.
     std::vector<Move> pvs;
-    for (auto p = &ss->pv[0]; is_ok(*p); ++p)
+    for (auto* p = &ss->pv[0]; is_ok(*p); ++p)
       pvs.push_back(*p);
 
     return ValueAndPV(bestValue, pvs);
@@ -2150,7 +2150,7 @@ namespace Learner
     ss->pv = pv; // For the time being, it must be a dummy and somewhere with a buffer.
 
     // Initialize variables related to this_thread
-    auto th = pos.this_thread();
+    auto* th = pos.this_thread();
     auto& rootDepth = th->rootDepth;
     auto& pvIdx = th->pvIdx;
     auto& pvLast = th->pvLast;

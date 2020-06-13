@@ -381,7 +381,7 @@ namespace EvalLearningTools
 	};
 
 	// Output for debugging.
-	static std::ostream& operator<<(std::ostream& os, KK rhs)
+	static std::ostream& operator<<(std::ostream& os, const KK& rhs)
 	{
 		os << "KK(" << rhs.king0() << "," << rhs.king1() << ")";
 		return os;
@@ -484,7 +484,7 @@ namespace EvalLearningTools
 	};
 
 	// Output for debugging.
-	static std::ostream& operator<<(std::ostream& os, KKP rhs)
+	static std::ostream& operator<<(std::ostream& os, const KKP& rhs)
 	{
 		os << "KKP(" << rhs.king0() << "," << rhs.king1() << "," << rhs.piece() << ")";
 		return os;
@@ -656,7 +656,7 @@ namespace EvalLearningTools
 	};
 
 	// Output for debugging.
-	static std::ostream& operator<<(std::ostream& os, KPP rhs)
+	static std::ostream& operator<<(std::ostream& os, const KPP& rhs)
 	{
 		os << "KPP(" << rhs.king() << "," << rhs.piece0() << "," << rhs.piece1() << ")";
 		return os;
@@ -875,7 +875,7 @@ namespace EvalLearningTools
 	};
 
 	// Output for debugging.
-	static std::ostream& operator<<(std::ostream& os, KPPP rhs)
+	static std::ostream& operator<<(std::ostream& os, const KPPP& rhs)
 	{
 		os << "KPPP(" << rhs.king() << "," << rhs.piece0() << "," << rhs.piece1() << "," << rhs.piece2() << ")";
 		return os;
@@ -1024,7 +1024,7 @@ namespace EvalLearningTools
 	};
 
 	// Output for debugging.
-	static std::ostream& operator<<(std::ostream& os, KKPP rhs)
+	static std::ostream& operator<<(std::ostream& os, const KKPP& rhs)
 	{
 		os << "KKPP(" << rhs.king() << "," << rhs.piece0() << "," << rhs.piece1() << ")";
 		return os;

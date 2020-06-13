@@ -74,7 +74,7 @@ namespace {
 
     Square s;
     auto score = SCORE_ZERO;
-    auto pl = pos.squares<PAWN>(Us);
+    const auto* pl = pos.squares<PAWN>(Us);
 
     auto ourPawns   = pos.pieces(  Us, PAWN);
     auto theirPawns = pos.pieces(Them, PAWN);
@@ -174,7 +174,7 @@ namespace Pawns {
 
 Entry* probe(const Position& pos) {
 	auto key = pos.pawn_key();
-	auto e = pos.this_thread()->pawnsTable[key];
+	auto* e = pos.this_thread()->pawnsTable[key];
 
   if (e->key == key)
       return e;

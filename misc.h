@@ -160,8 +160,8 @@ static void my_exit()
 // また、callbackされた関数のなかでバッファが確保できなかった場合や、想定していたファイルサイズと異なった場合は、
 // nullptrを返せば良い。このとき、read_file_to_memory()は、読み込みを中断し、エラーリターンする。
 
-int read_file_to_memory(std::string filename, std::function<void* (uint64_t)> callback_func);
-int write_memory_to_file(std::string filename, void* ptr, uint64_t size);
+int read_file_to_memory(const std::string& filename, const std::function<void* (uint64_t)>& callback_func);
+int write_memory_to_file(const std::string& filename, void* ptr, uint64_t size);
 
 // --------------------
 //    PRNGのasync版
@@ -285,7 +285,7 @@ namespace Dependency
   // フォルダを作成する。
   // カレントフォルダ相対で指定する。dir_nameに日本語は使っていないものとする。
   // 成功すれば0、失敗すれば非0が返る。
-  extern int mkdir(std::string dir_name);
+  extern int mkdir(const std::string& dir_name);
 }
 
 #endif // #ifndef MISC_H_INCLUDED

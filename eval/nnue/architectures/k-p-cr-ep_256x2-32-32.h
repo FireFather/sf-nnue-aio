@@ -1,4 +1,4 @@
-// NNUE評価関数で用いる入力特徴量とネットワーク構造の定義
+// Definition of input features and network structure used in NNUE evaluation function
 
 #ifndef K_P_CR_EP_256X2_32_32_H
 #define K_P_CR_EP_256X2_32_32_H

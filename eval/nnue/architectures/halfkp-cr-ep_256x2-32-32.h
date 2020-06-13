@@ -1,4 +1,7 @@
-// NNUE評価関数で用いる入力特徴量とネットワーク構造の定義
+// Definition of input features and network structure used in NNUE evaluation function
+
+#ifndef HALFKP_CR_EP_256X2_32_32_H
+#define HALFKP_CR_EP_256X2_32_32_H
 
 #include "../features/feature_set.h"
 #include "../features/half_kp.h"
@@ -33,3 +36,4 @@ namespace Eval::NNUE
 	using Network = Layers::OutputLayer;
 } // namespace Eval
 
+#endif // HALFKP_CR_EP_256X2_32_32_H

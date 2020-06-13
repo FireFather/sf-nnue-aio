@@ -557,7 +557,7 @@ void* aligned_malloc(size_t size, size_t align)
 	return p;
 }
 
-int read_file_to_memory(std::string filename, std::function<void* (uint64_t)> callback_func)
+int read_file_to_memory(const std::string& filename, const std::function<void* (uint64_t)>& callback_func)
 {
 	fstream fs(filename, ios::in | ios::binary);
 	if (fs.fail())
@@ -600,7 +600,7 @@ int read_file_to_memory(std::string filename, std::function<void* (uint64_t)> ca
 	return 0;
 }
 
-int write_memory_to_file(std::string filename, void* ptr, uint64_t size)
+int write_memory_to_file(const std::string& filename, void* ptr, uint64_t size)
 {
 	fstream fs(filename, ios::out | ios::binary);
 	if (fs.fail())
@@ -635,7 +635,7 @@ int write_memory_to_file(std::string filename, void* ptr, uint64_t size)
 #include <locale> // This is required for wstring_convert.
 
 namespace Dependency {
-	int mkdir(std::string dir_name)
+	int mkdir(const std::string& dir_name)
 	{
 		std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> cv;
 		return _wmkdir(cv.from_bytes(dir_name).c_str());

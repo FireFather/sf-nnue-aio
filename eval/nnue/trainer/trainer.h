@@ -111,7 +111,7 @@ namespace Eval {
 		// make_shared with alignment
 		template <typename T, typename... ArgumentTypes>
 		std::shared_ptr<T> MakeAlignedSharedPtr(ArgumentTypes&&... arguments) {
-			const auto ptr = new(aligned_malloc(sizeof(T), alignof(T)))
+			auto* const ptr = new(aligned_malloc(sizeof(T), alignof(T)))
 				T(std::forward<ArgumentTypes>(arguments)...);
 			return std::shared_ptr<T>(ptr, AlignedDeleter<T>());
 		}

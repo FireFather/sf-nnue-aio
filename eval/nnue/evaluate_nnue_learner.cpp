@@ -203,7 +203,7 @@ void CheckHealth() {
 } // namespace NNUE
 
 // save merit function parameters to a file
-void save_eval(std::string dir_name) {
+void save_eval(const std::string& dir_name) {
 	const auto eval_dir = Path::Combine(Options["EvalSaveDir"], dir_name);
 	std::cout << "save_eval() start. folder = " << eval_dir << std::endl;
 
