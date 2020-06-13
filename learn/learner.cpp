@@ -121,7 +121,7 @@ namespace Learner
 		// File name to write and number of threads to create
 		SfenWriter(const string& filename, int thread_num)
 		{
-			sfen_buffers_pool.reserve((size_t)thread_num * 10);
+			sfen_buffers_pool.reserve(static_cast<size_t>(thread_num) * 10);
 			sfen_buffers.resize(thread_num);
 
 			// When performing additional learning, the quality of the teacher generated after learning the evaluation function does not change much and we want to earn more teacher positions.
@@ -228,7 +228,7 @@ namespace Learner
 				{
 					for (auto* ptr : buffers)
 					{
-						fs.write((const char*)&(*ptr)[0], sizeof(PackedSfenValue) * ptr->size());
+						fs.write(reinterpret_cast<const char*>(&(*ptr)[0]), sizeof(PackedSfenValue) * ptr->size());
 
 						sfen_write_count += ptr->size();
 
@@ -243,7 +243,7 @@ namespace Learner
 							fs.close();
 
 							// Sequential number attached to the file
-							auto n = (int)(sfen_write_count / save_every);
+							auto n = static_cast<int>(sfen_write_count / save_every);
 							// Rename the file and open it again. Add ios::app in consideration of overwriting. (Depending on the operation, it may not be necessary..)
 							auto filename = filename_ + "_" + std::to_string(n);
 							fs.open(filename, ios::out | ios::binary | ios::app);
@@ -459,7 +459,7 @@ namespace Learner
 				// Actually, I only want N pieces, so I need to shuffle only the first N pieces with Fisher-Yates.
 
 				vector<int> a;
-				a.reserve((size_t)random_move_maxply);
+				a.reserve(static_cast<size_t>(random_move_maxply));
 
 				// random_move_minply ,random_move_maxply is specified by 1 origin,
 				// Note that we are handling 0 origin here.
@@ -468,12 +468,12 @@ namespace Learner
 
 				// In case of Apery random move, insert() may be called random_move_count times.
 				// Reserve only the size considering it.
-				random_move_flag.resize((size_t)random_move_maxply + random_move_count);
+				random_move_flag.resize(static_cast<size_t>(random_move_maxply) + random_move_count);
 
 				// A random move that exceeds the size() of a[] cannot be applied, so limit it.
-				for (auto i = 0; i < std::min(random_move_count, (int)a.size()); ++i)
+				for (auto i = 0; i < std::min(random_move_count, static_cast<int>(a.size())); ++i)
 				{
-					swap(a[i], a[prng.rand((uint64_t)a.size() - i) + i]);
+					swap(a[i], a[prng.rand(static_cast<uint64_t>(a.size()) - i) + i]);
 					random_move_flag[a[i]] = true;
 				}
 			}
@@ -489,7 +489,7 @@ namespace Learner
 
 				// Current search depth
 				// Go to goto, so declare it first.
-				auto depth = search_depth + (int)prng.rand(search_depth2 - search_depth + 1);
+				auto depth = search_depth + static_cast<int>(prng.rand(search_depth2 - search_depth + 1));
 
 				// has it reached the length
 				if (ply >= MAX_PLY2)
@@ -666,7 +666,7 @@ namespace Learner
 					// It is better to do the same process when reading.
 					{
 						auto key = pos.key();
-						auto hash_index = (size_t)(key & GENSFEN_HASH_SIZE - 1);
+						auto hash_index = static_cast<size_t>(key & GENSFEN_HASH_SIZE - 1);
 						auto key2 = hash[hash_index];
 						if (key == key2)
 						{
@@ -723,7 +723,7 @@ namespace Learner
 				// Phase to randomly choose one from legal hands
 				if (
 					// 1. A mode that performs random_move_count random moves between random_move_minply and random_move_maxply
-					random_move_minply != -1 && ply < (int)random_move_flag.size() && random_move_flag[ply] ||
+					random_move_minply != -1 && ply < static_cast<int>(random_move_flag.size()) && random_move_flag[ply] ||
 					// 2. A mode to perform random move of random_move_count times after exiting the track
 					random_move_minply == -1 && random_move_c < random_move_count)
 				{
@@ -742,7 +742,7 @@ namespace Learner
 							)
 						{
 							// Normally one move from legal move
-							m = list.at((size_t)prng.rand((uint64_t)list.size()));
+							m = list.at(static_cast<size_t>(prng.rand(static_cast<uint64_t>(list.size()))));
 						}
 						else {
 							// if you can move the ball, move the ball
@@ -766,7 +766,7 @@ namespace Learner
 							}
 							else
 								// Normally one move from legal move
-								m = list.at((size_t)prng.rand((uint64_t)list.size()));
+								m = list.at(static_cast<size_t>(prng.rand(static_cast<uint64_t>(list.size()))));
 						}
 
 						// I put the code of two handed ball, but if you choose one from legal hands, it should be equivalent to that
@@ -774,12 +774,12 @@ namespace Learner
 					}
 					else {
 						// Since the logic becomes complicated, I'm sorry, I will search again with MultiPV here.
-						Learner::search(pos, random_multi_pv_depth, random_multi_pv);
+						search(pos, random_multi_pv_depth, random_multi_pv);
 						// Select one from the top N hands of root Moves
 
 						auto& rm = pos.this_thread()->rootMoves;
 
-						auto s = min((uint64_t)rm.size(), (uint64_t)random_multi_pv);
+						auto s = min(static_cast<uint64_t>(rm.size()), static_cast<uint64_t>(random_multi_pv));
 						for (uint64_t i = 1; i < s; ++i)
 						{
 							// The difference from the evaluation value of rm[0] must be within the range of random_multi_pv_diff.
@@ -824,7 +824,7 @@ namespace Learner
 	void gen_sfen(Position&, istringstream& is)
 	{
 		// number of threads (given by USI setoption)
-		auto thread_num = (uint32_t)Options["Threads"];
+		auto thread_num = static_cast<uint32_t>(Options["Threads"]);
 
 		// Number of generated game records default = 8 billion phases (Ponanza specification)
 		auto loop_max = 8000000000UL;
@@ -889,7 +889,7 @@ namespace Learner
 			{
 				is >> eval_limit;
 				// Limit the maximum to a one-stop score. (Otherwise you might not end the loop)
-				eval_limit = std::min(eval_limit, (int)mate_in(2));
+				eval_limit = std::min(eval_limit, static_cast<int>(mate_in(2)));
 			}
 			else if (token == "random_move_minply")
 				is >> random_move_minply;
@@ -1117,7 +1117,7 @@ namespace Learner
 
 		// Use 1 as the corrective term, 1 if you have won the expected win rate, 0 if you have lost it, and 0.5 if you have drawn.
 		// game_result = 1,0,-1 so add 1 and divide by 2.
-		const auto t = double(psv.game_result + 1) / 2;
+		const auto t = static_cast<double>(psv.game_result + 1) / 2;
 
 		// If the evaluation value in deep search exceeds ELMO_LAMBDA_LIMIT, apply ELMO_LAMBDA2 instead of ELMO_LAMBDA.
 		const auto lambda = abs(deep) >= ELMO_LAMBDA_LIMIT ? ELMO_LAMBDA2 : ELMO_LAMBDA;
@@ -1137,7 +1137,7 @@ namespace Learner
 	{
 		const auto p /* teacher_winrate */ = winning_percentage(deep);
 		const auto q /* eval_winrate */ = winning_percentage(shallow);
-		const auto t = double(psv.game_result + 1) / 2;
+		const auto t = static_cast<double>(psv.game_result + 1) / 2;
 
 		constexpr const auto epsilon = 0.000001;
 
@@ -1167,7 +1167,7 @@ namespace Learner
 	// Other variations may be prepared as the objective function..
 
 	double calc_grad(Value shallow, const PackedSfenValue& psv) {
-		return calc_grad((Value)psv.score, shallow, psv);
+		return calc_grad(static_cast<Value>(psv.score), shallow, psv);
 	}
 
 	// Sfen reader
@@ -1233,7 +1233,7 @@ namespace Learner
 			while (fs)
 			{
 				PackedSfenValue p;
-				if (fs.read((char*)&p, sizeof(PackedSfenValue)))
+				if (fs.read(reinterpret_cast<char*>(&p), sizeof(PackedSfenValue)))
 				{
 					if (eval_limit < abs(p.score))
 						continue;
@@ -1363,7 +1363,7 @@ namespace Learner
 				while (sfens.size() < SFEN_READ_SIZE)
 				{
 					PackedSfenValue p;
-					if (fs.read((char*)&p, sizeof(PackedSfenValue)))
+					if (fs.read(reinterpret_cast<char*>(&p), sizeof(PackedSfenValue)))
 					{
 						sfens.push_back(p);
 					}
@@ -1387,7 +1387,7 @@ namespace Learner
 				{
 					auto size = sfens.size();
 					for (size_t i = 0; i < size; ++i)
-						swap(sfens[i], sfens[(size_t)(prng.rand((uint64_t)size - i) + i)]);
+						swap(sfens[i], sfens[static_cast<size_t>(prng.rand(static_cast<uint64_t>(size) - i) + i)]);
 				}
 
 				// Divide this by THREAD_BUFFER_SIZE. There should be size pieces.
@@ -1627,7 +1627,7 @@ namespace Learner
 		// It is better to parallelize here, but it is a bit troublesome because the search before slave has not finished.
 		// I created a mechanism to call task, so I will use it.
 
-		atomic<int> task_count = (int)sr.sfen_for_mse.size();
+		atomic<int> task_count = static_cast<int>(sr.sfen_for_mse.size());
 		task_dispatcher.task_reserve(task_count);
 
 		// Create a task to search for the situation and give it to each thread.
@@ -1669,7 +1669,7 @@ namespace Learner
 				}
 
 				// Evaluation value of deep search
-				auto deep_value = (Value)ps.score;
+				auto deep_value = static_cast<Value>(ps.score);
 
 				// Note) This code does not consider when eval_limit is specified in the learn command.
 
@@ -1702,13 +1702,13 @@ namespace Learner
 				test_sum_entropy_eval += test_entropy_eval;
 				test_sum_entropy_win += test_entropy_win;
 				test_sum_entropy += test_entropy;
-				sum_norm += (double)abs(shallow_value);
+				sum_norm += static_cast<double>(abs(shallow_value));
 #endif
 
 				// Determine if the teacher's move matches the shallow search score
 				{
 					auto r = search(pos, 1);
-					if ((uint16_t)r.second[0] == ps.move)
+					if (static_cast<uint16_t>(r.second[0]) == ps.move)
 						move_accord_count.fetch_add(1, std::memory_order_relaxed);
 				}
 
@@ -1968,7 +1968,7 @@ namespace Learner
 			auto pv = r.second;
 
 			// Evaluation value of deep search
-			auto deep_value = (Value)ps.score;
+			auto deep_value = static_cast<Value>(ps.score);
 
 			// It seems that the gradient is better in mini batch.
 			// Go to the leaf node as it is, add only to the gradient array, and later try AdaGrad at the time of rmse aggregation.
@@ -2040,7 +2040,7 @@ namespace Learner
 				Eval::add_grad(pos, rootColor, dj_dw, freeze);
 #else
 				const auto example_weight =
-					discount_rate != 0 && ply != (int)pv.size() ? discount_rate : 1.0;
+					discount_rate != 0 && ply != static_cast<int>(pv.size()) ? discount_rate : 1.0;
 				Eval::NNUE::AddExample(pos, rootColor, ps, example_weight);
 #endif
 
@@ -2129,7 +2129,7 @@ namespace Learner
 				if (latest_loss < best_loss) {
 					cout << " < best (" << best_loss << "), accepted" << endl;
 					best_loss = latest_loss;
-					best_nn_directory = Path::Combine((std::string)Options["EvalSaveDir"], dir_name);
+					best_nn_directory = Path::Combine(static_cast<std::string>(Options["EvalSaveDir"]), dir_name);
 					trials = newbob_num_trials;
 				}
 				else {
@@ -2214,9 +2214,9 @@ namespace Learner
 
 			PackedSfenValue psv;
 			// It's better to read and write all at once until the performance is not so good...
-			if (afs[n].read((char*)&psv, sizeof(PackedSfenValue)))
+			if (afs[n].read(reinterpret_cast<char*>(&psv), sizeof(PackedSfenValue)))
 			{
-				fs.write((char*)&psv, sizeof(PackedSfenValue));
+				fs.write(reinterpret_cast<char*>(&psv), sizeof(PackedSfenValue));
 				++write_sfen_count;
 				print_status();
 			}
@@ -2264,12 +2264,12 @@ namespace Learner
 		{
 			// shuffle from buf[0] to buf[size-1]
 			for (uint64_t i = 0; i < size; ++i)
-				swap(buf[i], buf[(uint64_t)(prng.rand(size - i) + i)]);
+				swap(buf[i], buf[static_cast<uint64_t>(prng.rand(size - i) + i)]);
 
 			// write to a file
 			fstream fs;
 			fs.open(make_filename(write_file_count++), ios::out | ios::binary);
-			fs.write((char*)&buf[0], size * sizeof(PackedSfenValue));
+			fs.write(reinterpret_cast<char*>(&buf[0]), size * sizeof(PackedSfenValue));
 			fs.close();
 			a_count.push_back(size);
 
@@ -2284,7 +2284,7 @@ namespace Learner
 		{
 			fstream fs(filename, ios::in | ios::binary);
 			cout << endl << "open file = " << filename;
-			while (fs.read((char*)&buf[buf_write_marker], sizeof(PackedSfenValue)))
+			while (fs.read(reinterpret_cast<char*>(&buf[buf_write_marker]), sizeof(PackedSfenValue)))
 				if (++buf_write_marker == buffer_size)
 					write_buffer(buffer_size);
 
@@ -2344,10 +2344,10 @@ namespace Learner
 
 			fs.open(filename, ios::in | ios::binary);
 			fs.seekg(0, fstream::end);
-			auto eofPos = (uint64_t)fs.tellg();
+			auto eofPos = static_cast<uint64_t>(fs.tellg());
 			fs.clear(); // Otherwise, the next seek may fail.
 			fs.seekg(0, fstream::beg);
-			auto begPos = (uint64_t)fs.tellg();
+			auto begPos = static_cast<uint64_t>(fs.tellg());
 			auto file_size = eofPos - begPos;
 			auto sfen_count = file_size / sizeof(PackedSfenValue);
 			a_count[i] = sfen_count;
@@ -2379,21 +2379,21 @@ namespace Learner
 				// Expand the buffer and read after the last time.
 				auto last = buf.size();
 				buf.resize(last + size / sizeof(PackedSfenValue));
-				return (void*)&buf[last];
+				return static_cast<void*>(&buf[last]);
 				});
 		}
 
 		// shuffle from buf[0] to buf[size-1]
 		PRNG prng((std::random_device())());
-		auto size = (uint64_t)buf.size();
+		auto size = static_cast<uint64_t>(buf.size());
 		std::cout << "shuffle buf.size() = " << size << std::endl;
 		for (uint64_t i = 0; i < size; ++i)
-			swap(buf[i], buf[(uint64_t)(prng.rand(size - i) + i)]);
+			swap(buf[i], buf[static_cast<uint64_t>(prng.rand(size - i) + i)]);
 
 		std::cout << "write : " << output_file_name << endl;
 
 		// If the file to be written exceeds 2GB, it cannot be written in one shot with fstream::write, so use wrapper.
-		write_memory_to_file(output_file_name, (void*)&buf[0], (uint64_t)sizeof(PackedSfenValue) * (uint64_t)buf.size());
+		write_memory_to_file(output_file_name, static_cast<void*>(&buf[0]), static_cast<uint64_t>(sizeof(PackedSfenValue)) * static_cast<uint64_t>(buf.size()));
 
 		std::cout << "..shuffle_on_memory done." << std::endl;
 	}
@@ -2441,7 +2441,7 @@ namespace Learner
 					p.game_result = int8_t(temp); // Do you need a cast here?
 				}
 				else if (token == "e") {
-					fs.write((char*)&p, sizeof(PackedSfenValue));
+					fs.write(reinterpret_cast<char*>(&p), sizeof(PackedSfenValue));
 					// debug
 					/*
 					std::cout<<tpos<<std::endl;
@@ -2493,7 +2493,7 @@ namespace Learner
 	// Learning from the generated game
 	void learn(Position&, istringstream& is)
 	{
-		auto thread_num = (int)Options["Threads"];
+		auto thread_num = static_cast<int>(Options["Threads"]);
 		SfenReader sr(thread_num);
 
 		LearnerThink learn_think(sr);
@@ -2699,7 +2699,7 @@ namespace Learner
 			sys::path p(kif_base_dir); // Origin of enumeration
 			std::for_each(sys::directory_iterator(p), sys::directory_iterator(),
 				[&](const sys::path& p) {
-					if (sys::is_regular_file(p))
+					if (is_regular_file(p))
 						filenames.push_back(Path::Combine(target_dir, p.filename().generic_string()));
 				});
 #pragma warning(pop)

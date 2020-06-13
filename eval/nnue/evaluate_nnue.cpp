@@ -128,7 +128,7 @@ namespace Eval {
 				transformed_features[FeatureTransformer::kBufferSize];
 			feature_transformer->Transform(pos, transformed_features, refresh);
 			alignas(kCacheLineSize) char buffer[Network::kBufferSize];
-			const auto output = network->Propagate(transformed_features, buffer);
+			const auto* const output = network->Propagate(transformed_features, buffer);
 
 			// aspiration search fails high when a value larger than VALUE_MAX_EVAL is returned
 			// It should be guaranteed that it is less than or equal to VALUE_MAX_EVAL because the search will not end.

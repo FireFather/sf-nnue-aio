@@ -184,7 +184,7 @@ namespace Eval {
 					gradients_.resize(kInputDimensions * batch.size());
 				}
 				batch_size_ = static_cast<IndexType>(batch.size());
-				const auto input = shared_input_trainer_->Propagate(batch);
+				const auto* const input = shared_input_trainer_->Propagate(batch);
 				for (IndexType b = 0; b < batch_size_; ++b) {
 					const auto input_offset = kInputDimensions * b;
 					const auto output_offset = kOutputDimensions * b;

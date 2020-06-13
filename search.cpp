@@ -755,7 +755,7 @@ namespace {
             && !pos.can_castle(ANY_CASTLING))
         {
             TB::ProbeState err;
-            auto wdl = Tablebases::probe_wdl(pos, &err);
+            auto wdl = probe_wdl(pos, &err);
 
             // Force check of time on the next occasion
             if (thisThread == Threads.main())
@@ -1864,7 +1864,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
          << " depth "    << d
          << " seldepth " << rootMoves[i].selDepth
          << " multipv "  << i + 1
-         << " score "    << UCI::value(v);
+         << " score "    << value(v);
 
       if (!tb && i == pvIdx)
           ss << (v >= beta ? " lowerbound" : v <= alpha ? " upperbound" : "");
@@ -1880,7 +1880,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
          << " pv";
 
       for (auto m : rootMoves[i].pv)
-          ss << " " << UCI::move(m, pos.is_chess960());
+          ss << " " << move(m, pos.is_chess960());
   }
 
   return ss.str();
@@ -1916,7 +1916,7 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
     return pv.size() > 1;
 }
 
-void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
+void Tablebases::rank_root_moves(Position& pos, RootMoves& rootMoves) {
 
     RootInTB = false;
     UseRule50 = static_cast<bool>(Options["Syzygy50MoveRule"]);
@@ -1986,7 +1986,7 @@ namespace Learner
     // About Search::Limits
     // Be careful because this member variable is global and affects other threads.
     {
-      auto& limits = Search::Limits;
+      auto& limits = Limits;
 
       // Make the search equivalent to the "go infinite" command. (Because it is troublesome if time management is done)
       limits.infinite = true;
@@ -2053,7 +2053,7 @@ namespace Learner
 
       rootMoves.clear();
       for (auto m: MoveList<LEGAL>(pos))
-        rootMoves.push_back(Search::RootMove(m));
+        rootMoves.push_back(RootMove(m));
 
       assert(!rootMoves.empty());
 
@@ -2137,7 +2137,7 @@ namespace Learner
 
     auto depth = depth_;
     if (depth <0)
-      return std::pair<Value, std::vector<Move>>(Eval::evaluate(pos), std::vector<Move>());
+      return std::pair<Value, std::vector<Move>>(evaluate(pos), std::vector<Move>());
 
     if (depth == 0)
       return qsearch(pos);

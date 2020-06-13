@@ -117,14 +117,14 @@ namespace Material {
 
 	Entry* probe(const Position& pos) {
 		auto key = pos.material_key();
-		auto e = pos.this_thread()->materialTable[key];
+		auto* e = pos.this_thread()->materialTable[key];
 
 		if (e->key == key)
 			return e;
 
 		std::memset(e, 0, sizeof(Entry));
 		e->key = key;
-		e->factor[WHITE] = e->factor[BLACK] = (uint8_t)SCALE_FACTOR_NORMAL;
+		e->factor[WHITE] = e->factor[BLACK] = static_cast<uint8_t>(SCALE_FACTOR_NORMAL);
 
 		auto npm_w = pos.non_pawn_material(WHITE);
 		auto npm_b = pos.non_pawn_material(BLACK);

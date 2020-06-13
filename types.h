@@ -470,10 +470,10 @@ constexpr bool is_ok(Move m) {
 }
 
 // Return squares when turning the board 180°
-constexpr Square Inv(Square sq) {return (Square)(SQUARE_NB-1-sq);}
+constexpr Square Inv(Square sq) {return static_cast<Square>(SQUARE_NB - 1 - sq);}
 
 // Return the grid when the board is mirrored
-constexpr Square Mir(Square sq) {return make_square(File(7-(int)file_of(sq)), rank_of(sq));}
+constexpr Square Mir(Square sq) {return make_square(File(7-static_cast<int>(file_of(sq))), rank_of(sq));}
 
 #if defined(EVAL_NNUE) || defined(EVAL_LEARN)
 // --------------------

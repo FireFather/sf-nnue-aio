@@ -31,7 +31,7 @@ void MultiThink::go_think()
 
 	// Create threads as many as Options["Threads"] and start thinking.
 	std::vector<std::thread> threads;
-	auto thread_num = (size_t)Options["Threads"];
+	auto thread_num = static_cast<size_t>(Options["Threads"]);
 
 	// Secure end flag of worker thread
 	thread_finished.resize(thread_num);

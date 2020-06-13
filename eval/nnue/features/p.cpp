@@ -18,7 +18,7 @@ namespace Eval::NNUE::Features
 			pos.eval_list()->piece_list_fb() :
 			pos.eval_list()->piece_list_fw();
 		for (auto i = PIECE_NUMBER_ZERO; i < PIECE_NUMBER_KING; ++i) {
-			if (pieces[i] != Eval::BONA_PIECE_ZERO) {
+			if (pieces[i] != BONA_PIECE_ZERO) {
 				active->push_back(pieces[i]);
 			}
 		}
@@ -31,10 +31,10 @@ namespace Eval::NNUE::Features
 		const auto& dp = pos.state()->dirtyPiece;
 		for (auto i = 0; i < dp.dirty_num; ++i) {
 			if (dp.pieceNo[i] >= PIECE_NUMBER_KING) continue;
-			if (dp.changed_piece[i].old_piece.from[perspective] != Eval::BONA_PIECE_ZERO) {
+			if (dp.changed_piece[i].old_piece.from[perspective] != BONA_PIECE_ZERO) {
 				removed->push_back(dp.changed_piece[i].old_piece.from[perspective]);
 			}
-			if (dp.changed_piece[i].new_piece.from[perspective] != Eval::BONA_PIECE_ZERO) {
+			if (dp.changed_piece[i].new_piece.from[perspective] != BONA_PIECE_ZERO) {
 				added->push_back(dp.changed_piece[i].new_piece.from[perspective]);
 			}
 		}

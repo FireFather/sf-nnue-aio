@@ -1,7 +1,7 @@
 # stockfish-nnue
 Stockfish NNUE (efficiently updateable neural network)
 
--Clang-tidy/resharper recommendations/fixes applied:
+-Clang-tidy recommendations/fixes applied:
 -Use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
 -auto can be declared as 'auto *' [readability-qualified-auto]
 -Use emplace_back instead of push_back [modernize-use-emplace]

@@ -111,7 +111,7 @@ namespace Eval {
 
 	// Reread the evaluation function parameters for learning from the file
 	void RestoreParameters(const std::string& dir_name) {
-		const auto file_name = Path::Combine(dir_name, NNUE::kFileName);
+		const auto file_name = Path::Combine(dir_name, kFileName);
 		std::ifstream stream(file_name, std::ios::binary);
 		const auto result = ReadParameters(stream);
 		assert(result);
@@ -179,14 +179,14 @@ void UpdateParameters(uint64_t epoch) {
 		std::vector<Example> batch(examples.end() - batch_size, examples.end());
 		examples.resize(examples.size() - batch_size);
 
-		const auto network_output = trainer->Propagate(batch);
+		const auto* const network_output = trainer->Propagate(batch);
 
 		std::vector<LearnFloatType> gradients(batch.size());
 		for (std::size_t b = 0; b < batch.size(); ++b) {
 			const auto shallow = static_cast<Value>(Round<std::int32_t>(
 				batch[b].sign * network_output[b] * kPonanzaConstant));
 			const auto& psv = batch[b].psv;
-			const auto gradient = batch[b].sign * Learner::calc_grad(shallow, psv);
+			const auto gradient = batch[b].sign * calc_grad(shallow, psv);
 			gradients[b] = static_cast<LearnFloatType>(gradient * batch[b].weight);
 		}
 

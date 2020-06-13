@@ -355,7 +355,7 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
 	const auto us = pos.side_to_move();
 	const auto pinned = pos.blockers_for_king(us) & pos.pieces(us);
 	const auto ksq = pos.square<KING>(us);
-	auto cur = moveList;
+	auto* cur = moveList;
 
 	moveList = pos.checkers() ? generate<EVASIONS    >(pos, moveList)
 		: generate<NON_EVASIONS>(pos, moveList);

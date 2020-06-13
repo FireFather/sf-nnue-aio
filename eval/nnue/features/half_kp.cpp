@@ -39,7 +39,7 @@ namespace Eval::NNUE::Features
 		Square sq_target_k;
 		GetPieces(pos, perspective, &pieces, &sq_target_k);
 		for (auto i = PIECE_NUMBER_ZERO; i < PIECE_NUMBER_KING; ++i) {
-			if (pieces[i] != Eval::BONA_PIECE_ZERO) {
+			if (pieces[i] != BONA_PIECE_ZERO) {
 				active->push_back(MakeIndex(sq_target_k, pieces[i]));
 			}
 		}
@@ -58,12 +58,12 @@ namespace Eval::NNUE::Features
 			if (dp.pieceNo[i] >= PIECE_NUMBER_KING) continue;
 			const auto old_p = static_cast<BonaPiece>(
 				dp.changed_piece[i].old_piece.from[perspective]);
-			if (old_p != Eval::BONA_PIECE_ZERO) {
+			if (old_p != BONA_PIECE_ZERO) {
 				removed->push_back(MakeIndex(sq_target_k, old_p));
 			}
 			const auto new_p = static_cast<BonaPiece>(
 				dp.changed_piece[i].new_piece.from[perspective]);
-			if (new_p != Eval::BONA_PIECE_ZERO) {
+			if (new_p != BONA_PIECE_ZERO) {
 				added->push_back(MakeIndex(sq_target_k, new_p));
 			}
 		}

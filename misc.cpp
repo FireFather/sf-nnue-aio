@@ -75,7 +75,7 @@ namespace {
 		Tie(streambuf* b, streambuf* l) : buf(b), logBuf(l) {}
 
 		int sync() override { return logBuf->pubsync(), buf->pubsync(); }
-		int overflow(int c) override { return log(buf->sputc((char)c), "<< "); }
+		int overflow(int c) override { return log(buf->sputc(static_cast<char>(c)), "<< "); }
 		int underflow() override { return buf->sgetc(); }
 		int uflow() override { return log(buf->sbumpc(), ">> "); }
 
@@ -88,7 +88,7 @@ namespace {
 			if (last == '\n')
 				logBuf->sputn(prefix, 3);
 
-			return last = logBuf->sputc((char)c);
+			return last = logBuf->sputc(static_cast<char>(c));
 		}
 	};
 
@@ -243,7 +243,7 @@ void dbg_print() {
 
 	if (means[0])
 		cerr << "Total " << means[0] << " Mean "
-		<< (double)means[1] / means[0] << endl;
+		<< static_cast<double>(means[1]) / means[0] << endl;
 }
 
 
@@ -286,7 +286,7 @@ void prefetch(void* addr) {
 #  endif
 
 #  if defined(__INTEL_COMPILER) || defined(_MSC_VER)
-	_mm_prefetch((char*)addr, _MM_HINT_T0);
+	_mm_prefetch(static_cast<char*>(addr), _MM_HINT_T0);
 #  else
 	__builtin_prefetch(addr);
 #  endif
@@ -435,8 +435,8 @@ namespace WinProcGroup {
 		DWORD byteOffset = 0;
 
 		// Early exit if the needed API is not available at runtime
-		auto k32 = GetModuleHandle("Kernel32.dll");
-		auto fun1 = (fun1_t)(void(*)())GetProcAddress(k32, "GetLogicalProcessorInformationEx");
+		auto* k32 = GetModuleHandle("Kernel32.dll");
+		auto fun1 = reinterpret_cast<fun1_t>(reinterpret_cast<void(*)()>(GetProcAddress(k32, "GetLogicalProcessorInformationEx")));
 		if (!fun1)
 			return -1;
 
@@ -446,7 +446,7 @@ namespace WinProcGroup {
 
 		// Once we know returnLength, allocate the buffer
 		SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX* buffer;
-		auto ptr = buffer = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)malloc(returnLength);
+		auto* ptr = buffer = static_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*>(malloc(returnLength));
 
 		// Second call, now we expect to succeed
 		if (!fun1(RelationAll, buffer, &returnLength))
@@ -468,7 +468,7 @@ namespace WinProcGroup {
 
 			assert(ptr->Size);
 			byteOffset += ptr->Size;
-			ptr = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)((char*)ptr + ptr->Size);
+			ptr = reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*>(reinterpret_cast<char*>(ptr) + ptr->Size);
 		}
 
 		free(buffer);
@@ -504,9 +504,9 @@ namespace WinProcGroup {
 			return;
 
 		// Early exit if the needed API are not available at runtime
-		auto k32 = GetModuleHandle("Kernel32.dll");
-		auto fun2 = (fun2_t)(void(*)())GetProcAddress(k32, "GetNumaNodeProcessorMaskEx");
-		auto fun3 = (fun3_t)(void(*)())GetProcAddress(k32, "SetThreadGroupAffinity");
+		auto* k32 = GetModuleHandle("Kernel32.dll");
+		auto fun2 = reinterpret_cast<fun2_t>(reinterpret_cast<void(*)()>(GetProcAddress(k32, "GetNumaNodeProcessorMaskEx")));
+		auto fun3 = reinterpret_cast<fun3_t>(reinterpret_cast<void(*)()>(GetProcAddress(k32, "SetThreadGroupAffinity")));
 
 		if (!fun2 || !fun3)
 			return;
@@ -548,7 +548,7 @@ void sleep(int ms)
 
 void* aligned_malloc(size_t size, size_t align)
 {
-	auto p = _mm_malloc(size, align);
+	auto* p = _mm_malloc(size, align);
 	if (p == nullptr)
 	{
 		std::cout << "info string can't allocate memory. sise = " << size << std::endl;
@@ -564,16 +564,16 @@ int read_file_to_memory(const std::string& filename, const std::function<void* (
 		return 1;
 
 	fs.seekg(0, fstream::end);
-	auto eofPos = (uint64_t)fs.tellg();
+	auto eofPos = static_cast<uint64_t>(fs.tellg());
 	fs.clear(); // Otherwise, the next seek may fail.
 	fs.seekg(0, fstream::beg);
-	auto begPos = (uint64_t)fs.tellg();
+	auto begPos = static_cast<uint64_t>(fs.tellg());
 	auto file_size = eofPos - begPos;
 	//std::cout << "filename = "<< filename << ", file_size = "<< file_size << endl;
 
 	// I know the file size, so call callback_func to get a buffer for this,
 	// Get the pointer.
-	auto ptr = callback_func(file_size);
+	auto* ptr = callback_func(file_size);
 
 	// If the buffer could not be allocated, or if the file size is different from the expected file size,
 	// It should return nullptr. At this time, reading is interrupted and an error is returned.
@@ -587,7 +587,7 @@ int read_file_to_memory(const std::string& filename, const std::function<void* (
 	{
 		// size to read this time
 		auto read_size = pos + block_size < file_size ? block_size : file_size - pos;
-		fs.read((char*)ptr + pos, read_size);
+		fs.read(static_cast<char*>(ptr) + pos, read_size);
 
 		// Read error occurred in the middle of the file.
 		if (fs.fail())
@@ -611,7 +611,7 @@ int write_memory_to_file(const std::string& filename, void* ptr, uint64_t size)
 	{
 		// Memory size to write this time
 		auto write_size = pos + block_size < size ? block_size : size - pos;
-		fs.write((char*)ptr + pos, write_size);
+		fs.write(static_cast<char*>(ptr) + pos, write_size);
 		//cout << ".";
 	}
 	fs.close();

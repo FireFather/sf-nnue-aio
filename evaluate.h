@@ -203,7 +203,7 @@ BonaPiece pieceListFb[MAX_LENGTH] = {};
 struct DirtyPiece
 {
 // What changed from the piece with that piece number
-Eval::ChangedBonaPiece changed_piece[2];
+ChangedBonaPiece changed_piece[2];
 
 // Number of dirty pieces
 PieceNumber pieceNo[2];
