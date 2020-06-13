@@ -1,7 +1,7 @@
 # stockfish-nnue
 Stockfish NNUE (efficiently updateable neural network)
 
--Many clang-tidy/resharper recommendations/fixes applied:
+-Clang-tidy/resharper recommendations/fixes applied:
 -Use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
 -auto can be declared as 'auto *' [readability-qualified-auto]
 -Use emplace_back instead of push_back [modernize-use-emplace]
@@ -18,7 +18,6 @@ Stockfish NNUE (efficiently updateable neural network)
 -Zero constant can be replaced with nullptr
 -Use range-based for loop instead [modernize-loop-convert]
 -The 'empty' method should be used to check for emptiness instead of 'size' [readability-container-size-empty]
-﻿-Solution Stockfish-nnue.sln
 -Redundant declaration [readability-redundant-declaration]
 
 Modernized from c++14 to c++17 & fully translated to English
