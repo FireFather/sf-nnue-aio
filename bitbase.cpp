@@ -43,7 +43,7 @@ namespace {
 	// bit 13-14: white pawn file (from FILE_A to FILE_D)
 	// bit 15-17: white pawn RANK_7 - rank (from RANK_7 - RANK_7 to RANK_7 - RANK_2)
 	unsigned index(Color stm, Square bksq, Square wksq, Square psq) {
-		return static_cast<int>(wksq) | (bksq << 6) | (stm << 12) | (file_of(psq) << 13) | ((RANK_7 - rank_of(psq)) << 15);
+		return static_cast<int>(wksq) | bksq << 6 | stm << 12 | file_of(psq) << 13 | RANK_7 - rank_of(psq) << 15;
 	}
 
 	enum Result {
@@ -90,7 +90,7 @@ void Bitbases::init() {
 	// changed to either wins or draws (15 cycles needed).
 	while (repeat)
 		for (repeat = idx = 0; idx < MAX_INDEX; ++idx)
-			repeat |= (db[idx] == UNKNOWN && db[idx].classify(db) != UNKNOWN);
+			repeat |= db[idx] == UNKNOWN && db[idx].classify(db) != UNKNOWN;
 
 	// Fill the bitbase with the decisive results
 	for (idx = 0; idx < MAX_INDEX; ++idx)
@@ -103,16 +103,16 @@ namespace {
 
 	KPKPosition::KPKPosition(unsigned idx) {
 
-		ksq[WHITE] = Square((idx >> 0) & 0x3F);
-		ksq[BLACK] = Square((idx >> 6) & 0x3F);
-		stm = Color((idx >> 12) & 0x01);
-		psq = make_square(File((idx >> 13) & 0x3), Rank(RANK_7 - ((idx >> 15) & 0x7)));
+		ksq[WHITE] = Square(idx >> 0 & 0x3F);
+		ksq[BLACK] = Square(idx >> 6 & 0x3F);
+		stm = Color(idx >> 12 & 0x01);
+		psq = make_square(File(idx >> 13 & 0x3), Rank(RANK_7 - (idx >> 15 & 0x7)));
 
 		// Check if two pieces are on the same square or if a king can be captured
 		if (distance(ksq[WHITE], ksq[BLACK]) <= 1
 			|| ksq[WHITE] == psq
 			|| ksq[BLACK] == psq
-			|| (stm == WHITE && (pawn_attacks_bb(WHITE, psq) & ksq[BLACK])))
+			|| stm == WHITE && pawn_attacks_bb(WHITE, psq) & ksq[BLACK])
 			result = INVALID;
 
 		// Immediate win if a pawn can be promoted without getting captured
@@ -120,13 +120,13 @@ namespace {
 			&& rank_of(psq) == RANK_7
 			&& ksq[stm] != psq + NORTH
 			&& (distance(ksq[~stm], psq + NORTH) > 1
-				|| (attacks_bb<KING>(ksq[stm]) & (psq + NORTH))))
+				|| attacks_bb<KING>(ksq[stm]) & psq + NORTH))
 			result = WIN;
 
 		// Immediate draw if it is a stalemate or a king captures undefended pawn
 		else if (stm == BLACK
 			&& (!(attacks_bb<KING>(ksq[stm]) & ~(attacks_bb<KING>(ksq[~stm]) | pawn_attacks_bb(~stm, psq)))
-				|| (attacks_bb<KING>(ksq[stm]) & psq & ~attacks_bb<KING>(ksq[~stm]))))
+				|| attacks_bb<KING>(ksq[stm]) & psq & ~attacks_bb<KING>(ksq[~stm])))
 			result = DRAW;
 
 		// Position will be classified later
@@ -145,8 +145,8 @@ namespace {
 		// of the current position is DRAW. If all moves lead to positions classified
 		// as WIN, the position is classified as WIN, otherwise the current position is
 		// classified as UNKNOWN.
-		const auto Good = (stm == WHITE ? WIN : DRAW);
-		const auto Bad = (stm == WHITE ? DRAW : WIN);
+		const auto Good = stm == WHITE ? WIN : DRAW;
+		const auto Bad = stm == WHITE ? DRAW : WIN;
 
 		auto r = INVALID;
 		auto b = attacks_bb<KING>(ksq[stm]);

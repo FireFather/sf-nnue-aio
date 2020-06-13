@@ -228,7 +228,7 @@ namespace Learner
 				{
 					for (auto* ptr : buffers)
 					{
-						fs.write((const char*)&((*ptr)[0]), sizeof(PackedSfenValue) * ptr->size());
+						fs.write((const char*)&(*ptr)[0], sizeof(PackedSfenValue) * ptr->size());
 
 						sfen_write_count += ptr->size();
 
@@ -257,7 +257,7 @@ namespace Learner
 						// Output the number of phases processed every 40 times
 						// Finally, the remainder of the teacher phase of each thread is written out, so halfway numbers are displayed, but is it okay?
 						// If you overuse the thread with the maximum number of logical cores, the console will be clogged, so it may be a little more loose.
-						if ((++time_stamp_count % 40) == 0)
+						if (++time_stamp_count % 40 == 0)
 							output_status();
 
 						// Since this memory is unnecessary, release it at this timing.
@@ -556,7 +556,7 @@ namespace Learner
 						// sync_cout << pos << "eval limit = "<< eval_limit << "over ,move = "<< pv1[0] << sync_endl;
 
 						// If value1 >= eval_limit in this situation, you win (on the turn side of this situation).
-						flush_psv((value1 >= eval_limit) ? 1 : -1);
+						flush_psv(value1 >= eval_limit ? 1 : -1);
 						break;
 					}
 
@@ -666,7 +666,7 @@ namespace Learner
 					// It is better to do the same process when reading.
 					{
 						auto key = pos.key();
-						auto hash_index = (size_t)(key & (GENSFEN_HASH_SIZE - 1));
+						auto hash_index = (size_t)(key & GENSFEN_HASH_SIZE - 1);
 						auto key2 = hash[hash_index];
 						if (key == key2)
 						{
@@ -723,9 +723,9 @@ namespace Learner
 				// Phase to randomly choose one from legal hands
 				if (
 					// 1. A mode that performs random_move_count random moves between random_move_minply and random_move_maxply
-					(random_move_minply != -1 && ply < (int)random_move_flag.size() && random_move_flag[ply]) ||
+					random_move_minply != -1 && ply < (int)random_move_flag.size() && random_move_flag[ply] ||
 					// 2. A mode to perform random move of random_move_count times after exiting the track
-					(random_move_minply == -1 && random_move_c < random_move_count))
+					random_move_minply == -1 && random_move_c < random_move_count)
 				{
 					++random_move_c;
 
@@ -750,7 +750,7 @@ namespace Learner
 							auto* p = &moves[0];
 							for (const auto& m : list)
 								if (type_of(pos.moved_piece(m)) == KING)
-									*(p++) = m;
+									*p++ = m;
 							size_t n = p - &moves[0];
 							if (n != 0)
 							{
@@ -1120,7 +1120,7 @@ namespace Learner
 		const auto t = double(psv.game_result + 1) / 2;
 
 		// If the evaluation value in deep search exceeds ELMO_LAMBDA_LIMIT, apply ELMO_LAMBDA2 instead of ELMO_LAMBDA.
-		const auto lambda = (abs(deep) >= ELMO_LAMBDA_LIMIT) ? ELMO_LAMBDA2 : ELMO_LAMBDA;
+		const auto lambda = abs(deep) >= ELMO_LAMBDA_LIMIT ? ELMO_LAMBDA2 : ELMO_LAMBDA;
 
 		// The actual winning percentage is used as a correction term.
 		// This is the idea of ​​elmo (WCSC27), modern O-parts.
@@ -1142,23 +1142,23 @@ namespace Learner
 		constexpr const auto epsilon = 0.000001;
 
 		// If the evaluation value in deep search exceeds ELMO_LAMBDA_LIMIT, apply ELMO_LAMBDA2 instead of ELMO_LAMBDA.
-		const auto lambda = (abs(deep) >= ELMO_LAMBDA_LIMIT) ? ELMO_LAMBDA2 : ELMO_LAMBDA;
+		const auto lambda = abs(deep) >= ELMO_LAMBDA_LIMIT ? ELMO_LAMBDA2 : ELMO_LAMBDA;
 
 		const auto m = (1.0 - lambda) * t + lambda * p;
 
 		cross_entropy_eval =
-			(-p * std::log(q + epsilon) - (1.0 - p) * std::log(1.0 - q + epsilon));
+			-p * std::log(q + epsilon) - (1.0 - p) * std::log(1.0 - q + epsilon);
 		cross_entropy_win =
-			(-t * std::log(q + epsilon) - (1.0 - t) * std::log(1.0 - q + epsilon));
+			-t * std::log(q + epsilon) - (1.0 - t) * std::log(1.0 - q + epsilon);
 		entropy_eval =
-			(-p * std::log(p + epsilon) - (1.0 - p) * std::log(1.0 - p + epsilon));
+			-p * std::log(p + epsilon) - (1.0 - p) * std::log(1.0 - p + epsilon);
 		entropy_win =
-			(-t * std::log(t + epsilon) - (1.0 - t) * std::log(1.0 - t + epsilon));
+			-t * std::log(t + epsilon) - (1.0 - t) * std::log(1.0 - t + epsilon);
 
 		cross_entropy =
-			(-m * std::log(q + epsilon) - (1.0 - m) * std::log(1.0 - q + epsilon));
+			-m * std::log(q + epsilon) - (1.0 - m) * std::log(1.0 - q + epsilon);
 		entropy =
-			(-m * std::log(m + epsilon) - (1.0 - m) * std::log(1.0 - m + epsilon));
+			-m * std::log(m + epsilon) - (1.0 - m) * std::log(1.0 - m + epsilon);
 	}
 
 #endif
@@ -1173,7 +1173,7 @@ namespace Learner
 	// Sfen reader
 	struct SfenReader
 	{
-		SfenReader(int thread_num) :prng((std::random_device())())
+		SfenReader(int thread_num) :prng(std::random_device()())
 		{
 			packed_sfens.resize(thread_num);
 			total_read = 0;
@@ -1273,7 +1273,7 @@ namespace Learner
 			// Since the filling of the thread buffer with the phase has been completed successfully
 			// thread_ps->rbegin() is still alive.
 
-			ps = *(thread_ps->rbegin());
+			ps = *thread_ps->rbegin();
 			thread_ps->pop_back();
 
 			// If you've run out of buffers, call delete yourself to free this buffer.
@@ -1392,7 +1392,7 @@ namespace Learner
 
 				// Divide this by THREAD_BUFFER_SIZE. There should be size pieces.
 				// SFEN_READ_SIZE is a multiple of THREAD_BUFFER_SIZE.
-				assert((SFEN_READ_SIZE % THREAD_BUFFER_SIZE) == 0);
+				assert(SFEN_READ_SIZE % THREAD_BUFFER_SIZE == 0);
 
 				auto size = size_t(SFEN_READ_SIZE / THREAD_BUFFER_SIZE);
 				std::vector<PSVector*> ptrs;
@@ -1403,7 +1403,7 @@ namespace Learner
 					// Delete this pointer on the receiving side.
 					auto* ptr = new PSVector();
 					ptr->resize(THREAD_BUFFER_SIZE);
-					memcpy(&((*ptr)[0]), &sfens[i * THREAD_BUFFER_SIZE], sizeof(PackedSfenValue) * THREAD_BUFFER_SIZE);
+					memcpy(&(*ptr)[0], &sfens[i * THREAD_BUFFER_SIZE], sizeof(PackedSfenValue) * THREAD_BUFFER_SIZE);
 
 					ptrs.push_back(ptr);
 				}
@@ -1663,7 +1663,7 @@ namespace Learner
 						pos.do_move(pv[i], states[i]);
 						Eval::evaluate_with_no_return(pos);
 					}
-					shallow_value = (rootColor == pos.side_to_move()) ? Eval::evaluate(pos) : -Eval::evaluate(pos);
+					shallow_value = rootColor == pos.side_to_move() ? Eval::evaluate(pos) : -Eval::evaluate(pos);
 					for (auto it = pv.rbegin(); it != pv.rend(); ++it)
 						pos.undo_move(*it);
 				}
@@ -1755,7 +1755,7 @@ namespace Learner
 			<< " , test_cross_entropy = "       << test_sum_cross_entropy / sr.sfen_for_mse.size()
 			<< " , test_entropy = "             << test_sum_entropy / sr.sfen_for_mse.size()
 			<< " , norm = "						<< sum_norm
-			<< " , move accuracy = "			<< (move_accord_count * 100.0 / sr.sfen_for_mse.size()) << "%";
+			<< " , move accuracy = "			<< move_accord_count * 100.0 / sr.sfen_for_mse.size() << "%";
 		if (done != static_cast<uint64_t>(-1))
 		{
 			cout
@@ -1803,7 +1803,7 @@ namespace Learner
 // Lock the evaluation function from being used during updating.
 			shared_lock<shared_timed_mutex> read_lock(nn_mutex, defer_lock);
 			if (sr.next_update_weights <= sr.total_done ||
-				(thread_id != 0 && !read_lock.try_lock()))
+				thread_id != 0 && !read_lock.try_lock())
 #else
 			if (sr.next_update_weights <= sr.total_done)
 #endif
@@ -2010,7 +2010,7 @@ namespace Learner
 				// I don't think this is a very desirable property, as the aspect that gives the gradient will be different.
 				// I have turned off the substitution table, but I haven't updated the pv array in case of one stumbling block etc...
 
-				auto shallow_value = (rootColor == pos.side_to_move()) ? Eval::evaluate(pos) : -Eval::evaluate(pos);
+				auto shallow_value = rootColor == pos.side_to_move() ? Eval::evaluate(pos) : -Eval::evaluate(pos);
 
 #if defined (LOSS_FUNCTION_IS_ELMO_METHOD)
 				// Calculate loss for learning data
@@ -2040,7 +2040,7 @@ namespace Learner
 				Eval::add_grad(pos, rootColor, dj_dw, freeze);
 #else
 				const auto example_weight =
-					(discount_rate != 0 && ply != (int)pv.size()) ? discount_rate : 1.0;
+					discount_rate != 0 && ply != (int)pv.size() ? discount_rate : 1.0;
 				Eval::NNUE::AddExample(pos, rootColor, ps, example_weight);
 #endif
 
@@ -2143,7 +2143,7 @@ namespace Learner
 					}
 					if (--trials > 0 && !is_final) {
 						cout << "reducing learning rate scale from " << newbob_scale
-							<< " to " << (newbob_scale * newbob_decay)
+							<< " to " << newbob_scale * newbob_decay
 							<< " (" << trials << " more trials)" << endl;
 						newbob_scale *= newbob_decay;
 						Eval::NNUE::SetGlobalLearningRateScale(newbob_scale);
@@ -2179,8 +2179,8 @@ namespace Learner
 		auto print_status = [&]()
 		{
 			// Output progress every 10M phase or when all writing is completed
-			if (((write_sfen_count % buffer_size) == 0) ||
-				(write_sfen_count == total_sfen_count))
+			if (write_sfen_count % buffer_size == 0 ||
+				write_sfen_count == total_sfen_count)
 				cout << write_sfen_count << " / " << total_sfen_count << endl;
 		};
 
@@ -2375,7 +2375,7 @@ namespace Learner
 		{
 			std::cout << "read : " << filename << std::endl;
 			read_file_to_memory(filename, [&buf](uint64_t size) {
-				assert((size % sizeof(PackedSfenValue)) == 0);
+				assert(size % sizeof(PackedSfenValue) == 0);
 				// Expand the buffer and read after the last time.
 				auto last = buf.size();
 				buf.resize(last + size / sizeof(PackedSfenValue));

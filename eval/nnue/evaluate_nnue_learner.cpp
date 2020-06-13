@@ -143,7 +143,7 @@ namespace Eval {
 			std::vector<TrainingFeature> training_features;
 			for (const auto base_index : active_indices[color]) {
 				static_assert(Features::Factorizer<RawFeatures>::GetDimensions() <
-					(1 << TrainingFeature::kIndexBits), "");
+					1 << TrainingFeature::kIndexBits, "");
 				Features::Factorizer<RawFeatures>::AppendTrainingFeatures(
 					base_index, &training_features);
 			}

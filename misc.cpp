@@ -145,11 +145,11 @@ const string engine_info(bool to_uci) {
 	if (Version.empty())
 	{
 		date >> month >> day >> year;
-		ss << setw(2) << day << setw(2) << (1 + months.find(month) / 4) << year.substr(2);
+		ss << setw(2) << day << setw(2) << 1 + months.find(month) / 4 << year.substr(2);
 	}
 
 	ss << (Is64Bit ? " 64" : "")
-		<< (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : ""))
+		<< (HasPext ? " BMI2" : HasPopCnt ? " POPCNT" : "")
 		<< (to_uci ? "\nid author " : " by ")
 		<< "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
 
@@ -343,7 +343,7 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
 			GetLastError() == ERROR_SUCCESS)
 		{
 			// round up size to full pages and allocate
-			allocSize = (allocSize + largePageSize - 1) & ~size_t(largePageSize - 1);
+			allocSize = allocSize + largePageSize - 1 & ~size_t(largePageSize - 1);
 			mem = VirtualAlloc(
 				NULL, allocSize, MEM_RESERVE | MEM_COMMIT | MEM_LARGE_PAGES, PAGE_READWRITE);
 
@@ -463,12 +463,12 @@ namespace WinProcGroup {
 			else if (ptr->Relationship == RelationProcessorCore)
 			{
 				cores++;
-				threads += (ptr->Processor.Flags == LTP_PC_SMT) ? 2 : 1;
+				threads += ptr->Processor.Flags == LTP_PC_SMT ? 2 : 1;
 			}
 
 			assert(ptr->Size);
 			byteOffset += ptr->Size;
-			ptr = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)(((char*)ptr) + ptr->Size);
+			ptr = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)((char*)ptr + ptr->Size);
 		}
 
 		free(buffer);
@@ -536,7 +536,7 @@ std::string now_string()
 	auto result = string(std::ctime(&tp));
 
 	// remove line breaks at the end if they are present
-	while (*result.rbegin() == '\n' || (*result.rbegin() == '\r'))
+	while (*result.rbegin() == '\n' || *result.rbegin() == '\r')
 		result.pop_back();
 	return result;
 }
@@ -586,7 +586,7 @@ int read_file_to_memory(const std::string& filename, const std::function<void* (
 	for (uint64_t pos = 0; pos < file_size; pos += block_size)
 	{
 		// size to read this time
-		auto read_size = (pos + block_size < file_size) ? block_size : (file_size - pos);
+		auto read_size = pos + block_size < file_size ? block_size : file_size - pos;
 		fs.read((char*)ptr + pos, read_size);
 
 		// Read error occurred in the middle of the file.
@@ -610,7 +610,7 @@ int write_memory_to_file(const std::string& filename, void* ptr, uint64_t size)
 	for (uint64_t pos = 0; pos < size; pos += block_size)
 	{
 		// Memory size to write this time
-		auto write_size = (pos + block_size < size) ? block_size : (size - pos);
+		auto write_size = pos + block_size < size ? block_size : size - pos;
 		fs.write((char*)ptr + pos, write_size);
 		//cout << ".";
 	}

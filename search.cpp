@@ -115,7 +115,7 @@ namespace {
   // loop by the constructor, and unmarked upon leaving that loop by the destructor.
   struct ThreadHolding {
     explicit ThreadHolding(Thread* thisThread, Key posKey, int ply) {
-       location = ply < 8 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
+       location = ply < 8 ? &breadcrumbs[posKey & breadcrumbs.size() - 1] : nullptr;
        otherThread = false;
        owning = false;
        if (location)
@@ -167,7 +167,7 @@ namespace {
 
     StateInfo st;
     uint64_t cnt, nodes = 0;
-    const auto leaf = (depth == 2);
+    const auto leaf = depth == 2;
 
     for (const auto& m : MoveList<LEGAL>(pos))
     {
@@ -297,8 +297,8 @@ void MainThread::search() {
                   bestThread = th;
           }
           else if (   th->rootMoves[0].score >= VALUE_TB_WIN_IN_MAX_PLY
-                   || (   th->rootMoves[0].score > VALUE_TB_LOSS_IN_MAX_PLY
-                       && votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]]))
+                   || th->rootMoves[0].score > VALUE_TB_LOSS_IN_MAX_PLY
+                   && votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]])
               bestThread = th;
       }
   }
@@ -333,7 +333,7 @@ void Thread::search() {
   Value alpha, delta;
   auto lastBestMove = MOVE_NONE;
   auto lastBestMoveDepth = 0;
-  auto* mainThread = (this == Threads.main() ? Threads.main() : nullptr);
+  auto* mainThread = this == Threads.main() ? Threads.main() : nullptr;
   double timeReduction = 1, totBestMoveChanges = 0;
   auto us = rootPos.side_to_move();
   auto iterIdx = 0;
@@ -394,8 +394,8 @@ void Thread::search() {
           : ct;
 
   // Evaluation score is from the white point of view
-  contempt = (us == WHITE ?  make_score(ct, ct / 2)
-                          : -make_score(ct, ct / 2));
+  contempt = us == WHITE ?  make_score(ct, ct / 2)
+	             : -make_score(ct, ct / 2);
 
   auto searchAgainCounter = 0;
 
@@ -444,8 +444,8 @@ void Thread::search() {
               // Adjust contempt based on root move's previousScore (dynamic contempt)
 	          auto dct = ct + (102 - ct / 2) * prev / (abs(prev) + 157);
 
-              contempt = (us == WHITE ?  make_score(dct, dct / 2)
-                                      : -make_score(dct, dct / 2));
+              contempt = us == WHITE ?  make_score(dct, dct / 2)
+	                         : -make_score(dct, dct / 2);
           }
 
           // Start with a small aspiration window and, in the case of a fail
@@ -578,7 +578,7 @@ void Thread::search() {
       }
 
       mainThread->iterValue[iterIdx] = bestValue;
-      iterIdx = (iterIdx + 1) & 3;
+      iterIdx = iterIdx + 1 & 3;
   }
 
   if (!mainThread)
@@ -620,7 +620,7 @@ namespace {
         return qsearch<NT>(pos, ss, alpha, beta);
 
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
-    assert(PvNode || (alpha == beta - 1));
+    assert(PvNode || alpha == beta - 1);
     assert(0 < depth && depth < MAX_PLY);
     assert(!(PvNode && cutNode));
 
@@ -660,7 +660,7 @@ namespace {
         if (   Threads.stop.load(std::memory_order_relaxed)
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
-            return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos)
+            return ss->ply >= MAX_PLY && !ss->inCheck ? evaluate(pos)
                                                     : value_draw(pos.this_thread());
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
@@ -701,7 +701,7 @@ namespace {
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
-    ttPv = PvNode || (ttHit && tte->is_pv());
+    ttPv = PvNode || ttHit && tte->is_pv();
     formerPv = ttPv && !PvNode;
 
     if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !pos.captured_piece() && is_ok((ss-1)->currentMove))
@@ -716,8 +716,8 @@ namespace {
         && ttHit
         && tte->depth() >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
-        && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
-                            : (tte->bound() & BOUND_UPPER)))
+        && (ttValue >= beta ? tte->bound() & BOUND_LOWER
+                            : tte->bound() & BOUND_UPPER))
     {
         // If ttMove is quiet, update move sorting heuristics on TT hit
         if (ttMove)
@@ -817,7 +817,7 @@ namespace {
 
         // Can ttValue be used as a better position evaluation?
         if (    ttValue != VALUE_NONE
-            && (tte->bound() & (ttValue > eval ? BOUND_LOWER : BOUND_UPPER)))
+            && tte->bound() & (ttValue > eval ? BOUND_LOWER : BOUND_UPPER))
             eval = ttValue;
     }
     else
@@ -840,8 +840,8 @@ namespace {
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
 
-    improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
-              || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
+    improving =  (ss-2)->staticEval == VALUE_NONE ? ss->staticEval > (ss-4)->staticEval
+	                 || (ss-4)->staticEval == VALUE_NONE : ss->staticEval > (ss-2)->staticEval;
 
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
@@ -881,7 +881,7 @@ namespace {
             if (nullValue >= VALUE_TB_WIN_IN_MAX_PLY)
                 nullValue = beta;
 
-            if (thisThread->nmpMinPly || (abs(beta) < VALUE_KNOWN_WIN && depth < 13))
+            if (thisThread->nmpMinPly || abs(beta) < VALUE_KNOWN_WIN && depth < 13)
                 return nullValue;
 
             assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
@@ -1082,11 +1082,11 @@ moves_loop: // When in check, search starts from here
           && !excludedMove // Avoid recursive singular search
        /* &&  ttValue != VALUE_NONE Already implicit in the next condition */
           &&  abs(ttValue) < VALUE_KNOWN_WIN
-          && (tte->bound() & BOUND_LOWER)
+          && tte->bound() & BOUND_LOWER
           &&  tte->depth() >= depth - 3
           &&  pos.legal(move))
       {
-	      auto singularBeta = ttValue - ((formerPv + 4) * depth) / 2;
+	      auto singularBeta = ttValue - (formerPv + 4) * depth / 2;
 	      auto singularDepth = (depth - 1 + 3 * formerPv) / 2;
           ss->excludedMove = move;
           value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
@@ -1284,7 +1284,7 @@ moves_loop: // When in check, search starts from here
       // For PV nodes only, do a full PV search on the first move or after a fail
       // high (in the latter case search only if value < beta), otherwise let the
       // parent node fail low with value <= alpha and try another move.
-      if (PvNode && (moveCount == 1 || (value > alpha && (rootNode || value < beta))))
+      if (PvNode && (moveCount == 1 || value > alpha && (rootNode || value < beta)))
       {
           (ss+1)->pv = pv;
           (ss+1)->pv[0] = MOVE_NONE;
@@ -1417,13 +1417,13 @@ moves_loop: // When in check, search starts from here
     constexpr const auto PvNode = NT == PV;
 
     assert(alpha >= -VALUE_INFINITE && alpha < beta && beta <= VALUE_INFINITE);
-    assert(PvNode || (alpha == beta - 1));
+    assert(PvNode || alpha == beta - 1);
     assert(depth <= 0);
 
     Move pv[MAX_PLY+1];
     StateInfo st;
     Move move;
-    Value bestValue, futilityBase, oldAlpha;
+    Value bestValue, futilityBase, oldAlpha = {};
     bool ttHit;
 
     if (PvNode)
@@ -1442,7 +1442,7 @@ moves_loop: // When in check, search starts from here
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : VALUE_DRAW;
+        return ss->ply >= MAX_PLY && !ss->inCheck ? evaluate(pos) : VALUE_DRAW;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
@@ -1463,8 +1463,8 @@ moves_loop: // When in check, search starts from here
         && ttHit
         && tte->depth() >= ttDepth
         && ttValue != VALUE_NONE // Only in case of TT access race
-        && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
-                            : (tte->bound() & BOUND_UPPER)))
+        && (ttValue >= beta ? tte->bound() & BOUND_LOWER
+                            : tte->bound() & BOUND_UPPER))
         return ttValue;
 
     // Evaluate the position statically
@@ -1483,7 +1483,7 @@ moves_loop: // When in check, search starts from here
 
             // Can ttValue be used as a better position evaluation?
             if (    ttValue != VALUE_NONE
-                && (tte->bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER)))
+                && tte->bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER))
                 bestValue = ttValue;
         }
         else
@@ -1706,7 +1706,7 @@ moves_loop: // When in check, search starts from here
         captureHistory[moved_piece][to_sq(bestMove)][captured] << bonus1;
 
     // Extra penalty for a quiet TT or main killer move in previous ply when it gets refuted
-    if (   ((ss-1)->moveCount == 1 || ((ss-1)->currentMove == (ss-1)->killers[0]))
+    if (   ((ss-1)->moveCount == 1 || (ss-1)->currentMove == (ss-1)->killers[0])
         && !pos.captured_piece())
             update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -bonus1);
 
@@ -1824,9 +1824,9 @@ void MainThread::check_time() {
   if (ponder)
       return;
 
-  if (   (Limits.use_time_management() && (elapsed > Time.maximum() - 10 || stopOnPonderhit))
-      || (Limits.movetime && elapsed >= Limits.movetime)
-      || (Limits.nodes && Threads.nodes_searched() >= static_cast<uint64_t>(Limits.nodes)))
+  if (   Limits.use_time_management() && (elapsed > Time.maximum() - 10 || stopOnPonderhit)
+      || Limits.movetime && elapsed >= Limits.movetime
+      || Limits.nodes && Threads.nodes_searched() >= static_cast<uint64_t>(Limits.nodes))
       Threads.stop = true;
 }
 
@@ -2042,8 +2042,8 @@ namespace Learner
         : ct;
 
       // Evaluation score is from the white point of view
-      th->contempt = (us == WHITE ?make_score(ct, ct / 2)
-        :-make_score(ct, ct / 2));
+      th->contempt = us == WHITE ?make_score(ct, ct / 2)
+	                     :-make_score(ct, ct / 2);
 
       for (auto i = 7; i> 0; i--)
           (ss-i)->continuationHistory = &th->continuationHistory[0][0][NO_PIECE][0]; // Use as a sentinel

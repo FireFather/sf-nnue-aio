@@ -21,12 +21,12 @@ namespace Eval::NNUE::Features
 		}
 		else {
 			// Invert the perspective.
-			relative_castling_rights = ((castling_rights & 3) << 2)
-				& ((castling_rights >> 2) & 3);
+			relative_castling_rights = (castling_rights & 3) << 2
+				& (castling_rights >> 2 & 3);
 		}
 
 		for (auto i = 0; i < kDimensions; ++i) {
-			if (relative_castling_rights & (i << 1)) {
+			if (relative_castling_rights & i << 1) {
 				active->push_back(i);
 			}
 		}
@@ -46,15 +46,15 @@ namespace Eval::NNUE::Features
 		}
 		else {
 			// Invert the perspective.
-			relative_previous_castling_rights = ((previous_castling_rights & 3) << 2)
-				& ((previous_castling_rights >> 2) & 3);
-			relative_current_castling_rights = ((current_castling_rights & 3) << 2)
-				& ((current_castling_rights >> 2) & 3);
+			relative_previous_castling_rights = (previous_castling_rights & 3) << 2
+				& (previous_castling_rights >> 2 & 3);
+			relative_current_castling_rights = (current_castling_rights & 3) << 2
+				& (current_castling_rights >> 2 & 3);
 		}
 
 		for (auto i = 0; i < kDimensions; ++i) {
-			if ((relative_previous_castling_rights & (i << 1)) &&
-				(relative_current_castling_rights & (i << 1)) == 0) {
+			if (relative_previous_castling_rights & i << 1 &&
+				(relative_current_castling_rights & i << 1) == 0) {
 				removed->push_back(i);
 			}
 		}

@@ -43,7 +43,7 @@ struct BitStream
 	// Get 1 bit from the stream.
 	int read_one_bit()
 	{
-		const auto b = (data[bit_cursor / 8] >> (bit_cursor & 7)) & 1;
+		const auto b = data[bit_cursor / 8] >> (bit_cursor & 7) & 1;
 		++bit_cursor;
 
 		return b;
@@ -54,7 +54,7 @@ struct BitStream
 	void write_n_bit(int d, int n)
 	{
 		for (auto i = 0; i < n; ++i)
-			write_one_bit(d & (1 << i));
+			write_one_bit(d & 1 << i);
 	}
 
 	// read n bits of data
@@ -63,17 +63,17 @@ struct BitStream
 	{
 		auto result = 0;
 		for (auto i = 0; i < n; ++i)
-			result |= read_one_bit() ? (1 << i) : 0;
+			result |= read_one_bit() ? 1 << i : 0;
 
 		return result;
 	}
 
 private:
 	// Next bit position to read/write.
-	int bit_cursor;
+	int bit_cursor = 0;
 
 	// data entity
-	uint8_t* data;
+	uint8_t* data = nullptr;
 };
 
 
@@ -270,7 +270,7 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread
 
 	std::memset(this, 0, sizeof(Position));
 	std::memset(si, 0, sizeof(StateInfo));
-	std::fill_n(&pieceList[0][0], sizeof(pieceList) / sizeof(Square), SQ_NONE);
+	std::fill_n(&pieceList[0][0], sizeof pieceList / sizeof(Square), SQ_NONE);
 	st = si;
 
 	// Active color
@@ -329,8 +329,8 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread
 
 			// update evalList
 			const auto piece_no =
-				(pc == B_KING) ? PIECE_NUMBER_BKING : //
-				(pc == W_KING) ? PIECE_NUMBER_WKING : // back ball
+				pc == B_KING ? PIECE_NUMBER_BKING : //
+				pc == W_KING ? PIECE_NUMBER_WKING : // back ball
 				next_piece_number++; // otherwise
 
 			evalList.put_piece(piece_no, sq, pc); // Place the pc piece in the sq box
@@ -377,7 +377,7 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread
 		st->epSquare = ep_square;
 
 		if (!(attackers_to(st->epSquare) & pieces(sideToMove, PAWN))
-			|| !(pieces(~sideToMove, PAWN) & (st->epSquare + pawn_push(~sideToMove))))
+			|| !(pieces(~sideToMove, PAWN) & st->epSquare + pawn_push(~sideToMove)))
 			st->epSquare = SQ_NONE;
 	}
 	else {

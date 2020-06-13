@@ -68,11 +68,11 @@ const std::string Bitboards::pretty(Bitboard b) {
 
 void Bitboards::init() {
 
-	for (unsigned i = 0; i < (1 << 16); ++i)
+	for (unsigned i = 0; i < 1 << 16; ++i)
 		PopCnt16[i] = uint8_t(std::bitset<16>(i).count());
 
 	for (auto s = SQ_A1; s <= SQ_H8; ++s)
-		SquareBB[s] = (1ULL << s);
+		SquareBB[s] = 1ULL << s;
 
 	for (auto s1 = SQ_A1; s1 <= SQ_H8; ++s1)
 		for (auto s2 = SQ_A1; s2 <= SQ_H8; ++s2)
@@ -116,7 +116,7 @@ namespace {
 		{
 			auto s = sq;
 			while (safe_destination(s, directions[i]) && !(occupied & s))
-				attacks |= (s += directions[i]);
+				attacks |= s += directions[i];
 		}
 
 		return attacks;
@@ -166,7 +166,7 @@ namespace {
 					m.attacks[pext(b, m.mask)] = reference[size];
 
 				size++;
-				b = (b - m.mask) & m.mask;
+				b = b - m.mask & m.mask;
 			} while (b);
 
 			if (HasPext)
@@ -178,7 +178,7 @@ namespace {
 			// until we find the one that passes the verification test.
 			for (auto i = 0; i < size; )
 			{
-				for (m.magic = 0; popcount((m.magic * m.mask) >> 56) < 6; )
+				for (m.magic = 0; popcount(m.magic * m.mask >> 56) < 6; )
 					m.magic = rng.sparse_rand<Bitboard>();
 
 				// A good magic must map every possible occupancy to an index that

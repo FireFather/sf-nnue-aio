@@ -16,8 +16,8 @@ namespace Eval::NNUE::Features
 		constexpr const auto H = kBoardHeight;
 		const IndexType piece_index = (p - fe_hand_end) / SQUARE_NB;
 		const auto sq_p = static_cast<Square>((p - fe_hand_end) % SQUARE_NB);
-		const auto relative_file = file_of(sq_p) - file_of(sq_k) + (W / 2);
-		const auto relative_rank = rank_of(sq_p) - rank_of(sq_k) + (H / 2);
+		const auto relative_file = file_of(sq_p) - file_of(sq_k) + W / 2;
+		const auto relative_rank = rank_of(sq_p) - rank_of(sq_k) + H / 2;
 		return H * W * piece_index + H * relative_file + relative_rank;
 	}
 
@@ -26,10 +26,10 @@ namespace Eval::NNUE::Features
 	void HalfRelativeKP<AssociatedKing>::GetPieces(
 		const Position& pos, Color perspective,
 		BonaPiece** pieces, Square* sq_target_k) {
-		*pieces = (perspective == BLACK) ?
+		*pieces = perspective == BLACK ?
 			pos.eval_list()->piece_list_fb() :
 			pos.eval_list()->piece_list_fw();
-		const auto target = (AssociatedKing == Side::kFriend) ?
+		const auto target = AssociatedKing == Side::kFriend ?
 			                    static_cast<PieceNumber>(PIECE_NUMBER_KING + perspective) :
 			                    static_cast<PieceNumber>(PIECE_NUMBER_KING + ~perspective);
 		*sq_target_k = static_cast<Square>(((*pieces)[target] - f_king) % SQUARE_NB);

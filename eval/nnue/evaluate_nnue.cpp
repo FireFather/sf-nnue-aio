@@ -46,7 +46,7 @@ namespace Eval {
 				template <typename T>
 				bool ReadParameters(std::istream& stream, const AlignedPtr<T>& pointer) {
 					std::uint32_t header;
-					stream.read(reinterpret_cast<char*>(&header), sizeof(header));
+					stream.read(reinterpret_cast<char*>(&header), sizeof header);
 					if (!stream || header != T::GetHashValue()) return false;
 					return pointer->ReadParameters(stream);
 				}
@@ -55,7 +55,7 @@ namespace Eval {
 				template <typename T>
 				bool WriteParameters(std::ostream& stream, const AlignedPtr<T>& pointer) {
 					constexpr std::uint32_t header = T::GetHashValue();
-					stream.write(reinterpret_cast<const char*>(&header), sizeof(header));
+					stream.write(reinterpret_cast<const char*>(&header), sizeof header);
 					return pointer->WriteParameters(stream);
 				}
 
@@ -73,9 +73,9 @@ namespace Eval {
 		bool ReadHeader(std::istream& stream,
 			std::uint32_t* hash_value, std::string* architecture) {
 			std::uint32_t version, size;
-			stream.read(reinterpret_cast<char*>(&version), sizeof(version));
-			stream.read(reinterpret_cast<char*>(hash_value), sizeof(*hash_value));
-			stream.read(reinterpret_cast<char*>(&size), sizeof(size));
+			stream.read(reinterpret_cast<char*>(&version), sizeof version);
+			stream.read(reinterpret_cast<char*>(hash_value), sizeof*hash_value);
+			stream.read(reinterpret_cast<char*>(&size), sizeof size);
 			if (!stream || version != kVersion) return false;
 			architecture->resize(size);
 			stream.read(&(*architecture)[0], size);
@@ -85,10 +85,10 @@ namespace Eval {
 		// write the header
 		bool WriteHeader(std::ostream& stream,
 			std::uint32_t hash_value, const std::string& architecture) {
-			stream.write(reinterpret_cast<const char*>(&kVersion), sizeof(kVersion));
-			stream.write(reinterpret_cast<const char*>(&hash_value), sizeof(hash_value));
+			stream.write(reinterpret_cast<const char*>(&kVersion), sizeof kVersion);
+			stream.write(reinterpret_cast<const char*>(&hash_value), sizeof hash_value);
 			const auto size = static_cast<std::uint32_t>(architecture.size());
-			stream.write(reinterpret_cast<const char*>(&size), sizeof(size));
+			stream.write(reinterpret_cast<const char*>(&size), sizeof size);
 			stream.write(architecture.data(), size);
 			return !stream.fail();
 		}
@@ -198,11 +198,11 @@ namespace Eval {
 	template <typename T, size_t Size>
 	struct HashTable {
 		HashTable() { clear(); }
-		T* operator [] (const Key k) { return entries_ + (static_cast<size_t>(k) & (Size - 1)); }
+		T* operator [] (const Key k) { return entries_ + (static_cast<size_t>(k) & Size - 1); }
 		void clear() { memset(entries_, 0, sizeof(T) * Size); }
 
 		// Check that Size is a power of 2
-		static_assert((Size& (Size - 1)) == 0, "");
+		static_assert((Size& Size - 1) == 0, "");
 
 	private:
 		T entries_[Size];

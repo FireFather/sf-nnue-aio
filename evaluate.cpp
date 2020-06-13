@@ -228,7 +228,7 @@ namespace {
 		constexpr const auto Them = ~Us;
 		constexpr const auto Up = pawn_push(Us);
 		constexpr const auto Down = -Up;
-		constexpr const auto LowRanks = (Us == WHITE ? Rank2BB | Rank3BB : Rank7BB | Rank6BB);
+		constexpr const auto LowRanks = Us == WHITE ? Rank2BB | Rank3BB : Rank7BB | Rank6BB;
 
 		const auto ksq = pos.square<KING>(Us);
 
@@ -266,8 +266,8 @@ namespace {
 
 		constexpr const auto Them = ~Us;
 		constexpr const auto Down = -pawn_push(Us);
-		constexpr const auto OutpostRanks = (Us == WHITE ? Rank4BB | Rank5BB | Rank6BB
-			                                     : Rank5BB | Rank4BB | Rank3BB);
+		constexpr const auto OutpostRanks = Us == WHITE ? Rank4BB | Rank5BB | Rank6BB
+			                                    : Rank5BB | Rank4BB | Rank3BB;
 		auto pl = pos.squares<Pt>(Us);
 
 		auto score = SCORE_ZERO;
@@ -297,10 +297,10 @@ namespace {
 				kingAttacksCount[Us] += popcount(b & attackedBy[Them][KING]);
 			}
 
-			else if (Pt == ROOK && (file_bb(s) & kingRing[Them]))
+			else if (Pt == ROOK && file_bb(s) & kingRing[Them])
 				score += RookOnKingRing;
 
-			else if (Pt == BISHOP && (attacks_bb<BISHOP>(s, pos.pieces(PAWN)) & kingRing[Them]))
+			else if (Pt == BISHOP && attacks_bb<BISHOP>(s, pos.pieces(PAWN)) & kingRing[Them])
 				score += BishopOnKingRing;
 
 			const auto mob = popcount(b & mobilityArea[Us]);
@@ -312,7 +312,7 @@ namespace {
 				// Bonus if piece is on an outpost square or can reach one
 				const auto bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them);
 				if (bb & s)
-					score += (Pt == KNIGHT) ? KnightOutpost : BishopOutpost;
+					score += Pt == KNIGHT ? KnightOutpost : BishopOutpost;
 				else if (Pt == KNIGHT && bb & b & ~pos.pieces(Us))
 					score += ReachableOutpost;
 
@@ -370,7 +370,7 @@ namespace {
 				else if (mob <= 3)
 				{
 					const auto kf = file_of(pos.square<KING>(Us));
-					if ((kf < FILE_E) == (file_of(s) < kf))
+					if (kf < FILE_E == file_of(s) < kf)
 						score -= TrappedRook * (1 + !pos.castling_rights(Us));
 				}
 			}
@@ -395,8 +395,8 @@ namespace {
 	[[nodiscard]] [[nodiscard]] Score Evaluation<T>::king() const {
 
 		constexpr const auto Them = ~Us;
-		constexpr const auto Camp = (Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
-			                             : AllSquares ^ Rank1BB ^ Rank2BB ^ Rank3BB);
+		constexpr const auto Camp = Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
+			                            : AllSquares ^ Rank1BB ^ Rank2BB ^ Rank3BB;
 
 		Bitboard unsafeChecks = 0;
 		auto kingDanger = 0;
@@ -503,7 +503,7 @@ namespace {
 
 		constexpr const auto Them = ~Us;
 		constexpr const auto Up = pawn_push(Us);
-		constexpr const auto TRank3BB = (Us == WHITE ? Rank3BB : Rank6BB);
+		constexpr const auto TRank3BB = Us == WHITE ? Rank3BB : Rank6BB;
 
 		Bitboard b;
 		auto score = SCORE_ZERO;
@@ -666,7 +666,7 @@ namespace {
 						         0;
 
 					// Assign a larger bonus if the block square is defended
-					if ((pos.pieces(Us) & bb) || (attackedBy[Us][ALL_PIECES] & blockSq))
+					if (pos.pieces(Us) & bb || attackedBy[Us][ALL_PIECES] & blockSq)
 						k += 5;
 
 					bonus += make_score(k * w, k * w);
@@ -732,8 +732,8 @@ namespace {
 		const auto outflanking = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
 			- distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
 
-		const auto pawnsOnBothFlanks = (pos.pieces(PAWN) & QueenSide)
-			&& (pos.pieces(PAWN) & KingSide);
+		const auto pawnsOnBothFlanks = pos.pieces(PAWN) & QueenSide
+			&& pos.pieces(PAWN) & KingSide;
 
 		const auto almostUnwinnable = outflanking < 0
 			&& !pawnsOnBothFlanks;
@@ -890,7 +890,7 @@ std::string Eval::trace(const Position& pos) {
 	if (pos.checkers())
 		return "Total evaluation: none (in check)";
 
-	std::memset(scores, 0, sizeof(scores));
+	std::memset(scores, 0, sizeof scores);
 
 	pos.this_thread()->contempt = SCORE_ZERO; // Reset any dynamic contempt
 

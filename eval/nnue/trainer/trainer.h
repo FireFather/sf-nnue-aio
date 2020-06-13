@@ -33,12 +33,12 @@ namespace Eval {
 				std::numeric_limits<StorageType>::digits - kIndexBits;
 
 			explicit TrainingFeature(IndexType index) :
-				index_and_count_((index << kCountBits) | 1) {
-				assert(index < (1 << kIndexBits));
+				index_and_count_(index << kCountBits | 1) {
+				assert(index < 1 << kIndexBits);
 			}
 			TrainingFeature& operator+=(const TrainingFeature& other) {
 				assert(other.GetIndex() == GetIndex());
-				assert(other.GetCount() + GetCount() < (1 << kCountBits));
+				assert(other.GetCount() + GetCount() < 1 << kCountBits);
 				index_and_count_ += other.GetCount();
 				return *this;
 			}
@@ -46,11 +46,11 @@ namespace Eval {
 				return static_cast<IndexType>(index_and_count_ >> kCountBits);
 			}
 			void ShiftIndex(IndexType offset) {
-				assert(GetIndex() + offset < (1 << kIndexBits));
+				assert(GetIndex() + offset < 1 << kIndexBits);
 				index_and_count_ += offset << kCountBits;
 			}
 			IndexType GetCount() const {
-				return static_cast<IndexType>(index_and_count_ & ((1 << kCountBits) - 1));
+				return static_cast<IndexType>(index_and_count_ & (1 << kCountBits) - 1);
 			}
 			bool operator<(const TrainingFeature& other) const {
 				return index_and_count_ < other.index_and_count_;

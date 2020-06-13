@@ -347,9 +347,9 @@ inline Score operator/(Score s, int i) {
 inline Score operator*(Score s, int i) {
 	const auto result = Score(static_cast<int>(s) * i);
 
-  assert(eg_value(result) == (i * eg_value(s)));
-  assert(mg_value(result) == (i * mg_value(s)));
-  assert((i == 0) || (result / i) == s);
+  assert(eg_value(result) == i * eg_value(s));
+  assert(mg_value(result) == i * mg_value(s));
+  assert(i == 0 || result / i == s);
 
   return result;
 }
@@ -417,11 +417,11 @@ constexpr Rank rank_of(Square s) {
 }
 
 constexpr Square relative_square(Color c, Square s) {
-  return Square(s ^ (c * 56));
+  return Square(s ^ c * 56);
 }
 
 constexpr Rank relative_rank(Color c, Rank r) {
-  return Rank(r ^ (c * 7));
+  return Rank(r ^ c * 7);
 }
 
 constexpr Rank relative_rank(Color c, Square s) {
@@ -433,7 +433,7 @@ constexpr Direction pawn_push(Color c) {
 }
 
 constexpr Square from_sq(Move m) {
-  return Square((m >> 6) & 0x3F);
+  return Square(m >> 6 & 0x3F);
 }
 
 constexpr Square to_sq(Move m) {
@@ -445,11 +445,11 @@ constexpr int from_to(Move m) {
 }
 
 constexpr MoveType type_of(Move m) {
-  return MoveType(m & (3 << 14));
+  return MoveType(m & 3 << 14);
 }
 
 constexpr PieceType promotion_type(Move m) {
-  return PieceType(((m >> 12) & 3) + KNIGHT);
+  return PieceType((m >> 12 & 3) + KNIGHT);
 }
 
 constexpr Move make_move(Square from, Square to) {
@@ -462,7 +462,7 @@ constexpr Move reverse_move(Move m) {
 
 template<MoveType T>
 constexpr Move make(Square from, Square to, PieceType pt = KNIGHT) {
-  return Move(T + ((pt - KNIGHT) << 12) + (from << 6) + to);
+  return Move(T + (pt - KNIGHT << 12) + (from << 6) + to);
 }
 
 constexpr bool is_ok(Move m) {
@@ -470,7 +470,7 @@ constexpr bool is_ok(Move m) {
 }
 
 // Return squares when turning the board 180°
-constexpr Square Inv(Square sq) {return (Square)((SQUARE_NB-1)-sq);}
+constexpr Square Inv(Square sq) {return (Square)(SQUARE_NB-1-sq);}
 
 // Return the grid when the board is mirrored
 constexpr Square Mir(Square sq) {return make_square(File(7-(int)file_of(sq)), rank_of(sq));}

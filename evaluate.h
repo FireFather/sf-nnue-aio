@@ -193,8 +193,8 @@ static const int MAX_LENGTH = 32;
 PieceNumber piece_no_list_board[SQUARE_NB_PLUS1];
 private:
 
-BonaPiece pieceListFw[MAX_LENGTH];
-BonaPiece pieceListFb[MAX_LENGTH];
+BonaPiece pieceListFw[MAX_LENGTH] = {};
+BonaPiece pieceListFb[MAX_LENGTH] = {};
 };
 
 // For management of evaluation value difference calculation

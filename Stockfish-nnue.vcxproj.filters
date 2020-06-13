@@ -266,9 +266,6 @@
     <ClInclude Include="eval\nnue\trainer\trainer_clipped_relu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="eval\nnue\trainer\trainer_feature_transformer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="eval\nnue\trainer\trainer_input_slice.h">
       <Filter>Header Files</Filter>
     </ClInclude>

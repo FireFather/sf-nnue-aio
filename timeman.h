@@ -40,9 +40,9 @@ public:
   int64_t availableNodes; // When in 'nodes as time' mode
 
 private:
-  TimePoint startTime;
-  TimePoint optimumTime;
-  TimePoint maximumTime;
+  TimePoint startTime = 0;
+  TimePoint optimumTime = 0;
+  TimePoint maximumTime = 0;
 };
 
 extern TimeManagement Time;

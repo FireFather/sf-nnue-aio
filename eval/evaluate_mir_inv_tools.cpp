@@ -49,7 +49,7 @@ namespace Eval
 			inv_piece_[p] = BONA_PIECE_NOT_INIT;
 
 			// mirror does not work for hand pieces. Just return the original value.
-			mir_piece_[p] = (p < f_pawn) ? p : BONA_PIECE_NOT_INIT;
+			mir_piece_[p] = p < f_pawn ? p : BONA_PIECE_NOT_INIT;
 		}
 
 		for (auto p = BONA_PIECE_ZERO; p < fe_end; ++p)
@@ -61,7 +61,7 @@ namespace Eval
 					const auto sq = static_cast<Square>(p - t[i]);
 
 					// found!!
-					const auto q = (p < fe_hand_end) ? BonaPiece(sq + t[i + 1]) : static_cast<BonaPiece>(Inv(sq) + t[i + 1]);
+					const auto q = p < fe_hand_end ? BonaPiece(sq + t[i + 1]) : static_cast<BonaPiece>(Inv(sq) + t[i + 1]);
 					inv_piece_[p] = q;
 					inv_piece_[q] = p;
 

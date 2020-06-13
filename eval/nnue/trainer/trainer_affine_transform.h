@@ -254,8 +254,8 @@ namespace Eval {
 			static constexpr LearnFloatType kActivationScale =
 				std::numeric_limits<std::int8_t>::max();
 			static constexpr LearnFloatType kBiasScale = kIsOutputLayer ?
-				(kPonanzaConstant * FV_SCALE) :
-				((1 << kWeightScaleBits) * kActivationScale);
+				kPonanzaConstant * FV_SCALE :
+				(1 << kWeightScaleBits) * kActivationScale;
 			static constexpr LearnFloatType kWeightScale = kBiasScale / kActivationScale;
 
 			// Upper limit of absolute value of weight used to prevent overflow when parameterizing integers

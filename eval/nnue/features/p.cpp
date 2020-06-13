@@ -14,7 +14,7 @@ namespace Eval::NNUE::Features
 		// do nothing if array size is small to avoid compiler warning
 		if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 
-		const BonaPiece* pieces = (perspective == BLACK) ?
+		const BonaPiece* pieces = perspective == BLACK ?
 			pos.eval_list()->piece_list_fb() :
 			pos.eval_list()->piece_list_fw();
 		for (auto i = PIECE_NUMBER_ZERO; i < PIECE_NUMBER_KING; ++i) {

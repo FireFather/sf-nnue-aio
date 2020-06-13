@@ -95,11 +95,11 @@ namespace {
 
         // Flag the pawn
         auto opposed = theirPawns & forward_file_bb(Us, s);
-        auto blocked = theirPawns & (s + Up);
+        auto blocked = theirPawns & s + Up;
         auto stoppers = theirPawns & passed_pawn_span(Us, s);
         auto lever = theirPawns & pawn_attacks_bb(Us, s);
         auto leverPush = theirPawns & pawn_attacks_bb(Us, s + Up);
-        bool doubled = ourPawns & (s - Up);
+        bool doubled = ourPawns & s - Up;
         auto neighbours = ourPawns & adjacent_files_bb(s);
         auto phalanx = neighbours & rank_bb(s);
         auto support = neighbours & rank_bb(s - Up);
@@ -107,7 +107,7 @@ namespace {
         // A pawn is backward when it is behind all pawns of the same color on
         // the adjacent files and cannot safely advance.
         auto backward = !(neighbours & forward_ranks_bb(Them, s + Up))
-	        && (leverPush | blocked);
+	        && leverPush | blocked;
 
         // Compute additional span if pawn is not backward nor blocked
         if (!backward && !blocked)
@@ -119,8 +119,8 @@ namespace {
         // (c) there is only one front stopper which can be levered.
         //     (Refined in Evaluation::passed)
         bool passed = !(stoppers ^ lever)
-	        || (!(stoppers ^ leverPush)
-		        && popcount(phalanx) >= popcount(leverPush))
+	        || !(stoppers ^ leverPush)
+	        && popcount(phalanx) >= popcount(leverPush)
 	        || (stoppers == blocked && r >= RANK_5
 		        && (shift<Up>(support) & ~(theirPawns | doubleAttackThem)));
 
@@ -143,7 +143,7 @@ namespace {
         else if (!neighbours)
         {
             if (     opposed
-                &&  (ourPawns & forward_file_bb(Them, s))
+                && ourPawns & forward_file_bb(Them, s)
                 && !(theirPawns & adjacent_files_bb(s)))
                 score -= Doubled;
             else
@@ -214,7 +214,7 @@ Score Entry::evaluate_shelter(const Position& pos, Square ksq) {
       auto d = edge_distance(f);
       bonus += make_score(ShelterStrength[d][ourRank], 0);
 
-      if (ourRank && (ourRank == theirRank - 1))
+      if (ourRank && ourRank == theirRank - 1)
           bonus -= BlockedStorm[theirRank];
       else
           bonus -= make_score(UnblockedStorm[d][theirRank], 0);

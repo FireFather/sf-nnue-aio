@@ -74,11 +74,11 @@ namespace EvalLearningTools
 		// Batch initialization of eta. If 0 is passed, the default value will be set.
 		static void init_eta(double eta1, double eta2, double eta3, uint64_t eta1_epoch, uint64_t eta2_epoch)
 		{
-			Weight::eta1 = (eta1 != 0) ? eta1 : 30.0;
-			Weight::eta2 = (eta2 != 0) ? eta2 : 30.0;
-			Weight::eta3 = (eta3 != 0) ? eta3 : 30.0;
-			Weight::eta1_epoch = (eta1_epoch != 0) ? eta1_epoch : 0;
-			Weight::eta2_epoch = (eta2_epoch != 0) ? eta2_epoch : 0;
+			Weight::eta1 = eta1 != 0 ? eta1 : 30.0;
+			Weight::eta2 = eta2 != 0 ? eta2 : 30.0;
+			Weight::eta3 = eta3 != 0 ? eta3 : 30.0;
+			Weight::eta1_epoch = eta1_epoch != 0 ? eta1_epoch : 0;
+			Weight::eta2_epoch = eta2_epoch != 0 ? eta2_epoch : 0;
 		}
 
 		// Set eta according to epoch.
@@ -103,7 +103,7 @@ namespace EvalLearningTools
 
 		// The maximum value that can be accurately calculated with float is INT16_MAX*256-1.
 		// Keep the small value as a marker.
-		const LearnFloatType V0_NOT_INIT = (INT16_MAX * 128);
+		const LearnFloatType V0_NOT_INIT = INT16_MAX * 128;
 
 		// What holds v internally. Previous implementations had a fixed decimal and kept only the fractional part to save memory,
 		// Since it is doubtful in accuracy and the visibility is bad, it was abolished.
@@ -133,7 +133,7 @@ namespace EvalLearningTools
 
 			// If v0 is V0_NOT_INIT, it means that the value is not initialized with the value of KK/KKP/KPP array,
 			// In this case, read the value of v from the one passed in the argument.
-			double V = (v0 == V0_NOT_INIT) ? v : v0;
+			double V = v0 == V0_NOT_INIT ? v : v0;
 
 			V -= k * eta * (double)g / sqrt((double)g2 + epsilon);
 
@@ -171,7 +171,7 @@ namespace EvalLearningTools
 			// It's a good idea to move around 0-5.
 			// It is better to have a Gaussian distribution, so generate a 5-bit random number (each bit is 1 with a probability of 1/2),
 			// Pop_count() it. At this time, it has a binomial distribution.
-			//int16_t diff = (int16_t)POPCNT32((u32)prng.rand(31));
+			//int16_t diff = (int16_t)POPCNT32((uint32_t)prng.rand(31));
 			// → If you do this with 80 threads, this AsyncPRNG::rand() will lock, so sl
 			int16_t diff = 1;
 
@@ -275,17 +275,17 @@ namespace EvalLearningTools
 
 	protected:
 		// The value of min_index() returned by this class
-		uint64_t min_index_;
+		uint64_t min_index_ = 0;
 
 		// max_index() value returned by this class = min_index() + max_raw_index_
 		// This variable is calculated by size() of the derived class.
-		uint64_t max_raw_index_;
+		uint64_t max_raw_index_ = 0;
 
 		// Number of ball boxes supported (usually SQUARE_NB)
-		int max_king_sq_;
+		int max_king_sq_ = 0;
 
 		// Maximum value of BonaPiece supported
-		uint64_t fe_end_;
+		uint64_t fe_end_ = 0;
 
 	};
 
@@ -306,7 +306,7 @@ namespace EvalLearningTools
 		{
 			auto king1 = (int)(raw_index % SQUARE_NB);
 			raw_index /= SQUARE_NB;
-			auto king0 = (int)(raw_index /* %SQUARE_NB */);
+			auto king0 = (int)raw_index /* %SQUARE_NB */;
 			assert(king0 < SQUARE_NB);
 			return fromKK((Square)king0, (Square)king1, false);
 		}
@@ -408,7 +408,7 @@ namespace EvalLearningTools
 			raw_index /= Eval::fe_end;
 			auto king1 = (int)(raw_index % SQUARE_NB);
 			raw_index /= SQUARE_NB;
-			auto king0 = (int)(raw_index /* %SQUARE_NB */);
+			auto king0 = (int)raw_index /* %SQUARE_NB */;
 			assert(king0 < SQUARE_NB);
 			return fromKKP((Square)king0, (Square)king1, (Eval::BonaPiece)piece, false);
 		}
@@ -547,7 +547,7 @@ namespace EvalLearningTools
 
 			raw_index /= triangle_fe_end;
 #endif
-			auto king = (int)(raw_index /* %SQUARE_NB */);
+			auto king = (int)raw_index /* %SQUARE_NB */;
 			assert(king < max_king_sq_);
 			return fromKPP((Square)king, (Eval::BonaPiece)piece0, (Eval::BonaPiece)piece1);
 		}
@@ -625,7 +625,7 @@ namespace EvalLearningTools
 			auto i = piece0_;
 			auto j = piece1_;
 
-			return (i >= j) ? PcPcOnSq(k, i, j) : PcPcOnSq(k, j, i);
+			return i >= j ? PcPcOnSq(k, i, j) : PcPcOnSq(k, j, i);
 #endif
 		}
 
@@ -638,10 +638,10 @@ namespace EvalLearningTools
 		// comparison operator
 		bool operator==(const KPP& rhs) {
 			return king() == rhs.king() &&
-				((piece0() == rhs.piece0() && piece1() == rhs.piece1())
+				(piece0() == rhs.piece0() && piece1() == rhs.piece1()
 #if defined(USE_TRIANGLE_WEIGHT_ARRAY)
 					// When using a triangular array, allow swapping of piece0 and piece1.
-					|| (piece0() == rhs.piece1() && piece1() == rhs.piece0())
+					|| piece0() == rhs.piece1() && piece1() == rhs.piece0()
 #endif
 					);
 		}
@@ -760,7 +760,7 @@ namespace EvalLearningTools
 				double t;
 
 				if (index2 < 100000000)
-					t = pow(sqrt((243.0 * index2 * index2 - 1)) * sqrt(3.0) + 27 * index2, 1.0 / 3);
+					t = pow(sqrt(243.0 * index2 * index2 - 1) * sqrt(3.0) + 27 * index2, 1.0 / 3);
 				else
 					// If index2 is very large, we can think of the contents of sqrt, approximately √243 * index2.
 					t = pow(index2 * sqrt(243 * 3.0) + 27 * index2, 1.0 / 3);
@@ -798,7 +798,7 @@ namespace EvalLearningTools
 
 			raw_index /= triangle_fe_end;
 
-			auto king = (int)(raw_index /* %SQUARE_NB */);
+			auto king = (int)raw_index /* %SQUARE_NB */;
 			assert(king < max_king_sq_);
 
 			// Propagate king_sq and fe_end.
@@ -957,7 +957,7 @@ namespace EvalLearningTools
 
 			raw_index /= triangle_fe_end;
 
-			auto king = (int)(raw_index /* %SQUARE_NB */);
+			auto king = (int)raw_index /* %SQUARE_NB */;
 			assert(king < max_king_sq_);
 			// Propagate king_sq and fe_end.
 			return fromKKPP(king, (Eval::BonaPiece)piece0, (Eval::BonaPiece)piece1);

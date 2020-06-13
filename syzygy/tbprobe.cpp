@@ -419,7 +419,7 @@ class TBTables {
     static constexpr int Size = 1 << 12; // 4K table, indexed by key's 12 lsb
     static constexpr int Overflow = 1;  // Number of elements allowed to map to the last bucket
 
-    Entry hashTable[Size + Overflow];
+    Entry hashTable[Size + Overflow] = {};
 
     std::deque<TBTable<WDL>> wdlTable;
     std::deque<TBTable<DTZ>> dtzTable;
@@ -1044,14 +1044,14 @@ uint8_t* set_dtz_map(TBTable<DTZ>& e, uint8_t* data, File maxFile) {
         if (flags & TBFlag::Mapped) {
             if (flags & TBFlag::Wide) {
                 data += (uintptr_t)data & 1;  // Word alignment, we may have a mixed table
-                for (unsigned short& i : e.get(0, f)->map_idx)
+                for (auto& i : e.get(0, f)->map_idx)
                 { // Sequence like 3,x,x,x,1,x,0,2,x,x
 	                i = static_cast<uint16_t>((uint16_t*)data - (uint16_t*)e.map + 1);
                     data += 2 * number<uint16_t, LittleEndian>(data) + 2;
                 }
             }
             else {
-                for (unsigned short& i : e.get(0, f)->map_idx)
+                for (auto& i : e.get(0, f)->map_idx)
                 {
 	                i = static_cast<uint16_t>(data - e.map + 1);
                     data += *data + 1;

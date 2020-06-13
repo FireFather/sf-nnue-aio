@@ -52,13 +52,13 @@ constexpr Bitboard FileGBB = FileABB << 6;
 constexpr Bitboard FileHBB = FileABB << 7;
 
 constexpr Bitboard Rank1BB = 0xFF;
-constexpr Bitboard Rank2BB = Rank1BB << (8 * 1);
-constexpr Bitboard Rank3BB = Rank1BB << (8 * 2);
-constexpr Bitboard Rank4BB = Rank1BB << (8 * 3);
-constexpr Bitboard Rank5BB = Rank1BB << (8 * 4);
-constexpr Bitboard Rank6BB = Rank1BB << (8 * 5);
-constexpr Bitboard Rank7BB = Rank1BB << (8 * 6);
-constexpr Bitboard Rank8BB = Rank1BB << (8 * 7);
+constexpr Bitboard Rank2BB = Rank1BB << 8 * 1;
+constexpr Bitboard Rank3BB = Rank1BB << 8 * 2;
+constexpr Bitboard Rank4BB = Rank1BB << 8 * 3;
+constexpr Bitboard Rank5BB = Rank1BB << 8 * 4;
+constexpr Bitboard Rank6BB = Rank1BB << 8 * 5;
+constexpr Bitboard Rank7BB = Rank1BB << 8 * 6;
+constexpr Bitboard Rank8BB = Rank1BB << 8 * 7;
 
 constexpr Bitboard QueenSide   = FileABB | FileBBB | FileCBB | FileDBB;
 constexpr Bitboard CenterFiles = FileCBB | FileDBB | FileEBB | FileFBB;
@@ -94,7 +94,7 @@ struct Magic {
         return static_cast<unsigned>(pext(occupied, mask));
 
     if (Is64Bit)
-        return static_cast<unsigned>(((occupied & mask) * magic) >> shift);
+        return static_cast<unsigned>((occupied & mask) * magic >> shift);
 
     auto lo = static_cast<unsigned>(occupied) & static_cast<unsigned>(mask);
     auto hi = static_cast<unsigned>(occupied >> 32) & static_cast<unsigned>(mask >> 32);
@@ -126,11 +126,11 @@ inline Bitboard  operator^(Square s, Bitboard b) { return b ^ s; }
 inline Bitboard  operator|(Square s, Square s2) { return square_bb(s) | s2; }
 
 constexpr bool more_than_one(Bitboard b) {
-  return b & (b - 1);
+  return b & b - 1;
 }
 
 constexpr bool opposite_colors(Square s1, Square s2) {
-  return (s1 + rank_of(s1) + s2 + rank_of(s2)) & 1;
+  return s1 + rank_of(s1) + s2 + rank_of(s2) & 1;
 }
 
 
@@ -138,7 +138,7 @@ constexpr bool opposite_colors(Square s1, Square s2) {
 /// the given file or rank.
 
 inline Bitboard rank_bb(Rank r) {
-  return Rank1BB << (8 * r);
+  return Rank1BB << 8 * r;
 }
 
 inline Bitboard rank_bb(Square s) {
@@ -205,8 +205,8 @@ inline Bitboard adjacent_files_bb(Square s) {
 /// If the given squares are not on a same file/rank/diagonal, return 0.
 
 inline Bitboard between_bb(Square s1, Square s2) {
-	const auto b = LineBB[s1][s2] & ((AllSquares << s1) ^ (AllSquares << s2));
-  return b & (b - 1); //exclude lsb
+	const auto b = LineBB[s1][s2] & (AllSquares << s1 ^ AllSquares << s2);
+  return b & b - 1; //exclude lsb
 }
 
 
@@ -279,7 +279,7 @@ inline Bitboard safe_destination(Square s, int step)
 template<PieceType Pt>
 Bitboard attacks_bb(Square s) {
 
-  assert((Pt != PAWN) && (is_ok(s)));
+  assert(Pt != PAWN && is_ok(s));
 
   return PseudoAttacks[Pt][s];
 }
@@ -291,7 +291,7 @@ Bitboard attacks_bb(Square s) {
 template<PieceType Pt>
 Bitboard attacks_bb(Square s, Bitboard occupied) {
 
-  assert((Pt != PAWN) && (is_ok(s)));
+  assert(Pt != PAWN && is_ok(s));
 
   switch (Pt)
   {
@@ -304,7 +304,7 @@ Bitboard attacks_bb(Square s, Bitboard occupied) {
 
 inline Bitboard attacks_bb(PieceType pt, Square s, Bitboard occupied) {
 
-  assert((pt != PAWN) && (is_ok(s)));
+  assert(pt != PAWN && is_ok(s));
 
   switch (pt)
   {

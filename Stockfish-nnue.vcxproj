@@ -186,7 +186,6 @@
     <ClInclude Include="eval\nnue\trainer\trainer.h" />
     <ClInclude Include="eval\nnue\trainer\trainer_affine_transform.h" />
     <ClInclude Include="eval\nnue\trainer\trainer_clipped_relu.h" />
-    <ClInclude Include="eval\nnue\trainer\trainer_feature_transformer.h" />
     <ClInclude Include="eval\nnue\trainer\trainer_input_slice.h" />
     <ClInclude Include="eval\nnue\trainer\trainer_sum.h" />
     <ClInclude Include="learn\half_float.h" />

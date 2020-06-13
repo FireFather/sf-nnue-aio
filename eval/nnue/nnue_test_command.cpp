@@ -114,13 +114,13 @@ namespace Eval::NNUE
 				pos.set(StartFEN, false, &si, Threads.main());
 
 				// Output'.' every 100 times (so you can see that it's progressing)
-				if ((i % 100) == 0)
+				if (i % 100 == 0)
 					std::cout << "." << std::flush;
 			}
 			std::cout << "passed." << std::endl;
 			std::cout << num_games << " games, " << num_moves << " moves, "
 				<< num_updates.back() << " updates, "
-				<< (1.0 * num_updates.back() / num_moves)
+				<< 1.0 * num_updates.back() / num_moves
 				<< " updates per move" << std::endl;
 			std::size_t num_observed_indices = 0;
 			for (IndexType i = 0; i < kRefreshTriggers.size(); ++i) {
@@ -128,15 +128,15 @@ namespace Eval::NNUE
 				num_observed_indices += count;
 				std::cout << "TriggerEvent(" << static_cast<int>(kRefreshTriggers[i])
 					<< "): " << count << " features ("
-					<< (100.0 * count / RawFeatures::kDimensions) << "%), "
+					<< 100.0 * count / RawFeatures::kDimensions << "%), "
 					<< num_updates[i] << " updates ("
-					<< (1.0 * num_updates[i] / num_moves) << " per move), "
+					<< 1.0 * num_updates[i] / num_moves << " per move), "
 					<< num_resets[i] << " resets ("
-					<< (100.0 * num_resets[i] / num_moves) << "%)"
+					<< 100.0 * num_resets[i] / num_moves << "%)"
 					<< std::endl;
 			}
 			std::cout << "observed " << num_observed_indices << " ("
-				<< (100.0 * num_observed_indices / RawFeatures::kDimensions)
+				<< 100.0 * num_observed_indices / RawFeatures::kDimensions
 				<< "% of " << RawFeatures::kDimensions
 				<< ") features" << std::endl;
 		}

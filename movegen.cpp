@@ -40,7 +40,7 @@ namespace {
 
 		// Knight promotion is the only promotion that can give a direct check
 		// that's not already included in the queen promotion.
-		if (Type == QUIET_CHECKS && (attacks_bb<KNIGHT>(to) & ksq))
+		if (Type == QUIET_CHECKS && attacks_bb<KNIGHT>(to) & ksq)
 			*moveList++ = make<PROMOTION>(to - D, to, KNIGHT);
 		else
 			(void)ksq; // Silence a warning under MSVC
@@ -53,11 +53,11 @@ namespace {
 	ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard target) {
 
 		constexpr auto Them = ~Us;
-		constexpr auto TRank7BB = (Us == WHITE ? Rank7BB : Rank2BB);
-		constexpr auto TRank3BB = (Us == WHITE ? Rank3BB : Rank6BB);
+		constexpr auto TRank7BB = Us == WHITE ? Rank7BB : Rank2BB;
+		constexpr auto TRank3BB = Us == WHITE ? Rank3BB : Rank6BB;
 		constexpr auto Up = pawn_push(Us);
-		constexpr auto UpRight = (Us == WHITE ? NORTH_EAST : SOUTH_WEST);
-		constexpr auto UpLeft = (Us == WHITE ? NORTH_WEST : SOUTH_EAST);
+		constexpr auto UpRight = Us == WHITE ? NORTH_EAST : SOUTH_WEST;
+		constexpr auto UpLeft = Us == WHITE ? NORTH_WEST : SOUTH_EAST;
 
 		const auto ksq = pos.square<KING>(Them);
 		Bitboard emptySquares;
@@ -65,13 +65,13 @@ namespace {
 		const auto pawnsOn7 = pos.pieces(Us, PAWN) & TRank7BB;
 		const auto pawnsNotOn7 = pos.pieces(Us, PAWN) & ~TRank7BB;
 
-		auto enemies = (Type == EVASIONS ? pos.pieces(Them) & target :
-			                Type == CAPTURES ? target : pos.pieces(Them));
+		auto enemies = Type == EVASIONS ? pos.pieces(Them) & target :
+			               Type == CAPTURES ? target : pos.pieces(Them);
 
 		// Single and double pawn pushes, no promotions
 		if (Type != CAPTURES)
 		{
-			emptySquares = (Type == QUIETS || Type == QUIET_CHECKS ? target : ~pos.pieces());
+			emptySquares = Type == QUIETS || Type == QUIET_CHECKS ? target : ~pos.pieces();
 
 			Bitboard b1 = shift<Up>(pawnsNotOn7) & emptySquares;
 			Bitboard b2 = shift<Up>(b1 & TRank3BB) & emptySquares;
@@ -163,7 +163,7 @@ namespace {
 				// An en passant capture can be an evasion only if the checking piece
 				// is the double pushed pawn and so is in the target. Otherwise this
 				// is a discovery check and we are forced to do otherwise.
-				if (Type == EVASIONS && !(target & (pos.ep_square() - Up)))
+				if (Type == EVASIONS && !(target & pos.ep_square() - Up))
 					return moveList;
 
 				b1 = pawnsNotOn7 & pawn_attacks_bb(Them, pos.ep_square());
@@ -251,7 +251,7 @@ namespace {
 			while (b)
 				*moveList++ = make_move(ksq, pop_lsb(&b));
 
-			if ((Type != CAPTURES) && pos.can_castle(Us & ANY_CASTLING))
+			if (Type != CAPTURES && pos.can_castle(Us & ANY_CASTLING))
 				for (auto cr : { Us& KING_SIDE, Us& QUEEN_SIDE })
 					if (!pos.castling_impeded(cr) && pos.can_castle(cr))
 						*moveList++ = make<CASTLING>(ksq, pos.castling_rook_square(cr));

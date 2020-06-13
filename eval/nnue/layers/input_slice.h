@@ -32,7 +32,7 @@ class InputSlice {
   // Hash value embedded in the evaluation function file
   static constexpr std::uint32_t GetHashValue() {
 	  auto hash_value = 0xEC42E90Du;
-    hash_value ^= kOutputDimensions ^ (Offset << 10);
+    hash_value ^= kOutputDimensions ^ Offset << 10;
     return hash_value;
   }
 

@@ -73,16 +73,16 @@ private:
 	{
 		float32_converter c;
 		c.f = f;
-		u32 n = c.n;
+		uint32_t n = c.n;
 
 		// The sign bit is MSB in common.
-		uint16_t sign_bit = (n >> 16) & 0x8000;
+		uint16_t sign_bit = n >> 16 & 0x8000;
 
 		// The exponent of IEEE 754's float 32 is biased +127 ,so we change this bias into +15 and limited to 5-bit.
-		uint16_t exponent = (((n >> 23) - 127 + 15) & 0x1f) << 10;
+		uint16_t exponent = ((n >> 23) - 127 + 15 & 0x1f) << 10;
 
 		// The fraction is limited to 10-bit.
-		uint16_t fraction = (n >> (23 - 10)) & 0x3ff;
+		uint16_t fraction = n >> 23 - 10 & 0x3ff;
 
 		float16 f_;
 		f_.v_ = sign_bit | exponent | fraction;
@@ -92,9 +92,9 @@ private:
 
 	static float to_float(float16 v)
 	{
-		u32 sign_bit = (v.v_ & 0x8000) << 16;
-		u32 exponent = ((((v.v_ >> 10) & 0x1f) - 15 + 127) & 0xff) << 23;
-		u32 fraction = (v.v_ & 0x3ff) << (23 - 10);
+		uint32_t sign_bit = (v.v_ & 0x8000) << 16;
+		uint32_t exponent = ((v.v_ >> 10 & 0x1f) - 15 + 127 & 0xff) << 23;
+		uint32_t fraction = (v.v_ & 0x3ff) << 23 - 10;
 
 		float32_converter c;
 		c.n = sign_bit | exponent | fraction;
