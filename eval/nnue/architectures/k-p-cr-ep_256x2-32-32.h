@@ -5,10 +5,8 @@
 
 #include "../features/feature_set.h"
 #include "../features/k.h"
-#include "../features/p.h"
 // Definition of input features and network structure used in NNUE evaluation function
 
-#include "../features/feature_set.h"
 #include "../features/half_kp.h"
 #include "../features/castling_right.h"
 #include "../features/enpassant.h"

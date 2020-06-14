@@ -180,7 +180,7 @@ piece_no_list_board[sq] = piece_no;
 // Length of piece list
 // 38 fixed
 public:
-[[nodiscard]] int length() const {return PIECE_NUMBER_KING;}
+[[nodiscard]] static int length() {return PIECE_NUMBER_KING;}
 
 // Must be a multiple of 4 to use VPGATHERDD.
 // In addition, KPPT type evaluation functions, etc. are based on the assumption that the 39th and 40th elements are zero.
@@ -203,7 +203,7 @@ BonaPiece pieceListFb[MAX_LENGTH] = {};
 struct DirtyPiece
 {
 // What changed from the piece with that piece number
-Eval::ChangedBonaPiece changed_piece[2];
+ChangedBonaPiece changed_piece[2];
 
 // Number of dirty pieces
 PieceNumber pieceNo[2];

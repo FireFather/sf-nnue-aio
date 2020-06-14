@@ -10,7 +10,7 @@ namespace Eval::NNUE::Features
 
 	// Get a list of indices with a value of 1 among the features
 	void EnPassant::AppendActiveIndices(
-		const Position& pos, Color perspective, IndexList* active) {
+		const Position& pos, const Color perspective, IndexList* active) {
 		// do nothing if array size is small to avoid compiler warning
 		if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 

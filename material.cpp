@@ -84,7 +84,7 @@ namespace {
 	template<Color Us>
 	int imbalance(const int pieceCount[][PIECE_TYPE_NB]) {
 
-		constexpr const auto Them = ~Us;
+		constexpr auto Them = ~Us;
 
 		auto bonus = 0;
 
@@ -116,7 +116,7 @@ namespace Material {
 	/// have to recompute all when the same material configuration occurs again.
 
 	Entry* probe(const Position& pos) {
-		auto key = pos.material_key();
+		const auto key = pos.material_key();
 		auto* e = pos.this_thread()->materialTable[key];
 
 		if (e->key == key)
@@ -126,9 +126,9 @@ namespace Material {
 		e->key = key;
 		e->factor[WHITE] = e->factor[BLACK] = static_cast<uint8_t>(SCALE_FACTOR_NORMAL);
 
-		auto npm_w = pos.non_pawn_material(WHITE);
-		auto npm_b = pos.non_pawn_material(BLACK);
-		auto npm = Utility::clamp(npm_w + npm_b, EndgameLimit, MidgameLimit);
+		const auto npm_w = pos.non_pawn_material(WHITE);
+		const auto npm_b = pos.non_pawn_material(BLACK);
+		const auto npm = Utility::clamp(npm_w + npm_b, EndgameLimit, MidgameLimit);
 
 		// Map total non-pawn material into [PHASE_ENDGAME, PHASE_MIDGAME]
 		e->gamePhase = Phase((npm - EndgameLimit) * PHASE_MIDGAME / (MidgameLimit - EndgameLimit));

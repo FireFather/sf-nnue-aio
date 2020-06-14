@@ -225,10 +225,10 @@ namespace {
 	template<Tracing T> template<Color Us>
 	void Evaluation<T>::initialize() {
 
-		constexpr const auto Them = ~Us;
-		constexpr const auto Up = pawn_push(Us);
-		constexpr const auto Down = -Up;
-		constexpr const auto LowRanks = Us == WHITE ? Rank2BB | Rank3BB : Rank7BB | Rank6BB;
+		constexpr auto Them = ~Us;
+		constexpr auto Up = pawn_push(Us);
+		constexpr auto Down = -Up;
+		constexpr auto LowRanks = Us == WHITE ? Rank2BB | Rank3BB : Rank7BB | Rank6BB;
 
 		const auto ksq = pos.square<KING>(Us);
 
@@ -264,10 +264,10 @@ namespace {
 	template<Tracing T> template<Color Us, PieceType Pt>
 	Score Evaluation<T>::pieces() {
 
-		constexpr const auto Them = ~Us;
-		constexpr const auto Down = -pawn_push(Us);
-		constexpr const auto OutpostRanks = Us == WHITE ? Rank4BB | Rank5BB | Rank6BB
-			                                    : Rank5BB | Rank4BB | Rank3BB;
+		constexpr auto Them = ~Us;
+		constexpr auto Down = -pawn_push(Us);
+		constexpr auto OutpostRanks = Us == WHITE ? Rank4BB | Rank5BB | Rank6BB
+			                              : Rank5BB | Rank4BB | Rank3BB;
 		auto pl = pos.squares<Pt>(Us);
 
 		auto score = SCORE_ZERO;
@@ -384,7 +384,7 @@ namespace {
 			}
 		}
 		if (T)
-			Trace::add(Pt, Us, score);
+			add(Pt, Us, score);
 
 		return score;
 	}
@@ -394,9 +394,9 @@ namespace {
 	template<Tracing T> template<Color Us>
 	[[nodiscard]] [[nodiscard]] Score Evaluation<T>::king() const {
 
-		constexpr const auto Them = ~Us;
-		constexpr const auto Camp = Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
-			                            : AllSquares ^ Rank1BB ^ Rank2BB ^ Rank3BB;
+		constexpr auto Them = ~Us;
+		constexpr auto Camp = Us == WHITE ? AllSquares ^ Rank6BB ^ Rank7BB ^ Rank8BB
+			                      : AllSquares ^ Rank1BB ^ Rank2BB ^ Rank3BB;
 
 		Bitboard unsafeChecks = 0;
 		auto kingDanger = 0;
@@ -490,7 +490,7 @@ namespace {
 		score -= FlankAttacks * kingFlankAttack;
 
 		if (T)
-			Trace::add(KING, Us, score);
+			add(KING, Us, score);
 
 		return score;
 	}
@@ -501,9 +501,9 @@ namespace {
 	template<Tracing T> template<Color Us>
 	[[nodiscard]] [[nodiscard]] Score Evaluation<T>::threats() const {
 
-		constexpr const auto Them = ~Us;
-		constexpr const auto Up = pawn_push(Us);
-		constexpr const auto TRank3BB = Us == WHITE ? Rank3BB : Rank6BB;
+		constexpr auto Them = ~Us;
+		constexpr auto Up = pawn_push(Us);
+		constexpr auto TRank3BB = Us == WHITE ? Rank3BB : Rank6BB;
 
 		Bitboard b;
 		auto score = SCORE_ZERO;
@@ -586,7 +586,7 @@ namespace {
 		}
 
 		if (T)
-			Trace::add(THREAT, Us, score);
+			add(THREAT, Us, score);
 
 		return score;
 	}
@@ -597,9 +597,9 @@ namespace {
 	template<Tracing T> template<Color Us>
 	[[nodiscard]] [[nodiscard]] Score Evaluation<T>::passed() const {
 
-		constexpr const auto Them = ~Us;
-		constexpr const auto Up = pawn_push(Us);
-		constexpr const auto Down = -Up;
+		constexpr auto Them = ~Us;
+		constexpr auto Up = pawn_push(Us);
+		constexpr auto Down = -Up;
 
 		auto king_proximity = [&](Color c, Square s) {
 			return std::min(distance(pos.square<KING>(c), s), 5);
@@ -677,7 +677,7 @@ namespace {
 		}
 
 		if (T)
-			Trace::add(PASSED, Us, score);
+			add(PASSED, Us, score);
 
 		return score;
 	}
@@ -696,9 +696,9 @@ namespace {
 		if (pos.non_pawn_material() < SpaceThreshold)
 			return SCORE_ZERO;
 
-		constexpr const auto Them = ~Us;
-		constexpr const auto Down = -pawn_push(Us);
-		constexpr const auto SpaceMask =
+		constexpr auto Them = ~Us;
+		constexpr auto Down = -pawn_push(Us);
+		constexpr auto SpaceMask =
 			Us == WHITE ? CenterFiles & (Rank2BB | Rank3BB | Rank4BB)
 			: CenterFiles & (Rank7BB | Rank6BB | Rank5BB);
 
@@ -717,7 +717,7 @@ namespace {
 		const auto score = make_score(bonus * weight * weight / 16, 0);
 
 		if (T)
-			Trace::add(SPACE, Us, score);
+			add(SPACE, Us, score);
 
 		return score;
 	}
@@ -762,7 +762,7 @@ namespace {
 		const auto v = ((eg > 0) - (eg < 0)) * std::max(complexity, -abs(eg));
 
 		if (T)
-			Trace::add(INITIATIVE, make_score(u, v));
+			add(INITIATIVE, make_score(u, v));
 
 		return make_score(u, v);
 	}
@@ -857,11 +857,11 @@ namespace {
 		// In case of tracing add all remaining individual evaluation terms
 		if (T)
 		{
-			Trace::add(MATERIAL, pos.psq_score());
-			Trace::add(IMBALANCE, me->imbalance());
-			Trace::add(PAWN, pe->pawn_score(WHITE), pe->pawn_score(BLACK));
-			Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
-			Trace::add(TOTAL, score);
+			add(MATERIAL, pos.psq_score());
+			add(IMBALANCE, me->imbalance());
+			add(PAWN, pe->pawn_score(WHITE), pe->pawn_score(BLACK));
+			add(MOBILITY, mobility[WHITE], mobility[BLACK]);
+			add(TOTAL, score);
 		}
 
 		// Side to move point of view
@@ -966,7 +966,7 @@ namespace Eval {
 			const auto fw = pieceListFw[i];
 			// Go to the Position class to see if this fw really exists.
 
-			if (fw == Eval::BONA_PIECE_ZERO) {
+			if (fw == BONA_PIECE_ZERO) {
 				continue;
 			}
 

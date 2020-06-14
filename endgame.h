@@ -28,7 +28,6 @@
 #include <utility>
 
 #include "position.h"
-#include "types.h"
 
 
 /// EndgameCode lists all supported endgame functions by corresponding codes
@@ -73,7 +72,7 @@ eg_type = typename std::conditional<E < SCALING_FUNCTIONS, Value, ScaleFactor>::
 template<typename T>
 struct EndgameBase {
 
-	explicit EndgameBase(Color c) : strongSide(c), weakSide(~c) {}
+	explicit EndgameBase(const Color c) : strongSide(c), weakSide(~c) {}
 	virtual ~EndgameBase() = default;
 	virtual T operator()(const Position&) const = 0;
 

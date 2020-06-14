@@ -1,6 +1,9 @@
 # stockfish-nnue
 Stockfish NNUE (efficiently updateable neural network)
 
+forked from:
+https://github.com/nodchip/Stockfish/releases/tag/stockfish-nnue-2020-06-09
+
 -Clang-tidy recommendations/fixes applied:
 -Use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
 -auto can be declared as 'auto *' [readability-qualified-auto]

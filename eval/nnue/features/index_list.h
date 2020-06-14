@@ -19,7 +19,7 @@ namespace Eval {
 			class ValueList {
 			public:
 				[[nodiscard]] std::size_t size() const { return size_; }
-				void resize(std::size_t size) { size_ = size; }
+				void resize(const std::size_t size) { size_ = size; }
 				void push_back(const T& value) { values_[size_++] = value; }
 				T& operator[](std::size_t index) { return values_[index]; }
 				T* begin() { return values_; }

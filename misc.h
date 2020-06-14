@@ -31,7 +31,6 @@
 #include <vector>
 
 #include "types.h"
-#include "thread_win32_osx.h"
 
 const std::string engine_info(bool to_uci = false);
 const std::string compiler_info();
@@ -266,8 +265,8 @@ public:
 
   template <typename U> AlignedAllocator(const AlignedAllocator<U>&) {}
 
-  T* allocate(std::size_t n) { return static_cast<T*>(aligned_malloc(n * sizeof(T), alignof(T))); }
-  void deallocate(T* p, std::size_t n) { aligned_free(p); }
+  static T* allocate(std::size_t n) { return static_cast<T*>(aligned_malloc(n * sizeof(T), alignof(T))); }
+  static void deallocate(T* p, std::size_t n) { aligned_free(p); }
 };
 
 // --------------------

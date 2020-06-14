@@ -28,29 +28,29 @@ namespace {
 
 	// Used to drive the king towards the edge of the board
 	// in KX vs K and KQ vs KR endgames.
-	int push_to_edge(Square s) {
+	int push_to_edge(const Square s) {
 		const auto rd = edge_distance(rank_of(s)), fd = edge_distance(file_of(s));
 		return 90 - (7 * fd * fd / 2 + 7 * rd * rd / 2);
 	}
 
 	// Used to drive the king towards A1H8 corners in KBN vs K endgames.
-	int push_to_corner(Square s) {
+	int push_to_corner(const Square s) {
 		return abs(7 - rank_of(s) - file_of(s));
 	}
 
 	// Drive a piece close to or away from another piece
-	int push_close(Square s1, Square s2) { return 140 - 20 * distance(s1, s2); }
-	int push_away(Square s1, Square s2) { return 120 - push_close(s1, s2); }
+	int push_close(const Square s1, const Square s2) { return 140 - 20 * distance(s1, s2); }
+	int push_away(const Square s1, const Square s2) { return 120 - push_close(s1, s2); }
 
 #ifndef NDEBUG
-	bool verify_material(const Position& pos, Color c, Value npm, int pawnsCnt) {
+	bool verify_material(const Position& pos, const Color c, const Value npm, const int pawnsCnt) {
 		return pos.non_pawn_material(c) == npm && pos.count<PAWN>(c) == pawnsCnt;
 	}
 #endif
 
 	// Map the square as if strongSide is white and strongSide's only pawn
 	// is on the left half of the board.
-	Square normalize(const Position& pos, Color strongSide, Square sq) {
+	Square normalize(const Position& pos, const Color strongSide, Square sq) {
 
 		assert(pos.count<PAWN>(strongSide) == 1);
 

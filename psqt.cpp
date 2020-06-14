@@ -18,8 +18,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <algorithm>
-
 #include "types.h"
 #include "bitboard.h"
 
@@ -108,11 +106,11 @@ namespace PSQT {
 
 		for (auto pc = W_PAWN; pc <= W_KING; ++pc)
 		{
-			auto score = make_score(PieceValue[MG][pc], PieceValue[EG][pc]);
+			const auto score = make_score(PieceValue[MG][pc], PieceValue[EG][pc]);
 
 			for (auto s = SQ_A1; s <= SQ_H8; ++s)
 			{
-				auto f = File(edge_distance(file_of(s)));
+				const auto f = File(edge_distance(file_of(s)));
 				psq[pc][s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
 					: Bonus[pc][rank_of(s)][f]);
 				psq[~pc][flip_rank(s)] = -psq[pc][s];

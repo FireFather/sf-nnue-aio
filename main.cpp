@@ -25,7 +25,6 @@
 #include "position.h"
 #include "search.h"
 #include "thread.h"
-#include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
@@ -37,7 +36,7 @@ int main(int argc, char* argv[]) {
 
 	std::cout << engine_info() << std::endl;
 
-	UCI::init(Options);
+	init(Options);
 	Tune::init();
 	PSQT::init();
 	Bitboards::init();

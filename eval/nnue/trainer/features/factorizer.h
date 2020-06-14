@@ -52,7 +52,7 @@ namespace Eval {
 			// If the learning rate scale is not 0, inherit other types of learning features
 			template <typename FeatureType>
 			IndexType InheritFeaturesIfRequired(
-				IndexType index_offset, FeatureProperties properties, IndexType base_index,
+				const IndexType index_offset, FeatureProperties properties, IndexType base_index,
 				std::vector<TrainingFeature>* training_features) {
 				if (!properties.active) {
 					return 0;
@@ -72,7 +72,7 @@ namespace Eval {
 
 			// Return the index difference as needed, without adding learning features
 			// Call instead of InheritFeaturesIfRequired() if there are no corresponding features
-			IndexType SkipFeatures(FeatureProperties properties) {
+			IndexType SkipFeatures(const FeatureProperties properties) {
 				if (!properties.active) {
 					return 0;
 				}

@@ -11,7 +11,6 @@
 #include "../../position.h"
 #include "../../uci.h"
 #include "../../misc.h"
-#include "../../thread_win32_osx.h"
 
 #include "../evaluate_common.h"
 
@@ -65,8 +64,8 @@ namespace Eval {
 		} // namespace
 
 		// Initialize learning
-		void InitializeTraining(double eta1, uint64_t eta1_epoch,
-        		double eta2, uint64_t eta2_epoch, double eta3) {
+		void InitializeTraining(const double eta1, const uint64_t eta1_epoch,
+		                        const double eta2, const uint64_t eta2_epoch, const double eta3) {
 				std::cout << "Initializing NN training for "
 				<< GetArchitectureString() << std::endl;
 
@@ -83,13 +82,13 @@ namespace Eval {
 	}
 
 	// set the number of samples in the mini-batch
-	void SetBatchSize(uint64_t size) {
+	void SetBatchSize(const uint64_t size) {
 		assert(size > 0);
 		batch_size = size;
 	}
 
 	// set the learning rate scale
-	void SetGlobalLearningRateScale(double scale) {
+	void SetGlobalLearningRateScale(const double scale) {
 		global_learning_rate_scale = scale;
 	}
 
@@ -111,7 +110,7 @@ namespace Eval {
 
 	// Reread the evaluation function parameters for learning from the file
 	void RestoreParameters(const std::string& dir_name) {
-		const auto file_name = Path::Combine(dir_name, NNUE::kFileName);
+		const auto file_name = Path::Combine(dir_name, kFileName);
 		std::ifstream stream(file_name, std::ios::binary);
 		const auto result = ReadParameters(stream);
 		assert(result);
@@ -120,8 +119,8 @@ namespace Eval {
 	}
 
 	// Add one sample of learning data
-	void AddExample(Position& pos, Color rootColor,
-		const Learner::PackedSfenValue& psv, double weight) {
+	void AddExample(Position& pos, const Color rootColor,
+		const Learner::PackedSfenValue& psv, const double weight) {
 		Example example;
 		if (rootColor == pos.side_to_move()) {
 			example.sign = 1;
@@ -166,7 +165,7 @@ namespace Eval {
 }
 
 // update the evaluation function parameters
-void UpdateParameters(uint64_t epoch) {
+void UpdateParameters(const uint64_t epoch) {
 	assert(batch_size > 0);
 
 	EvalLearningTools::Weight::calc_eta(epoch);
@@ -186,7 +185,7 @@ void UpdateParameters(uint64_t epoch) {
 			const auto shallow = static_cast<Value>(Round<std::int32_t>(
 				batch[b].sign * network_output[b] * kPonanzaConstant));
 			const auto& psv = batch[b].psv;
-			const auto gradient = batch[b].sign * Learner::calc_grad(shallow, psv);
+			const auto gradient = batch[b].sign * calc_grad(shallow, psv);
 			gradients[b] = static_cast<LearnFloatType>(gradient * batch[b].weight);
 		}
 

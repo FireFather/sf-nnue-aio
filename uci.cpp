@@ -184,7 +184,7 @@ namespace {
 		uint64_t nodes = 0, cnt = 1;
 
 		auto list = setup_bench(pos, args);
-		uint64_t num = count_if(list.begin(), list.end(), [](const string& s) { return s.find("go ") == 0 || s.find("eval") == 0; });
+		const uint64_t num = count_if(list.begin(), list.end(), [](const string& s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
 		auto elapsed = now();
 
@@ -447,7 +447,7 @@ std::string UCI::square(Square s) {
 /// castling moves are always encoded as 'king captures rook'.
 
 string UCI::move(Move m, bool chess960) {
-	auto from = from_sq(m);
+	const auto from = from_sq(m);
 	auto to = to_sq(m);
 
 	if (m == MOVE_NONE)
@@ -459,7 +459,7 @@ string UCI::move(Move m, bool chess960) {
 	if (type_of(m) == CASTLING && !chess960)
 		to = make_square(to > from ? FILE_G : FILE_C, rank_of(from));
 
-	auto move = UCI::square(from) + UCI::square(to);
+	auto move = square(from) + square(to);
 
 	if (type_of(m) == PROMOTION)
 		move += " pnbrqk"[promotion_type(m)];
@@ -477,7 +477,7 @@ Move UCI::to_move(const Position& pos, string& str) {
 		str[4] = static_cast<char>(tolower(str[4]));
 
 	for (const auto& m : MoveList<LEGAL>(pos))
-		if (str == UCI::move(m, pos.is_chess960()))
+		if (str == move(m, pos.is_chess960()))
 			return m;
 
 	return MOVE_NONE;

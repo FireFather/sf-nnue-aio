@@ -44,19 +44,21 @@ class InputSlice {
   }
 
   // read parameters
-  bool ReadParameters(std::istream& /*stream*/) {
+  static bool ReadParameters(std::istream& /*stream*/) {
     return true;
   }
 
   // write parameters
-  bool WriteParameters(std::ostream& /*stream*/) const {
+  static bool WriteParameters(std::ostream& /*stream*/)
+  {
     return true;
   }
 
   // forward propagation
-  const OutputType* Propagate(
+  static const OutputType* Propagate(
       const TransformedFeatureType* transformed_features,
-      char* /*buffer*/) const {
+      char* /*buffer*/)
+  {
     return transformed_features + Offset;
   }
 

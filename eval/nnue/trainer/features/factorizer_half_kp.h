@@ -57,7 +57,7 @@ class Factorizer<HalfKP<AssociatedKing>> {
 
   // Get the index of learning feature and scale of learning rate
   static void AppendTrainingFeatures(
-      IndexType base_index, std::vector<TrainingFeature>* training_features) {
+	  const IndexType base_index, std::vector<TrainingFeature>* training_features) {
     // kFeaturesHalfKP
     IndexType index_offset = AppendBaseFeature<FeatureType>(
         kProperties[kFeaturesHalfKP], base_index, training_features);

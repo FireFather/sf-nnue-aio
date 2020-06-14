@@ -6,7 +6,6 @@
 #if defined(EVAL_LEARN) && defined(EVAL_NNUE)
 
 #include "../nnue_common.h"
-#include "../features/index_list.h"
 
 #include <sstream>
 #if defined(USE_BLAS)
@@ -32,7 +31,7 @@ namespace Eval {
 			static constexpr std::uint32_t kCountBits =
 				std::numeric_limits<StorageType>::digits - kIndexBits;
 
-			explicit TrainingFeature(IndexType index) :
+			explicit TrainingFeature(const IndexType index) :
 				index_and_count_(index << kCountBits | 1) {
 				assert(index < 1 << kIndexBits);
 			}
@@ -45,7 +44,7 @@ namespace Eval {
 			IndexType GetIndex() const {
 				return static_cast<IndexType>(index_and_count_ >> kCountBits);
 			}
-			void ShiftIndex(IndexType offset) {
+			void ShiftIndex(const IndexType offset) {
 				assert(GetIndex() + offset < 1 << kIndexBits);
 				index_and_count_ += offset << kCountBits;
 			}
@@ -92,7 +91,7 @@ namespace Eval {
 		}
 
 		// split the string
-		std::vector<std::string> Split(const std::string& input, char delimiter) {
+		std::vector<std::string> Split(const std::string& input, const char delimiter) {
 			std::istringstream stream(input);
 			std::string field;
 			std::vector<std::string> fields;
@@ -104,7 +103,7 @@ namespace Eval {
 
 		// round a floating point number to an integer
 		template <typename IntType>
-		IntType Round(double value) {
+		IntType Round(const double value) {
 			return static_cast<IntType>(std::floor(value + 0.5));
 		}
 

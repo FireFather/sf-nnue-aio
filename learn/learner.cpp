@@ -67,7 +67,6 @@
 // It seems that the C++ filesystem cannot be used unless it is C++17 or later or MSVC.
 // I tried to use windows.h, but with g++ of msys2 I can not get the files in the folder well.
 // Use dirent.h because there is no help for it.
-#include <filesystem>
 #elif defined(__GNUC__)
 #include <dirent.h>
 #endif
@@ -75,9 +74,7 @@
 #include "../misc.h"
 #include "../thread.h"
 #include "../position.h"
-//#include "../extra/book/book.h"
 #include "../tt.h"
-#include "multi_think.h"
 
 #if defined(EVAL_NNUE)
 #include "../eval/nnue/evaluate_nnue_learner.h"
@@ -243,7 +240,7 @@ namespace Learner
 							fs.close();
 
 							// Sequential number attached to the file
-							auto n = static_cast<int>(sfen_write_count / save_every);
+							const auto n = static_cast<int>(sfen_write_count / save_every);
 							// Rename the file and open it again. Add ios::app in consideration of overwriting. (Depending on the operation, it may not be necessary..)
 							auto filename = filename_ + "_" + std::to_string(n);
 							fs.open(filename, ios::out | ios::binary | ios::app);
@@ -322,7 +319,7 @@ namespace Learner
 		}
 
 		virtual void thread_worker(size_t thread_id);
-		void start_file_write_worker() { sw.start_file_write_worker(); }
+		void start_file_write_worker() const { sw.start_file_write_worker(); }
 
 		// search_depth = search depth for normal search
 		int search_depth;
@@ -430,7 +427,7 @@ namespace Learner
 					// When I tried to write out the phase, it reached the specified number of times.
 					// Because the counter is added in get_next_loop_count()
 					// If you don't call this when the phase is output, the counter goes crazy.
-					auto loop_count = get_next_loop_count();
+					const auto loop_count = get_next_loop_count();
 					if (loop_count == UINT64_MAX)
 					{
 						// Set the end flag.
@@ -541,7 +538,7 @@ namespace Learner
 
 					auto pv_value1 = search(pos, depth);
 
-					auto value1 = pv_value1.first;
+					const auto value1 = pv_value1.first;
 					auto& pv1 = pv_value1.second;
 
 					// For situations where the absolute evaluation value is greater than or equal to this value
@@ -585,7 +582,7 @@ namespace Learner
 					// Use PV's move to the leaf node and use the value that evaluated() is called on that leaf node.
 					auto evaluate_leaf = [&](Position& pos, vector<Move>& pv)
 					{
-						auto rootColor = pos.side_to_move();
+						const auto rootColor = pos.side_to_move();
 
 						auto ply2 = ply;
 						for (auto m : pv)
@@ -665,9 +662,9 @@ namespace Learner
 					// This may include the same aspect as it is generated in parallel on multiple PCs, so
 					// It is better to do the same process when reading.
 					{
-						auto key = pos.key();
-						auto hash_index = static_cast<size_t>(key & GENSFEN_HASH_SIZE - 1);
-						auto key2 = hash[hash_index];
+						const auto key = pos.key();
+						const auto hash_index = static_cast<size_t>(key & GENSFEN_HASH_SIZE - 1);
+						const auto key2 = hash[hash_index];
 						if (key == key2)
 						{
 							// when skipping is about before this
@@ -703,7 +700,7 @@ namespace Learner
 
 						// Take out the PV first hand. This should be present unless depth 0.
 						assert(!pv_value1.second.empty());
-						auto pv_move1 = pv_value1.second[0];
+						const auto pv_move1 = pv_value1.second[0];
 						psv.move = pv_move1;
 					}
 
@@ -751,7 +748,7 @@ namespace Learner
 							for (const auto& m : list)
 								if (type_of(pos.moved_piece(m)) == KING)
 									*p++ = m;
-							size_t n = p - &moves[0];
+							const size_t n = p - &moves[0];
 							if (n != 0)
 							{
 								// move to move the ball
@@ -774,7 +771,7 @@ namespace Learner
 					}
 					else {
 						// Since the logic becomes complicated, I'm sorry, I will search again with MultiPV here.
-						Learner::search(pos, random_multi_pv_depth, random_multi_pv);
+						search(pos, random_multi_pv_depth, random_multi_pv);
 						// Select one from the top N hands of root Moves
 
 						auto& rm = pos.this_thread()->rootMoves;
@@ -1139,7 +1136,7 @@ namespace Learner
 		const auto q /* eval_winrate */ = winning_percentage(shallow);
 		const auto t = static_cast<double>(psv.game_result + 1) / 2;
 
-		constexpr const auto epsilon = 0.000001;
+		constexpr auto epsilon = 0.000001;
 
 		// If the evaluation value in deep search exceeds ELMO_LAMBDA_LIMIT, apply ELMO_LAMBDA2 instead of ELMO_LAMBDA.
 		const auto lambda = abs(deep) >= ELMO_LAMBDA_LIMIT ? ELMO_LAMBDA2 : ELMO_LAMBDA;
@@ -1337,7 +1334,7 @@ namespace Learner
 					return false;
 
 				// Get the next file name.
-				auto filename = *filenames.rbegin();
+				const auto filename = *filenames.rbegin();
 				filenames.pop_back();
 
 				fs.open(filename, ios::in | ios::binary);
@@ -1385,7 +1382,7 @@ namespace Learner
 
 				if (!no_shuffle)
 				{
-					auto size = sfens.size();
+					const auto size = sfens.size();
 					for (size_t i = 0; i < size; ++i)
 						swap(sfens[i], sfens[static_cast<size_t>(prng.rand(static_cast<uint64_t>(size) - i) + i)]);
 				}
@@ -1394,7 +1391,7 @@ namespace Learner
 				// SFEN_READ_SIZE is a multiple of THREAD_BUFFER_SIZE.
 				assert(SFEN_READ_SIZE % THREAD_BUFFER_SIZE == 0);
 
-				auto size = size_t(SFEN_READ_SIZE / THREAD_BUFFER_SIZE);
+				const auto size = size_t(SFEN_READ_SIZE / THREAD_BUFFER_SIZE);
 				std::vector<PSVector*> ptrs;
 				ptrs.reserve(size);
 
@@ -1516,7 +1513,7 @@ namespace Learner
 		virtual void thread_worker(size_t thread_id);
 
 		// Start a thread that loads the phase file in the background.
-		void start_file_read_worker() { sr.start_file_read_worker(); }
+		void start_file_read_worker() const { sr.start_file_read_worker(); }
 
 		// save merit function parameters to a file
 		bool save(bool is_final = false);
@@ -1651,7 +1648,7 @@ namespace Learner
 				// The value of evaluate() may be used, but when calculating loss, learn_cross_entropy and
 				// Use qsearch() because it is difficult to compare the values.
 				// EvalHash has been disabled in advance. (If not, the same value will be returned every time)
-				auto r = qsearch(pos);
+				const auto r = qsearch(pos);
 
 				auto shallow_value = r.first;
 				{
@@ -1669,7 +1666,7 @@ namespace Learner
 				}
 
 				// Evaluation value of deep search
-				auto deep_value = static_cast<Value>(ps.score);
+				const auto deep_value = static_cast<Value>(ps.score);
 
 				// Note) This code does not consider when eval_limit is specified in the learn command.
 
@@ -1876,7 +1873,7 @@ namespace Learner
 						loss_output_count = 0;
 
 						// Number of cases processed this time
-						auto done = sr.total_done - sr.last_done;
+						const auto done = sr.total_done - sr.last_done;
 
 						// loss calculation
 						calc_loss(thread_id, done);
@@ -1964,7 +1961,7 @@ namespace Learner
 			// cout << pos << value << endl;
 
 			// Evaluation value of shallow search (qsearch)
-			auto r = qsearch(pos);
+			const auto r = qsearch(pos);
 			auto pv = r.second;
 
 			// Evaluation value of deep search
@@ -2010,7 +2007,7 @@ namespace Learner
 				// I don't think this is a very desirable property, as the aspect that gives the gradient will be different.
 				// I have turned off the substitution table, but I haven't updated the pv array in case of one stumbling block etc...
 
-				auto shallow_value = rootColor == pos.side_to_move() ? Eval::evaluate(pos) : -Eval::evaluate(pos);
+				const auto shallow_value = rootColor == pos.side_to_move() ? Eval::evaluate(pos) : -Eval::evaluate(pos);
 
 #if defined (LOSS_FUNCTION_IS_ELMO_METHOD)
 				// Calculate loss for learning data
@@ -2329,7 +2326,7 @@ namespace Learner
 		PRNG prng((std::random_device())());
 
 		// number of files
-		auto file_count = filenames.size();
+		const auto file_count = filenames.size();
 
 		// number of teacher positions stored in each file in filenames
 		vector<uint64_t> a_count(file_count);
@@ -2344,12 +2341,12 @@ namespace Learner
 
 			fs.open(filename, ios::in | ios::binary);
 			fs.seekg(0, fstream::end);
-			auto eofPos = static_cast<uint64_t>(fs.tellg());
+			const auto eofPos = static_cast<uint64_t>(fs.tellg());
 			fs.clear(); // Otherwise, the next seek may fail.
 			fs.seekg(0, fstream::beg);
-			auto begPos = static_cast<uint64_t>(fs.tellg());
-			auto file_size = eofPos - begPos;
-			auto sfen_count = file_size / sizeof(PackedSfenValue);
+			const auto begPos = static_cast<uint64_t>(fs.tellg());
+			const auto file_size = eofPos - begPos;
+			const auto sfen_count = file_size / sizeof(PackedSfenValue);
 			a_count[i] = sfen_count;
 
 			// Output the number of sfen stored in each file.
@@ -2377,7 +2374,7 @@ namespace Learner
 			read_file_to_memory(filename, [&buf](uint64_t size) {
 				assert(size % sizeof(PackedSfenValue) == 0);
 				// Expand the buffer and read after the last time.
-				auto last = buf.size();
+				const auto last = buf.size();
 				buf.resize(last + size / sizeof(PackedSfenValue));
 				return static_cast<void*>(&buf[last]);
 				});
@@ -2385,7 +2382,7 @@ namespace Learner
 
 		// shuffle from buf[0] to buf[size-1]
 		PRNG prng((std::random_device())());
-		auto size = static_cast<uint64_t>(buf.size());
+		const auto size = static_cast<uint64_t>(buf.size());
 		std::cout << "shuffle buf.size() = " << size << std::endl;
 		for (uint64_t i = 0; i < size; ++i)
 			swap(buf[i], buf[static_cast<uint64_t>(prng.rand(size - i) + i)]);
@@ -2699,7 +2696,7 @@ namespace Learner
 			sys::path p(kif_base_dir); // Origin of enumeration
 			std::for_each(sys::directory_iterator(p), sys::directory_iterator(),
 				[&](const sys::path& p) {
-					if (sys::is_regular_file(p))
+					if (is_regular_file(p))
 						filenames.push_back(Path::Combine(target_dir, p.filename().generic_string()));
 				});
 #pragma warning(pop)

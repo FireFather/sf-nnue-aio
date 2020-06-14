@@ -27,7 +27,6 @@
 
 #include "movegen.h"
 #include "position.h"
-#include "types.h"
 
 /// StatsEntry stores the stat table value. It is usually a number but could
 /// be a move or even a nested history. We use a class instead of naked value
@@ -140,8 +139,8 @@ public:
 private:
   template<PickType T, typename Pred> Move select(Pred);
   template<GenType> void score();
-  ExtMove* begin() { return cur; }
-  ExtMove* end() { return endMoves; }
+  ExtMove* begin() const { return cur; }
+  ExtMove* end() const { return endMoves; }
 
   const Position& pos;
   const ButterflyHistory* mainHistory;

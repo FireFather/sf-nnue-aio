@@ -81,8 +81,8 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
 		Position p;
 		p.set(pos.fen(), pos.is_chess960(), &st, pos.this_thread());
 		Tablebases::ProbeState s1, s2;
-		auto wdl = Tablebases::probe_wdl(p, &s1);
-		auto dtz = Tablebases::probe_dtz(p, &s2);
+		const auto wdl = probe_wdl(p, &s1);
+		const auto dtz = probe_dtz(p, &s2);
 		os << "\nTablebases WDL: " << std::setw(4) << wdl << " (" << s1 << ")"
 			<< "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
 	}
@@ -124,7 +124,7 @@ void Position::init() {
 		Bitboard b = cr;
 		while (b)
 		{
-			auto k = Zobrist::castling[1ULL << pop_lsb(&b)];
+			const auto k = Zobrist::castling[1ULL << pop_lsb(&b)];
 			Zobrist::castling[cr] ^= k ? k : rng.rand<Key>();
 		}
 	}
@@ -231,11 +231,11 @@ evalList.clear();
 
 		else if ((idx = PieceToChar.find(token)) != string::npos)
 		{
-			auto pc = Piece(idx);
+			const auto pc = Piece(idx);
 			put_piece(pc, sq);
 
 #if defined(EVAL_NNUE)
-			auto piece_no =
+			const auto piece_no =
 			idx == W_KING ?PIECE_NUMBER_WKING ://back ball
 			idx == B_KING ?PIECE_NUMBER_BKING ://back ball
 			next_piece_number++; // otherwise
@@ -259,8 +259,8 @@ evalList.clear();
 	while (ss >> token && !isspace(token))
 	{
 		Square rsq;
-		auto c = islower(token) ? BLACK : WHITE;
-		auto rook = make_piece(c, ROOK);
+		const auto c = islower(token) ? BLACK : WHITE;
+		const auto rook = make_piece(c, ROOK);
 
 		token = static_cast<char>(toupper(token));
 
@@ -316,16 +316,16 @@ evalList.clear();
 /// rights given the corresponding color and the rook starting square.
 
 void Position::set_castling_right(Color c, Square rfrom) {
-	auto kfrom = square<KING>(c);
-	auto cr = c & (kfrom < rfrom ? KING_SIDE : QUEEN_SIDE);
+	const auto kfrom = square<KING>(c);
+	const auto cr = c & (kfrom < rfrom ? KING_SIDE : QUEEN_SIDE);
 
 	st->castlingRights |= cr;
 	castlingRightsMask[kfrom] |= cr;
 	castlingRightsMask[rfrom] |= cr;
 	castlingRookSquare[cr] = rfrom;
 
-	auto kto = relative_square(c, cr & KING_SIDE ? SQ_G1 : SQ_C1);
-	auto rto = relative_square(c, cr & KING_SIDE ? SQ_F1 : SQ_D1);
+	const auto kto = relative_square(c, cr & KING_SIDE ? SQ_G1 : SQ_C1);
+	const auto rto = relative_square(c, cr & KING_SIDE ? SQ_F1 : SQ_D1);
 
 	castlingPath[cr] = (between_bb(rfrom, rto) | between_bb(kfrom, kto) | rto | kto)
 		& ~(kfrom | rfrom);
@@ -339,7 +339,7 @@ void Position::set_check_info(StateInfo* si) const {
 	si->blockersForKing[WHITE] = slider_blockers(pieces(BLACK), square<KING>(WHITE), si->pinners[BLACK]);
 	si->blockersForKing[BLACK] = slider_blockers(pieces(WHITE), square<KING>(BLACK), si->pinners[WHITE]);
 
-	auto ksq = square<KING>(~sideToMove);
+	const auto ksq = square<KING>(~sideToMove);
 
 	si->checkSquares[PAWN] = pawn_attacks_bb(~sideToMove, ksq);
 	si->checkSquares[KNIGHT] = attacks_bb<KNIGHT>(ksq);
@@ -366,8 +366,8 @@ void Position::set_state(StateInfo* si) const {
 
 	for (auto b = pieces(); b; )
 	{
-		auto s = pop_lsb(&b);
-		auto pc = piece_on(s);
+		const auto s = pop_lsb(&b);
+		const auto pc = piece_on(s);
 		si->key ^= Zobrist::psq[pc][s];
 
 		if (type_of(pc) == PAWN)
@@ -407,7 +407,7 @@ Position& Position::set(const string& code, Color c, StateInfo* si) {
 
 	std::transform(sides[c].begin(), sides[c].end(), sides[c].begin(), tolower);
 
-	auto fenStr = "8/" + sides[0] + static_cast<char>(8 - sides[0].length() + '0') + "/8/8/8/8/"
+	const auto fenStr = "8/" + sides[0] + static_cast<char>(8 - sides[0].length() + '0') + "/8/8/8/8/"
 		+ sides[1] + static_cast<char>(8 - sides[1].length() + '0') + "/8 w - - 0 10";
 
 	return set(fenStr, false, si, nullptr);
@@ -479,12 +479,12 @@ Bitboard Position::slider_blockers(Bitboard sliders, Square s, Bitboard& pinners
 	// Snipers are sliders that attack 's' when a piece and other snipers are removed
 	auto snipers = ((attacks_bb<  ROOK>(s) & pieces(QUEEN, ROOK))
 		| (attacks_bb<BISHOP>(s) & pieces(QUEEN, BISHOP))) & sliders;
-	auto occupancy = pieces() ^ snipers;
+	const auto occupancy = pieces() ^ snipers;
 
 	while (snipers)
 	{
-		auto sniperSq = pop_lsb(&snipers);
-		auto b = between_bb(s, sniperSq) & occupancy;
+		const auto sniperSq = pop_lsb(&snipers);
+		const auto b = between_bb(s, sniperSq) & occupancy;
 
 		if (b && !more_than_one(b))
 		{
@@ -517,8 +517,8 @@ bool Position::legal(Move m) const {
 
 	assert(is_ok(m));
 
-	auto us = sideToMove;
-	auto from = from_sq(m);
+	const auto us = sideToMove;
+	const auto from = from_sq(m);
 	auto to = to_sq(m);
 
 	assert(color_of(moved_piece(m)) == us);
@@ -529,9 +529,9 @@ bool Position::legal(Move m) const {
 	// the move is made.
 	if (type_of(m) == ENPASSANT)
 	{
-		auto ksq = square<KING>(us);
-		auto capsq = to - pawn_push(us);
-		auto occupied = pieces() ^ from ^ capsq | to;
+		const auto ksq = square<KING>(us);
+		const auto capsq = to - pawn_push(us);
+		const auto occupied = pieces() ^ from ^ capsq | to;
 
 		assert(to == ep_square());
 		assert(moved_piece(m) == make_piece(us, PAWN));
@@ -549,7 +549,7 @@ bool Position::legal(Move m) const {
 		// After castling, the rook and king final positions are the same in
 		// Chess960 as they would be in standard chess.
 		to = relative_square(us, to > from ? SQ_G1 : SQ_C1);
-		auto step = to > from ? WEST : EAST;
+		const auto step = to > from ? WEST : EAST;
 
 		for (auto s = to; s != from; s += step)
 			if (attackers_to(s) & pieces(~us))
@@ -579,10 +579,10 @@ bool Position::legal(Move m) const {
 /// due to SMP concurrent access or hash position key aliasing.
 
 bool Position::pseudo_legal(const Move m) const {
-	auto us = sideToMove;
-	auto from = from_sq(m);
-	auto to = to_sq(m);
-	auto pc = moved_piece(m);
+	const auto us = sideToMove;
+	const auto from = from_sq(m);
+	const auto to = to_sq(m);
+	const auto pc = moved_piece(m);
 
 	// Use a slower but simpler function for uncommon cases
 	if (type_of(m) != NORMAL)
@@ -652,8 +652,8 @@ bool Position::gives_check(Move m) const {
 	assert(is_ok(m));
 	assert(color_of(moved_piece(m)) == sideToMove);
 
-	auto from = from_sq(m);
-	auto to = to_sq(m);
+	const auto from = from_sq(m);
+	const auto to = to_sq(m);
 
 	// Is there a direct check?
 	if (check_squares(type_of(piece_on(from))) & to)
@@ -678,18 +678,18 @@ bool Position::gives_check(Move m) const {
 		// the captured pawn.
 	case ENPASSANT:
 	{
-		auto capsq = make_square(file_of(to), rank_of(from));
-		auto b = pieces() ^ from ^ capsq | to;
+		const auto capsq = make_square(file_of(to), rank_of(from));
+		const auto b = pieces() ^ from ^ capsq | to;
 
 		return  (attacks_bb<  ROOK>(square<KING>(~sideToMove), b) & pieces(sideToMove, QUEEN, ROOK))
 			| (attacks_bb<BISHOP>(square<KING>(~sideToMove), b) & pieces(sideToMove, QUEEN, BISHOP));
 	}
 	case CASTLING:
 	{
-		auto kfrom = from;
-		auto rfrom = to; // Castling is encoded as 'king captures the rook'
-		auto kto = relative_square(sideToMove, rfrom > kfrom ? SQ_G1 : SQ_C1);
-		auto rto = relative_square(sideToMove, rfrom > kfrom ? SQ_F1 : SQ_D1);
+		const auto kfrom = from;
+		const auto rfrom = to; // Castling is encoded as 'king captures the rook'
+		const auto kto = relative_square(sideToMove, rfrom > kfrom ? SQ_G1 : SQ_C1);
+		const auto rto = relative_square(sideToMove, rfrom > kfrom ? SQ_F1 : SQ_D1);
 
 		return attacks_bb<ROOK>(rto) & square<KING>(~sideToMove)
 			&& attacks_bb<ROOK>(rto, pieces() ^ kfrom ^ rfrom | rto | kto) & square<KING>(~sideToMove);
@@ -733,9 +733,9 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
 	auto us = sideToMove;
 	auto them = ~us;
-	auto from = from_sq(m);
+	const auto from = from_sq(m);
 	auto to = to_sq(m);
-	auto pc = piece_on(from);
+	const auto pc = piece_on(from);
 	auto captured = type_of(m) == ENPASSANT ? make_piece(them, PAWN) : piece_on(to);
 
 #if defined(EVAL_NNUE)
@@ -850,7 +850,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 	// Update castling rights if needed
 	if (st->castlingRights && castlingRightsMask[from] | castlingRightsMask[to])
 	{
-		auto cr = castlingRightsMask[from] | castlingRightsMask[to];
+		const auto cr = castlingRightsMask[from] | castlingRightsMask[to];
 		k ^= Zobrist::castling[st->castlingRights & cr];
 		st->castlingRights &= ~cr;
 	}
@@ -885,7 +885,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
 		else if (type_of(m) == PROMOTION)
 		{
-			auto promotion = make_piece(us, promotion_type(m));
+			const auto promotion = make_piece(us, promotion_type(m));
 
 			assert(relative_rank(us, to) == RANK_8);
 			assert(type_of(promotion) >= KNIGHT && type_of(promotion) <= QUEEN);
@@ -937,7 +937,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 	// occurrence of the same position, negative in the 3-fold case, or zero
 	// if the position was not repeated.
 	st->repetition = 0;
-	auto end = std::min(st->rule50, st->pliesFromNull);
+	const auto end = std::min(st->rule50, st->pliesFromNull);
 	if (end >= 4)
 	{
 		auto* stp = st->previous->previous;
@@ -970,8 +970,8 @@ void Position::undo_move(Move m) {
 
 	sideToMove = ~sideToMove;
 
-	auto us = sideToMove;
-	auto from = from_sq(m);
+	const auto us = sideToMove;
+	const auto from = from_sq(m);
 	auto to = to_sq(m);
 	auto pc = piece_on(to);
 
@@ -989,7 +989,7 @@ void Position::undo_move(Move m) {
 		put_piece(pc, to);
 
 #if defined(EVAL_NNUE)
-		auto piece_no0 = st->dirtyPiece.pieceNo[0];
+		const auto piece_no0 = st->dirtyPiece.pieceNo[0];
 		evalList.put_piece(piece_no0, to, pc);
 #endif  // defined(EVAL_NNUE)
 	}
@@ -1005,7 +1005,7 @@ void Position::undo_move(Move m) {
 		move_piece(to, from); // Put the piece back at the source square
 
 #if defined(EVAL_NNUE)
-		auto piece_no0 = st->dirtyPiece.pieceNo[0];
+		const auto piece_no0 = st->dirtyPiece.pieceNo[0];
 		evalList.put_piece(piece_no0, from, pc);
 		evalList.piece_no_list_board[to] = PIECE_NUMBER_NB;
 #endif  // defined(EVAL_NNUE)
@@ -1028,7 +1028,7 @@ void Position::undo_move(Move m) {
 			put_piece(st->capturedPiece, capsq); // Restore the captured piece
 
 #if defined(EVAL_NNUE)
-			auto piece_no1 = st->dirtyPiece.pieceNo[1];
+			const auto piece_no1 = st->dirtyPiece.pieceNo[1];
 			assert(evalList.bona_piece(piece_no1).fw == Eval::BONA_PIECE_ZERO);
 			assert(evalList.bona_piece(piece_no1).fb == Eval::BONA_PIECE_ZERO);
 			evalList.put_piece(piece_no1, capsq, st->capturedPiece);
@@ -1065,7 +1065,7 @@ void Position::do_castling(Color us, Square from, Square& to, Square& rfrom, Squ
 	}
 #endif  // defined(EVAL_NNUE)
 
-	auto kingSide = to > from;
+	const auto kingSide = to > from;
 	rfrom = to; // Castling is encoded as "king captures friendly rook"
 	rto = relative_square(us, kingSide ? SQ_F1 : SQ_D1);
 	to = relative_square(us, kingSide ? SQ_G1 : SQ_C1);
@@ -1159,10 +1159,10 @@ void Position::undo_null_move() {
 /// en-passant and promotions.
 
 Key Position::key_after(Move m) const {
-	auto from = from_sq(m);
-	auto to = to_sq(m);
-	auto pc = piece_on(from);
-	auto captured = piece_on(to);
+	const auto from = from_sq(m);
+	const auto to = to_sq(m);
+	const auto pc = piece_on(from);
+	const auto captured = piece_on(to);
 	auto k = st->key ^ Zobrist::side;
 
 	if (captured)
@@ -1184,7 +1184,7 @@ bool Position::see_ge(Move m, Value threshold) const {
 	if (type_of(m) != NORMAL)
 		return VALUE_ZERO >= threshold;
 
-	auto from = from_sq(m), to = to_sq(m);
+	const auto from = from_sq(m), to = to_sq(m);
 
 	int swap = PieceValue[MG][piece_on(to)] - threshold;
 	if (swap < 0)
@@ -1313,23 +1313,23 @@ bool Position::has_game_cycle(int ply) const {
 
 	int j;
 
-	auto end = std::min(st->rule50, st->pliesFromNull);
+	const auto end = std::min(st->rule50, st->pliesFromNull);
 
 	if (end < 3)
 		return false;
 
-	auto originalKey = st->key;
+	const auto originalKey = st->key;
 	auto* stp = st->previous;
 
 	for (auto i = 3; i <= end; i += 2)
 	{
 		stp = stp->previous->previous;
 
-		auto moveKey = originalKey ^ stp->key;
+		const auto moveKey = originalKey ^ stp->key;
 		if ((j = H1(moveKey), cuckoo[j] == moveKey)
 			|| (j = H2(moveKey), cuckoo[j] == moveKey))
 		{
-			auto move = cuckooMove[j];
+			const auto move = cuckooMove[j];
 			auto s1 = from_sq(move);
 			auto s2 = to_sq(move);
 
@@ -1396,7 +1396,7 @@ void Position::flip() {
 
 bool Position::pos_is_ok() const {
 
-	constexpr const auto Fast = true; // Quick (default) or full check?
+	constexpr auto Fast = true; // Quick (default) or full check?
 
 	if (sideToMove != WHITE && sideToMove != BLACK
 		|| piece_on(square<KING>(WHITE)) != W_KING
@@ -1464,7 +1464,7 @@ bool Position::pos_is_ok() const {
 PieceNumber Position::piece_no_of(Square sq) const
 {
 	assert(piece_on(sq) != NO_PIECE);
-	auto n = evalList.piece_no_of_board(sq);
+	const auto n = evalList.piece_no_of_board(sq);
 	assert(is_ok(n));
 	return n;
 }

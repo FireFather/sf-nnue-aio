@@ -73,16 +73,16 @@ private:
 	{
 		float32_converter c;
 		c.f = f;
-		uint32_t n = c.n;
+		const uint32_t n = c.n;
 
 		// The sign bit is MSB in common.
-		uint16_t sign_bit = n >> 16 & 0x8000;
+		const uint16_t sign_bit = n >> 16 & 0x8000;
 
 		// The exponent of IEEE 754's float 32 is biased +127 ,so we change this bias into +15 and limited to 5-bit.
-		uint16_t exponent = ((n >> 23) - 127 + 15 & 0x1f) << 10;
+		const uint16_t exponent = ((n >> 23) - 127 + 15 & 0x1f) << 10;
 
 		// The fraction is limited to 10-bit.
-		uint16_t fraction = n >> 23 - 10 & 0x3ff;
+		const uint16_t fraction = n >> 23 - 10 & 0x3ff;
 
 		float16 f_;
 		f_.v_ = sign_bit | exponent | fraction;
@@ -92,9 +92,9 @@ private:
 
 	static float to_float(float16 v)
 	{
-		uint32_t sign_bit = (v.v_ & 0x8000) << 16;
-		uint32_t exponent = ((v.v_ >> 10 & 0x1f) - 15 + 127 & 0xff) << 23;
-		uint32_t fraction = (v.v_ & 0x3ff) << 23 - 10;
+		const uint32_t sign_bit = (v.v_ & 0x8000) << 16;
+		const uint32_t exponent = ((v.v_ >> 10 & 0x1f) - 15 + 127 & 0xff) << 23;
+		const uint32_t fraction = (v.v_ & 0x3ff) << 23 - 10;
 
 		float32_converter c;
 		c.n = sign_bit | exponent | fraction;
@@ -110,7 +110,7 @@ private:
 		std::cout << static_cast<float>(b) << std::endl;
 		float16 c = 2.5;
 		std::cout << static_cast<float>(c) << std::endl;
-		float16 d = a + c;
+		const auto d = a + c;
 		std::cout << static_cast<float>(d) << std::endl;
 
 		c *= 1.5;
@@ -119,7 +119,7 @@ private:
 		b /= 3;
 		std::cout << static_cast<float>(b) << std::endl;
 
-		float f1 = 1.5;
+		const float f1 = 1.5;
 		a += f1;
 		std::cout << static_cast<float>(a) << std::endl;
 

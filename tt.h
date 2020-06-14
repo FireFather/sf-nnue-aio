@@ -22,7 +22,6 @@
 #define TT_H_INCLUDED
 
 #include "misc.h"
-#include "types.h"
 
 /// TTEntry struct is the 10 bytes transposition table entry, defined as below:
 ///
@@ -76,7 +75,7 @@ class TranspositionTable {
 public:
  ~TranspositionTable() { aligned_ttmem_free(mem); }
   void new_search() { generation8 += 8; } // Lower 3 bits are used by PV flag and Bound
-  TTEntry* probe(const Key key, bool& found) const;
+  TTEntry* probe(Key key, bool& found) const;
   [[nodiscard]] int hashfull() const;
   void resize(size_t mbSize);
   void clear();

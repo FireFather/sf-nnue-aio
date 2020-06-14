@@ -11,9 +11,9 @@ namespace Eval::NNUE::Features
 	// Find the index of the feature quantity from the ball position and BonaPiece
 	template <Side AssociatedKing>
 	IndexType HalfRelativeKP<AssociatedKing>::MakeIndex(
-		Square sq_k, BonaPiece p) {
-		constexpr const auto W = kBoardWidth;
-		constexpr const auto H = kBoardHeight;
+		const Square sq_k, const BonaPiece p) {
+		constexpr auto W = kBoardWidth;
+		constexpr auto H = kBoardHeight;
 		const IndexType piece_index = (p - fe_hand_end) / SQUARE_NB;
 		const auto sq_p = static_cast<Square>((p - fe_hand_end) % SQUARE_NB);
 		const auto relative_file = file_of(sq_p) - file_of(sq_k) + W / 2;
@@ -24,7 +24,7 @@ namespace Eval::NNUE::Features
 	// Get the piece information
 	template <Side AssociatedKing>
 	void HalfRelativeKP<AssociatedKing>::GetPieces(
-		const Position& pos, Color perspective,
+		const Position& pos, const Color perspective,
 		BonaPiece** pieces, Square* sq_target_k) {
 		*pieces = perspective == BLACK ?
 			pos.eval_list()->piece_list_fb() :
@@ -38,7 +38,7 @@ namespace Eval::NNUE::Features
 	// Get a list of indices with a value of 1 among the features
 	template <Side AssociatedKing>
 	void HalfRelativeKP<AssociatedKing>::AppendActiveIndices(
-		const Position& pos, Color perspective, IndexList* active) {
+		const Position& pos, const Color perspective, IndexList* active) {
 		// do nothing if array size is small to avoid compiler warning
 		if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 
@@ -47,7 +47,7 @@ namespace Eval::NNUE::Features
 		GetPieces(pos, perspective, &pieces, &sq_target_k);
 		for (auto i = PIECE_NUMBER_ZERO; i < PIECE_NUMBER_KING; ++i) {
 			if (pieces[i] >= fe_hand_end) {
-				if (pieces[i] != Eval::BONA_PIECE_ZERO) {
+				if (pieces[i] != BONA_PIECE_ZERO) {
 					active->push_back(MakeIndex(sq_target_k, pieces[i]));
 				}
 			}
@@ -57,7 +57,7 @@ namespace Eval::NNUE::Features
 	// Get a list of indexes whose values ​​have changed from the previous one among the feature quantities
 	template <Side AssociatedKing>
 	void HalfRelativeKP<AssociatedKing>::AppendChangedIndices(
-		const Position& pos, Color perspective,
+		const Position& pos, const Color perspective,
 		IndexList* removed, IndexList* added) {
 		BonaPiece* pieces;
 		Square sq_target_k;
@@ -68,14 +68,14 @@ namespace Eval::NNUE::Features
 			const auto old_p = static_cast<BonaPiece>(
 				dp.changed_piece[i].old_piece.from[perspective]);
 			if (old_p >= fe_hand_end) {
-				if (old_p != Eval::BONA_PIECE_ZERO) {
+				if (old_p != BONA_PIECE_ZERO) {
 					removed->push_back(MakeIndex(sq_target_k, old_p));
 				}
 			}
 			const auto new_p = static_cast<BonaPiece>(
 				dp.changed_piece[i].new_piece.from[perspective]);
 			if (new_p >= fe_hand_end) {
-				if (new_p != Eval::BONA_PIECE_ZERO) {
+				if (new_p != BONA_PIECE_ZERO) {
 					added->push_back(MakeIndex(sq_target_k, new_p));
 				}
 			}

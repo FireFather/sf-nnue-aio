@@ -40,7 +40,7 @@ void MultiThink::go_think()
 	for (size_t i = 0; i < thread_num; ++i)
 	{
 		thread_finished[i] = 0;
-		threads.push_back(std::thread([i, this]
+		threads.emplace_back([i, this]
 			{
 				// exhaust all processor threads.
 				WinProcGroup::bindThisThread(i);
@@ -50,7 +50,7 @@ void MultiThink::go_think()
 
 				// Set the end flag because the thread has ended
 				this->thread_finished[i] = 1;
-			}));
+			});
 	}
 
 	// wait for all threads to finish

@@ -74,7 +74,7 @@ namespace Eval {
 
 			// backpropagation
 			void Backpropagate(const LearnFloatType* gradients,
-				LearnFloatType learning_rate) {
+			                   const LearnFloatType learning_rate) {
 				if (num_referrers_ == 1) {
 					feature_transformer_trainer_->Backpropagate(gradients, learning_rate);
 					return;
@@ -202,7 +202,7 @@ namespace Eval {
 
 			// backpropagation
 			void Backpropagate(const LearnFloatType* gradients,
-				LearnFloatType learning_rate) {
+			                   const LearnFloatType learning_rate) {
 				for (IndexType b = 0; b < batch_size_; ++b) {
 					const auto input_offset = kInputDimensions * b;
 					const auto output_offset = kOutputDimensions * b;

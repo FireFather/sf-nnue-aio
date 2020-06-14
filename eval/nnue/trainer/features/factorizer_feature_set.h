@@ -80,7 +80,7 @@ namespace Eval {
 				// Get the index of learning feature and scale of learning rate
 				static void AppendTrainingFeatures(
 					IndexType base_index, std::vector<TrainingFeature>* training_features,
-					IndexType base_dimensions = kBaseDimensions) {
+					const IndexType base_dimensions = kBaseDimensions) {
 					assert(base_index < kBaseDimensions);
 					const auto start = training_features->size();
 					Factorizer<FeatureType>::AppendTrainingFeatures(

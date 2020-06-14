@@ -78,14 +78,14 @@ namespace Eval {
 		}
 
 		// convert input features
-		void Transform(const Position& pos, OutputType* output, bool refresh) const {
+		void Transform(const Position& pos, OutputType* output, const bool refresh) const {
 			if (refresh || !UpdateAccumulatorIfPossible(pos)) {
 				RefreshAccumulator(pos);
 			}
 			const auto& accumulation = pos.state()->accumulator.accumulation;
 #if defined(USE_AVX2)
 			constexpr IndexType kNumChunks = kHalfDimensions / kSimdWidth;
-			constexpr const auto kControl = 0b11011000;
+			constexpr auto kControl = 0b11011000;
 			const auto kZero = _mm256_setzero_si256();
 #elif defined(USE_SSE41)
 			constexpr IndexType kNumChunks = kHalfDimensions / kSimdWidth;

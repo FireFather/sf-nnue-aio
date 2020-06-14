@@ -84,17 +84,17 @@ namespace EvalLearningTools
 		// Set eta according to epoch.
 		static void calc_eta(uint64_t epoch)
 		{
-			if (Weight::eta1_epoch == 0) // Exclude eta2
-				Weight::eta = Weight::eta1;
-			else if (epoch < Weight::eta1_epoch)
+			if (eta1_epoch == 0) // Exclude eta2
+				eta = eta1;
+			else if (epoch < eta1_epoch)
 				// apportion
-				Weight::eta = Weight::eta1 + (Weight::eta2 - Weight::eta1) * epoch / Weight::eta1_epoch;
-			else if (Weight::eta2_epoch == 0) // Exclude eta3
-				Weight::eta = Weight::eta2;
-			else if (epoch < Weight::eta2_epoch)
-				Weight::eta = Weight::eta2 + (Weight::eta3 - Weight::eta2) * (epoch - Weight::eta1_epoch) / (Weight::eta2_epoch - Weight::eta1_epoch);
+				eta = eta1 + (eta2 - eta1) * epoch / eta1_epoch;
+			else if (eta2_epoch == 0) // Exclude eta3
+				eta = eta2;
+			else if (epoch < eta2_epoch)
+				eta = eta2 + (eta3 - eta2) * (epoch - eta1_epoch) / (eta2_epoch - eta1_epoch);
 			else
-				Weight::eta = Weight::eta3;
+				eta = eta3;
 		}
 
 		template <typename T> void updateFV(T& v) { updateFV(v, 1.0); }
@@ -124,7 +124,7 @@ namespace EvalLearningTools
 			// g2 = g2 + g^2
 			// v = v-ηg/sqrt(g2)
 
-			constexpr const auto epsilon = 0.000001;
+			constexpr auto epsilon = 0.000001;
 
 			if (g == LearnFloatType(0))
 				return;
@@ -253,7 +253,7 @@ namespace EvalLearningTools
 		[[nodiscard]] virtual uint64_t size() const = 0;
 
 		// Determine if the given index is more than min_index() and less than max_index().
-		/*final*/ bool is_ok(uint64_t index) { return min_index() <= index && index < max_index(); }
+		/*final*/ bool is_ok(uint64_t index) const { return min_index() <= index && index < max_index(); }
 
 		// Be sure to use this set() by calling it. Otherwise, construct an instance using fromKK()/fromIndex() on the derived class side and use it.
 		virtual void set(int max_king_sq, uint64_t fe_end, uint64_t min_index)
@@ -372,8 +372,8 @@ namespace EvalLearningTools
 		}
 
 		// comparison operator
-		bool operator==(const KK& rhs) { return king0() == rhs.king0() && king1() == rhs.king1(); }
-		bool operator !=(const KK& rhs) { return !(*this == rhs); }
+		bool operator==(const KK& rhs) const { return king0() == rhs.king0() && king1() == rhs.king1(); }
+		bool operator !=(const KK& rhs) const { return !(*this == rhs); }
 
 	private:
 		Square king0_, king1_;
@@ -474,8 +474,8 @@ namespace EvalLearningTools
 		}
 
 		// comparison operator
-		bool operator==(const KKP& rhs) { return king0() == rhs.king0() && king1() == rhs.king1() && piece() == rhs.piece(); }
-		bool operator !=(const KKP& rhs) { return !(*this == rhs); }
+		bool operator==(const KKP& rhs) const { return king0() == rhs.king0() && king1() == rhs.king1() && piece() == rhs.piece(); }
+		bool operator !=(const KKP& rhs) const { return !(*this == rhs); }
 
 	private:
 		Square king0_, king1_;
@@ -529,7 +529,7 @@ namespace EvalLearningTools
 			int piece0 = (int)(raw_index % fe_end_);
 			raw_index /= fe_end_;
 #else
-			auto index2 = raw_index % triangle_fe_end;
+			const auto index2 = raw_index % triangle_fe_end;
 
 			// Write the formula to find piece0, piece1 from index2 here.
 			// This is the inverse function of index2 = i * (i+1) / 2 + j.
@@ -621,9 +621,9 @@ namespace EvalLearningTools
 				return static_cast<uint64_t>(k) * triangle_fe_end + static_cast<uint64_t>(uint64_t(i) * (uint64_t(i) + 1) / 2 + uint64_t(j));
 			};
 
-			auto k = king_;
-			auto i = piece0_;
-			auto j = piece1_;
+			const auto k = king_;
+			const auto i = piece0_;
+			const auto j = piece1_;
 
 			return i >= j ? PcPcOnSq(k, i, j) : PcPcOnSq(k, j, i);
 #endif
@@ -631,12 +631,14 @@ namespace EvalLearningTools
 
 		//Returns whether the dimension lowered with toLowerDimensions is inverse.
 		// Prepared to match KK, KKP and interface. This method always returns false for this KPP class.
-		[[nodiscard]] bool is_inverse() const {
+		[[nodiscard]] static bool is_inverse()
+		{
 			return false;
 		}
 
 		// comparison operator
-		bool operator==(const KPP& rhs) {
+		bool operator==(const KPP& rhs) const
+		{
 			return king() == rhs.king() &&
 				(piece0() == rhs.piece0() && piece1() == rhs.piece1()
 #if defined(USE_TRIANGLE_WEIGHT_ARRAY)
@@ -645,7 +647,7 @@ namespace EvalLearningTools
 #endif
 					);
 		}
-		bool operator !=(const KPP& rhs) { return !(*this == rhs); }
+		bool operator !=(const KPP& rhs) const { return !(*this == rhs); }
 
 
 	private:
@@ -732,7 +734,7 @@ namespace EvalLearningTools
 		// A builder that creates KPPP objects from raw_index (a number that starts from 0, not a serial number)
 		[[nodiscard]] KPPP fromRawIndex(uint64_t raw_index) const
 		{
-			auto index2 = raw_index % triangle_fe_end;
+			const auto index2 = raw_index % triangle_fe_end;
 
 			// Write the expression to find piece0, piece1, piece2 from index2 here.
 			// This is the inverse function of index2 = i(i-1)(i-2)/6-1 + j(j+1)/2 + k.
@@ -778,9 +780,9 @@ namespace EvalLearningTools
 			// j(j+1)/2 = index2-a
 			// This is from the solution formula of the quadratic equation..
 
-			auto a = static_cast<uint64_t>(piece0) * (static_cast<uint64_t>(piece0) - 1) * (static_cast<uint64_t>(piece0) - 2) / 6;
+			const auto a = static_cast<uint64_t>(piece0) * (static_cast<uint64_t>(piece0) - 1) * (static_cast<uint64_t>(piece0) - 2) / 6;
 			auto piece1 = static_cast<int>((1 + sqrt(8.0 * (index2 - a) + 1)) / 2);
-			auto b = static_cast<uint64_t>(piece1) * (piece1 - 1) / 2;
+			const auto b = static_cast<uint64_t>(piece1) * (piece1 - 1) / 2;
 			auto piece2 = static_cast<int>(index2 - a - b);
 
 #if 0
@@ -844,7 +846,8 @@ namespace EvalLearningTools
 		[[nodiscard]] Eval::BonaPiece piece2() const { return piece2_; }
 		//Returns whether the dimension lowered with toLowerDimensions is inverse.
 		// Prepared to match KK, KKP and interface. This method always returns false for this KPPP class.
-		[[nodiscard]] bool is_inverse() const {
+		[[nodiscard]] static bool is_inverse()
+		{
 			return false;
 		}
 
@@ -853,11 +856,12 @@ namespace EvalLearningTools
 		[[nodiscard]] uint64_t get_triangle_fe_end() const { return triangle_fe_end; }
 
 		// comparison operator
-		bool operator==(const KPPP& rhs) {
+		bool operator==(const KPPP& rhs) const
+		{
 			// piece0> piece1> piece2 is assumed, so there is no possibility of replacement.
 			return king() == rhs.king() && piece0() == rhs.piece0() && piece1() == rhs.piece1() && piece2() == rhs.piece2();
 		}
-		bool operator !=(const KPPP& rhs) { return !(*this == rhs); }
+		bool operator !=(const KPPP& rhs) const { return !(*this == rhs); }
 
 	private:
 
@@ -938,7 +942,7 @@ namespace EvalLearningTools
 		// A builder that creates a KKPP object from raw_index (a number that starts from 0, not a serial number)
 		[[nodiscard]] KKPP fromRawIndex(uint64_t raw_index) const
 		{
-			auto index2 = raw_index % triangle_fe_end;
+			const auto index2 = raw_index % triangle_fe_end;
 
 			// Write the expression to find piece0, piece1, piece2 from index2 here.
 			// This is the inverse function of index2 = i(i-1)/2 + j.
@@ -955,7 +959,7 @@ namespace EvalLearningTools
 
 			raw_index /= triangle_fe_end;
 
-			auto king = static_cast<int>(raw_index) /* %SQUARE_NB */;
+			const auto king = static_cast<int>(raw_index) /* %SQUARE_NB */;
 			assert(king < max_king_sq_);
 			// Propagate king_sq and fe_end.
 			return fromKKPP(king, static_cast<Eval::BonaPiece>(piece0), static_cast<Eval::BonaPiece>(piece1));
@@ -995,7 +999,8 @@ namespace EvalLearningTools
 
 		//Returns whether the dimension lowered with toLowerDimensions is inverse.
 		// Prepared to match KK, KKP and interface. This method always returns false for this KKPP class.
-		[[nodiscard]] bool is_inverse() const {
+		[[nodiscard]] static bool is_inverse()
+		{
 			return false;
 		}
 
@@ -1004,7 +1009,8 @@ namespace EvalLearningTools
 		[[nodiscard]] uint64_t get_triangle_fe_end() const { return triangle_fe_end; }
 
 		// comparison operator
-		bool operator==(const KKPP& rhs) {
+		bool operator==(const KKPP& rhs) const
+		{
 			// Since piece0> piece1 is assumed, there is no possibility of replacement.
 			return king() == rhs.king() && piece0() == rhs.piece0() && piece1() == rhs.piece1();
 		}

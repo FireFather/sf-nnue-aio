@@ -118,7 +118,7 @@ namespace Eval {
 		}
 
 		// calculate the evaluation value
-		static Value ComputeScore(const Position& pos, bool refresh = false) {
+		static Value ComputeScore(const Position& pos, const bool refresh = false) {
 			auto& accumulator = pos.state()->accumulator;
 			if (!refresh && accumulator.computed_score) {
 				return accumulator.score;
@@ -172,7 +172,7 @@ namespace Eval {
 #endif
 
 		// It is necessary to be able to operate atomically with evaluate hash, so the manipulator for that
-		void encode() {
+		static void encode() {
 #if defined(USE_SSE2)
 			// ScoreKeyValue is copied to atomic, so if key matches, data matches.
 #else
@@ -180,7 +180,7 @@ namespace Eval {
 #endif
 		}
 		// decode() is the reverse conversion of encode(), but since it is xor, the reverse conversion is the same.
-		void decode() { encode(); }
+		static void decode() { encode(); }
 
 		union {
 			struct {

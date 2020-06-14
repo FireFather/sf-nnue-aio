@@ -42,7 +42,7 @@ namespace {
 	// bit    12: side to move (WHITE or BLACK)
 	// bit 13-14: white pawn file (from FILE_A to FILE_D)
 	// bit 15-17: white pawn RANK_7 - rank (from RANK_7 - RANK_7 to RANK_7 - RANK_2)
-	unsigned index(Color stm, Square bksq, Square wksq, Square psq) {
+	unsigned index(const Color stm, const Square bksq, const Square wksq, const Square psq) {
 		return static_cast<int>(wksq) | bksq << 6 | stm << 12 | file_of(psq) << 13 | RANK_7 - rank_of(psq) << 15;
 	}
 
@@ -53,7 +53,7 @@ namespace {
 		WIN = 4
 	};
 
-	Result& operator|=(Result& r, Result v) { return r = Result(r | v); }
+	Result& operator|=(Result& r, const Result v) { return r = Result(r | v); }
 
 	struct KPKPosition {
 		KPKPosition() = default;
@@ -69,7 +69,7 @@ namespace {
 } // namespace
 
 
-bool Bitbases::probe(Square wksq, Square wpsq, Square bksq, Color stm) {
+bool Bitbases::probe(const Square wksq, const Square wpsq, const Square bksq, Color stm) {
 
 	assert(file_of(wpsq) <= FILE_D);
 
@@ -101,7 +101,7 @@ void Bitbases::init() {
 
 namespace {
 
-	KPKPosition::KPKPosition(unsigned idx) {
+	KPKPosition::KPKPosition(const unsigned idx) {
 
 		ksq[WHITE] = Square(idx >> 0 & 0x3F);
 		ksq[BLACK] = Square(idx >> 6 & 0x3F);

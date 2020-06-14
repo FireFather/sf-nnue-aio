@@ -10,7 +10,7 @@ namespace Eval::NNUE::Features
 
 	// Get a list of indices with a value of 1 among the features
 	void CastlingRight::AppendActiveIndices(
-		const Position& pos, Color perspective, IndexList* active) {
+		const Position& pos, const Color perspective, IndexList* active) {
 		// do nothing if array size is small to avoid compiler warning
 		if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 
@@ -34,7 +34,7 @@ namespace Eval::NNUE::Features
 
 	// Get a list of indexes whose values ​​have changed from the previous one among the feature quantities
 	void CastlingRight::AppendChangedIndices(
-		const Position& pos, Color perspective,
+		const Position& pos, const Color perspective,
 		IndexList* removed, IndexList* added) {
 		const auto previous_castling_rights = pos.state()->previous->castlingRights;
 		const auto current_castling_rights = pos.state()->castlingRights;

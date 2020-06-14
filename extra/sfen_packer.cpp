@@ -4,7 +4,6 @@
 #include "../position.h"
 
 #include <sstream>
-#include <fstream>
 #include <cstring> // std::memset()
 
 using namespace std;

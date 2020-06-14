@@ -74,7 +74,7 @@ namespace {
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
   Depth reduction(bool i, Depth d, int mn) {
-	  auto r = Reductions[d] * Reductions[mn];
+	  const auto r = Reductions[d] * Reductions[mn];
     return (r + 511) / 1024 + (!i && r > 1007);
   }
 
@@ -223,7 +223,7 @@ void MainThread::search() {
       return;
   }
 
-  auto us = rootPos.side_to_move();
+  const auto us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
 
@@ -335,7 +335,7 @@ void Thread::search() {
   auto lastBestMoveDepth = 0;
   auto* mainThread = this == Threads.main() ? Threads.main() : nullptr;
   double timeReduction = 1, totBestMoveChanges = 0;
-  auto us = rootPos.side_to_move();
+  const auto us = rootPos.side_to_move();
   auto iterIdx = 0;
 
   std::memset(ss-7, 0, 10 * sizeof(Stack));
@@ -368,10 +368,10 @@ void Thread::search() {
   // to CCRL Elo (goldfish 1.13 = 2000) and a fit through Ordo derived Elo
   // for match (TC 60+0.6) results spanning a wide range of k values.
   PRNG rng(now());
-  auto floatLevel = Options["UCI_LimitStrength"] ?
-	                    Utility::clamp(std::pow((Options["UCI_Elo"] - 1346.6) / 143.4, 1 / 0.806), 0.0, 20.0) :
-	                    static_cast<double>(Options["Skill Level"]);
-  auto intLevel = static_cast<int>(floatLevel) +
+  const auto floatLevel = Options["UCI_LimitStrength"] ?
+	                          Utility::clamp(std::pow((Options["UCI_Elo"] - 1346.6) / 143.4, 1 / 0.806), 0.0, 20.0) :
+	                          static_cast<double>(Options["Skill Level"]);
+  const auto intLevel = static_cast<int>(floatLevel) +
                  ((floatLevel - static_cast<int>(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
   Skill skill(intLevel);
 
@@ -436,13 +436,13 @@ void Thread::search() {
           // Reset aspiration window starting size
           if (rootDepth >= 4)
           {
-	          auto prev = rootMoves[pvIdx].previousScore;
+	          const auto prev = rootMoves[pvIdx].previousScore;
               delta = Value(21);
               alpha = std::max(prev - delta,-VALUE_INFINITE);
               beta  = std::min(prev + delta, VALUE_INFINITE);
 
               // Adjust contempt based on root move's previousScore (dynamic contempt)
-	          auto dct = ct + (102 - ct / 2) * prev / (abs(prev) + 157);
+	          const auto dct = ct + (102 - ct / 2) * prev / (abs(prev) + 157);
 
               contempt = us == WHITE ?  make_score(dct, dct / 2)
 	                         : -make_score(dct, dct / 2);
@@ -454,7 +454,7 @@ void Thread::search() {
           auto failedHighCnt = 0;
           while (true)
           {
-	          auto adjustedDepth = std::max(1, rootDepth - failedHighCnt - searchAgainCounter);
+	          const auto adjustedDepth = std::max(1, rootDepth - failedHighCnt - searchAgainCounter);
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, adjustedDepth, false);
 
               // Bring the best move to the front. It is critical that sorting
@@ -546,7 +546,7 @@ void Thread::search() {
 
           // If the bestMove is stable over several iterations, reduce time accordingly
           timeReduction = lastBestMoveDepth + 9 < completedDepth ? 1.94 : 0.91;
-	      auto reduction = (1.41 + mainThread->previousTimeReduction) / (2.27 * timeReduction);
+	      const auto reduction = (1.41 + mainThread->previousTimeReduction) / (2.27 * timeReduction);
 
           // Use part of the gained time from a previous stable move for the current move
           for (auto* th : Threads)
@@ -554,10 +554,10 @@ void Thread::search() {
               totBestMoveChanges += th->bestMoveChanges;
               th->bestMoveChanges = 0;
           }
-	      auto bestMoveInstability = 1 + totBestMoveChanges / Threads.size();
+	      const auto bestMoveInstability = 1 + totBestMoveChanges / Threads.size();
 
-	      auto totalTime = rootMoves.size() == 1 ? 0 :
-		                       Time.optimum() * fallingEval * reduction * bestMoveInstability;
+	      const auto totalTime = rootMoves.size() == 1 ? 0 :
+		                             Time.optimum() * fallingEval * reduction * bestMoveInstability;
 
           // Stop the search if we have exceeded the totalTime, at least 1ms search.
           if (Time.elapsed() > totalTime)
@@ -600,7 +600,7 @@ namespace {
   template <NodeType NT>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode) {
 
-    constexpr const auto PvNode = NT == PV;
+    constexpr auto PvNode = NT == PV;
     const auto rootNode = PvNode && ss->ply == 0;
 
     // Check if we have an upcoming move which draws by repetition, or
@@ -755,7 +755,7 @@ namespace {
             && !pos.can_castle(ANY_CASTLING))
         {
             TB::ProbeState err;
-            auto wdl = Tablebases::probe_wdl(pos, &err);
+            auto wdl = probe_wdl(pos, &err);
 
             // Force check of time on the next occasion
             if (thisThread == Threads.main())
@@ -1414,7 +1414,7 @@ moves_loop: // When in check, search starts from here
   template <NodeType NT>
   Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
 
-    constexpr const auto PvNode = NT == PV;
+    constexpr auto PvNode = NT == PV;
 
     assert(alpha >= -VALUE_INFINITE && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || alpha == beta - 1);
@@ -1449,15 +1449,15 @@ moves_loop: // When in check, search starts from here
     // Decide whether or not to include checks: this fixes also the type of
     // TT entry depth that we are going to use. Note that in qsearch we use
     // only two types of depth in TT: DEPTH_QS_CHECKS or DEPTH_QS_NO_CHECKS.
-    Depth ttDepth = ss->inCheck || depth >= DEPTH_QS_CHECKS
-	                    ? DEPTH_QS_CHECKS
-	                    : DEPTH_QS_NO_CHECKS;
+    const Depth ttDepth = ss->inCheck || depth >= DEPTH_QS_CHECKS
+	                          ? DEPTH_QS_CHECKS
+	                          : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
-    auto posKey = pos.key();
+    const auto posKey = pos.key();
     auto* tte = TT.probe(posKey, ttHit);
-    auto ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-    auto ttMove = ttHit ? tte->move() : MOVE_NONE;
-    auto pvHit = ttHit && tte->is_pv();
+    const auto ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+    const auto ttMove = ttHit ? tte->move() : MOVE_NONE;
+    const auto pvHit = ttHit && tte->is_pv();
 
     if (  !PvNode
         && ttHit
@@ -1525,8 +1525,8 @@ moves_loop: // When in check, search starts from here
     {
       assert(is_ok(move));
 
-      auto givesCheck = pos.gives_check(move);
-      auto captureOrPromotion = pos.capture_or_promotion(move);
+      const auto givesCheck = pos.gives_check(move);
+      const auto captureOrPromotion = pos.capture_or_promotion(move);
 
       moveCount++;
 
@@ -1581,7 +1581,7 @@ moves_loop: // When in check, search starts from here
 
       // Make and search the move
       pos.do_move(move, st, givesCheck);
-      Value value = -qsearch<NT>(pos, ss + 1, -beta, -alpha, depth - 1);
+      const Value value = -qsearch<NT>(pos, ss + 1, -beta, -alpha, depth - 1);
       pos.undo_move(move);
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
@@ -1680,16 +1680,16 @@ moves_loop: // When in check, search starts from here
 
   void update_all_stats(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Square prevSq,
                         Move* quietsSearched, int quietCount, Move* capturesSearched, int captureCount, Depth depth) {
-	  auto us = pos.side_to_move();
+	  const auto us = pos.side_to_move();
 	  auto* thisThread = pos.this_thread();
 	  auto& captureHistory = thisThread->captureHistory;
 	  auto moved_piece = pos.moved_piece(bestMove);
 	  auto captured = type_of(pos.piece_on(to_sq(bestMove)));
 
-	  auto bonus1 = stat_bonus(depth + 1);
-	  auto bonus2 = bestValue > beta + PawnValueMg
-		                ? bonus1 // larger bonus
-		                : stat_bonus(depth);   // smaller bonus
+	  const auto bonus1 = stat_bonus(depth + 1);
+	  const auto bonus2 = bestValue > beta + PawnValueMg
+		                      ? bonus1 // larger bonus
+		                      : stat_bonus(depth);   // smaller bonus
 
     if (!pos.capture_or_promotion(bestMove))
     {
@@ -1745,7 +1745,7 @@ moves_loop: // When in check, search starts from here
         ss->killers[0] = move;
     }
 
-    auto us = pos.side_to_move();
+    const auto us = pos.side_to_move();
     auto* thisThread = pos.this_thread();
     thisThread->mainHistory[us][from_to(move)] << bonus;
     update_continuation_histories(ss, pos.moved_piece(move), to_sq(move), bonus);
@@ -1755,7 +1755,7 @@ moves_loop: // When in check, search starts from here
 
     if (is_ok((ss-1)->currentMove))
     {
-	    auto prevSq = to_sq((ss-1)->currentMove);
+	    const auto prevSq = to_sq((ss-1)->currentMove);
         thisThread->counterMoves[pos.piece_on(prevSq)][prevSq] = move;
     }
 
@@ -1772,9 +1772,9 @@ moves_loop: // When in check, search starts from here
     static PRNG rng(now()); // PRNG sequence should be non-deterministic
 
     // RootMoves are already sorted by score in descending order
-    auto topScore = rootMoves[0].score;
-    int delta = std::min(topScore - rootMoves[multiPV - 1].score, PawnValueMg);
-    auto weakness = 120 - 2 * level;
+    const auto topScore = rootMoves[0].score;
+    const int delta = std::min(topScore - rootMoves[multiPV - 1].score, PawnValueMg);
+    const auto weakness = 120 - 2 * level;
     int maxScore = -VALUE_INFINITE;
 
     // Choose best move. For each move score we add two terms, both dependent on
@@ -1783,7 +1783,7 @@ moves_loop: // When in check, search starts from here
     for (size_t i = 0; i < multiPV; ++i)
     {
         // This is our magic formula
-        int push = (  weakness * static_cast<int>(topScore - rootMoves[i].score)
+        const int push = (  weakness * static_cast<int>(topScore - rootMoves[i].score)
                     + delta * (rng.rand<unsigned>() % weakness)) / 128;
 
         if (rootMoves[i].score + push >= maxScore)
@@ -1811,8 +1811,8 @@ void MainThread::check_time() {
 
   static auto lastInfoTime = now();
 
-  auto elapsed = Time.elapsed();
-  auto tick = Limits.startTime + elapsed;
+  const auto elapsed = Time.elapsed();
+  const auto tick = Limits.startTime + elapsed;
 
   if (tick - lastInfoTime >= 1000)
   {
@@ -1837,24 +1837,24 @@ void MainThread::check_time() {
 string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
 
   std::stringstream ss;
-  auto elapsed = Time.elapsed() + 1;
+  const auto elapsed = Time.elapsed() + 1;
   const auto& rootMoves = pos.this_thread()->rootMoves;
-  auto pvIdx = pos.this_thread()->pvIdx;
-  auto multiPV = std::min(static_cast<size_t>(Options["MultiPV"]), rootMoves.size());
-  auto nodesSearched = Threads.nodes_searched();
-  auto tbHits = Threads.tb_hits() + (TB::RootInTB ? rootMoves.size() : 0);
+  const auto pvIdx = pos.this_thread()->pvIdx;
+  const auto multiPV = std::min(static_cast<size_t>(Options["MultiPV"]), rootMoves.size());
+  const auto nodesSearched = Threads.nodes_searched();
+  const auto tbHits = Threads.tb_hits() + (TB::RootInTB ? rootMoves.size() : 0);
 
   for (size_t i = 0; i < multiPV; ++i)
   {
-	  auto updated = rootMoves[i].score != -VALUE_INFINITE;
+	  const auto updated = rootMoves[i].score != -VALUE_INFINITE;
 
       if (depth == 1 && !updated)
           continue;
 
-	  auto d = updated ? depth : depth - 1;
+	  const auto d = updated ? depth : depth - 1;
 	  auto v = updated ? rootMoves[i].score : rootMoves[i].previousScore;
 
-	  auto tb = TB::RootInTB && abs(v) < VALUE_MATE_IN_MAX_PLY;
+	  const auto tb = TB::RootInTB && abs(v) < VALUE_MATE_IN_MAX_PLY;
       v = tb ? rootMoves[i].tbScore : v;
 
       if (ss.rdbuf()->in_avail()) // Not at first line
@@ -1864,7 +1864,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
          << " depth "    << d
          << " seldepth " << rootMoves[i].selDepth
          << " multipv "  << i + 1
-         << " score "    << UCI::value(v);
+         << " score "    << value(v);
 
       if (!tb && i == pvIdx)
           ss << (v >= beta ? " lowerbound" : v <= alpha ? " upperbound" : "");
@@ -1880,7 +1880,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
          << " pv";
 
       for (auto m : rootMoves[i].pv)
-          ss << " " << UCI::move(m, pos.is_chess960());
+          ss << " " << move(m, pos.is_chess960());
   }
 
   return ss.str();
@@ -1907,7 +1907,7 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
 
     if (ttHit)
     {
-	    auto m = tte->move(); // Local copy to be SMP safe
+	    const auto m = tte->move(); // Local copy to be SMP safe
         if (MoveList<LEGAL>(pos).contains(m))
             pv.push_back(m);
     }
@@ -1916,7 +1916,7 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
     return pv.size() > 1;
 }
 
-void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
+void Tablebases::rank_root_moves(Position& pos, RootMoves& rootMoves) {
 
     RootInTB = false;
     UseRule50 = static_cast<bool>(Options["Syzygy50MoveRule"]);
@@ -1986,7 +1986,7 @@ namespace Learner
     // About Search::Limits
     // Be careful because this member variable is global and affects other threads.
     {
-      auto& limits = Search::Limits;
+      auto& limits = Limits;
 
       // Make the search equivalent to the "go infinite" command. (Because it is troublesome if time management is done)
       limits.infinite = true;
@@ -2031,7 +2031,7 @@ namespace Learner
       // th->clear();
 
       int ct = static_cast<int>(Options["Contempt"]) * PawnValueEg / 100; // From centipawns
-      auto us = pos.side_to_move();
+	    const auto us = pos.side_to_move();
 
       // In analysis mode, adjust contempt in accordance with user preference
       if (Limits.infinite || Options["UCI_AnalyseMode"])
@@ -2053,7 +2053,7 @@ namespace Learner
 
       rootMoves.clear();
       for (auto m: MoveList<LEGAL>(pos))
-        rootMoves.push_back(Search::RootMove(m));
+        rootMoves.emplace_back(m);
 
       assert(!rootMoves.empty());
 
@@ -2135,9 +2135,9 @@ namespace Learner
   {
     std::vector<Move> pvs;
 
-    auto depth = depth_;
+    const auto depth = depth_;
     if (depth <0)
-      return std::pair<Value, std::vector<Move>>(Eval::evaluate(pos), std::vector<Move>());
+      return std::pair<Value, std::vector<Move>>(evaluate(pos), std::vector<Move>());
 
     if (depth == 0)
       return qsearch(pos);
@@ -2203,7 +2203,7 @@ namespace Learner
         {
           delta = Value(20);
 
-          auto p = rootMoves[pvIdx].previousScore;
+          const auto p = rootMoves[pvIdx].previousScore;
 
           alpha = std::max(p-delta, -VALUE_INFINITE);
           beta = std::min(p + delta, VALUE_INFINITE);
@@ -2213,7 +2213,7 @@ namespace Learner
         auto failedHighCnt = 0;
         while (true)
         {
-	        auto adjustedDepth = std::max(1, rootDepth-failedHighCnt * 1);
+	        const auto adjustedDepth = std::max(1, rootDepth-failedHighCnt * 1);
           bestValue = ::search<PV>(pos, ss, alpha, beta, adjustedDepth, false);
 
           stable_sort(rootMoves.begin() + pvIdx, rootMoves.end());

@@ -26,7 +26,6 @@ namespace Eval::NNUE
 			const auto MAX_PLY = 256; // test up to 256 hands
 
 			StateInfo state[MAX_PLY]; // StateInfo for maximum number of steps
-			int ply; // Trouble from the initial phase
 
 			PRNG prng(20171128);
 
@@ -95,7 +94,7 @@ namespace Eval::NNUE
 
 			for (std::uint64_t i = 0; i < num_games; ++i) {
 				auto index_sets = make_index_sets(pos);
-				for (ply = 0; ply < MAX_PLY; ++ply) {
+				for (int ply = 0; ply < MAX_PLY; ++ply) {
 					MoveList<LEGAL> mg(pos); // Generate all legal hands
 
 					// There was no legal move == Clog
