@@ -115,7 +115,7 @@ namespace {
   // loop by the constructor, and unmarked upon leaving that loop by the destructor.
   struct ThreadHolding {
     explicit ThreadHolding(Thread* thisThread, const Key posKey, const int ply) {
-       location = ply < 8 ? &breadcrumbs[posKey & breadcrumbs.size() - 1] : nullptr;
+       location = ply < 8 ? &breadcrumbs[posKey & (breadcrumbs.size() - 1)] : nullptr;
        otherThread = false;
        owning = false;
        if (location)
@@ -297,9 +297,9 @@ void MainThread::search() {
                   bestThread = th;
           }
           else if (   th->rootMoves[0].score >= VALUE_TB_WIN_IN_MAX_PLY
-                   || th->rootMoves[0].score > VALUE_TB_LOSS_IN_MAX_PLY
-                   && votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]])
-              bestThread = th;
+				|| (th->rootMoves[0].score > VALUE_TB_LOSS_IN_MAX_PLY
+	  			&& votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]]))
+				bestThread = th;
       }
   }
 
@@ -578,7 +578,7 @@ void Thread::search() {
       }
 
       mainThread->iterValue[iterIdx] = bestValue;
-      iterIdx = iterIdx + 1 & 3;
+      iterIdx = (iterIdx + 1) & 3;
   }
 
   if (!mainThread)
@@ -701,7 +701,7 @@ namespace {
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ttHit    ? tte->move() : MOVE_NONE;
-    ttPv = PvNode || ttHit && tte->is_pv();
+    ttPv = PvNode || (ttHit && tte->is_pv());
     formerPv = ttPv && !PvNode;
 
     if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !pos.captured_piece() && is_ok((ss-1)->currentMove))
@@ -881,7 +881,7 @@ namespace {
             if (nullValue >= VALUE_TB_WIN_IN_MAX_PLY)
                 nullValue = beta;
 
-            if (thisThread->nmpMinPly || abs(beta) < VALUE_KNOWN_WIN && depth < 13)
+            if (thisThread->nmpMinPly || (abs(beta) < VALUE_KNOWN_WIN && depth < 13))
                 return nullValue;
 
             assert(!thisThread->nmpMinPly); // Recursive verification is not allowed
@@ -1284,7 +1284,7 @@ moves_loop: // When in check, search starts from here
       // For PV nodes only, do a full PV search on the first move or after a fail
       // high (in the latter case search only if value < beta), otherwise let the
       // parent node fail low with value <= alpha and try another move.
-      if (PvNode && (moveCount == 1 || value > alpha && (rootNode || value < beta)))
+      if (PvNode && (moveCount == 1 || (value > alpha && (rootNode || value < beta))))
       {
           (ss+1)->pv = pv;
           (ss+1)->pv[0] = MOVE_NONE;
@@ -1824,9 +1824,9 @@ void MainThread::check_time() {
   if (ponder)
       return;
 
-  if (   Limits.use_time_management() && (elapsed > Time.maximum() - 10 || stopOnPonderhit)
-      || Limits.movetime && elapsed >= Limits.movetime
-      || Limits.nodes && Threads.nodes_searched() >= static_cast<uint64_t>(Limits.nodes))
+  if ((Limits.use_time_management() && (elapsed > Time.maximum() - 10 || stopOnPonderhit))
+      || (Limits.movetime && elapsed >= Limits.movetime)
+      || (Limits.nodes && Threads.nodes_searched() >= static_cast<uint64_t>(Limits.nodes)))
       Threads.stop = true;
 }
 

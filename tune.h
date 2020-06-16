@@ -113,7 +113,7 @@ class Tune {
   };
 
   template<typename T>
-  struct Entry : public EntryBase {
+  struct Entry : EntryBase {
 
     static_assert(!std::is_const<T>::value, "Parameter cannot be const!");
 

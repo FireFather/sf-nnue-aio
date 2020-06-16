@@ -94,7 +94,7 @@ namespace Eval::NNUE
 
 			for (std::uint64_t i = 0; i < num_games; ++i) {
 				auto index_sets = make_index_sets(pos);
-				for (int ply = 0; ply < MAX_PLY; ++ply) {
+				for (auto ply = 0; ply < MAX_PLY; ++ply) {
 					MoveList<LEGAL> mg(pos); // Generate all legal hands
 
 					// There was no legal move == Clog

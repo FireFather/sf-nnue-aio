@@ -119,10 +119,10 @@ namespace {
         // (c) there is only one front stopper which can be levered.
         //     (Refined in Evaluation::passed)
         bool passed = !(stoppers ^ lever)
-	        || !(stoppers ^ leverPush)
-	        && popcount(phalanx) >= popcount(leverPush)
+	        || (!(stoppers ^ leverPush)
+	        && popcount(phalanx) >= popcount(leverPush))
 	        || (stoppers == blocked && r >= RANK_5
-		        && (shift<Up>(support) & ~(theirPawns | doubleAttackThem)));
+			&& (shift<Up>(support) & ~(theirPawns | doubleAttackThem)));
 
         passed &= !(forward_file_bb(Us, s) & ourPawns);
 

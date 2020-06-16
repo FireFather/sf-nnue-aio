@@ -344,7 +344,7 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
 			GetLastError() == ERROR_SUCCESS)
 		{
 			// round up size to full pages and allocate
-			allocSize = allocSize + largePageSize - 1 & ~size_t(largePageSize - 1);
+			allocSize = (allocSize + largePageSize - 1) & ~size_t(largePageSize - 1);
 			mem = VirtualAlloc(
 				nullptr, allocSize, MEM_RESERVE | MEM_COMMIT | MEM_LARGE_PAGES, PAGE_READWRITE);
 
@@ -358,12 +358,12 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
 	return mem;
 }
 
-void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
+void* aligned_ttmem_alloc(size_t size, void*& mem) {
 
 	static auto firstCall = true;
 
 	// try to allocate large pages
-	mem = aligned_ttmem_alloc_large_pages(allocSize);
+	mem = aligned_ttmem_alloc_large_pages(size);
 
 	// Suppress info strings on the first call. The first call occurs before 'uci'
 	// is received and in that case this output confuses some GUIs.
@@ -376,7 +376,7 @@ void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
 
 	// fall back to regular, page aligned, allocation if necessary
 	if (!mem)
-		mem = VirtualAlloc(nullptr, allocSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+		mem = VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
 	return mem;
 }

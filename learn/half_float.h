@@ -65,13 +65,13 @@ private:
 
 	// --- entity
 
-	uint16_t v_;
+	uint16_t v_{};
 
 	// --- conversion between float and float16
 
 	static float16 to_float16(const float f)
 	{
-		float32_converter c;
+		float32_converter c{};
 		c.f = f;
 		const uint32_t n = c.n;
 
@@ -96,7 +96,7 @@ private:
 		const uint32_t exponent = ((v.v_ >> 10 & 0x1f) - 15 + 127 & 0xff) << 23;
 		const uint32_t fraction = (v.v_ & 0x3ff) << 23 - 10;
 
-		float32_converter c;
+		float32_converter c{};
 		c.n = sign_bit | exponent | fraction;
 		return c.f;
 	}

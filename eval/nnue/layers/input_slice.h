@@ -61,8 +61,6 @@ class InputSlice {
   {
     return transformed_features + Offset;
   }
-
- private:
 };
 
 } // namespace Layers

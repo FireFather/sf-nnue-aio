@@ -40,23 +40,23 @@
 struct StateInfo {
 
   // Copied when making a move
-  Key    pawnKey;
-  Key    materialKey;
-  Value  nonPawnMaterial[COLOR_NB];
-  int    castlingRights;
-  int    rule50;
-  int    pliesFromNull;
+  Key    pawnKey{};
+  Key    materialKey{};
+  Value  nonPawnMaterial[COLOR_NB]{};
+  int    castlingRights{};
+  int    rule50{};
+  int    pliesFromNull{};
   Square epSquare;
 
   // Not copied when making a move (will be recomputed anyhow)
-  Key        key;
-  Bitboard   checkersBB;
+  Key        key{};
+  Bitboard   checkersBB{};
   Piece      capturedPiece;
-  StateInfo* previous;
-  Bitboard   blockersForKing[COLOR_NB];
-  Bitboard   pinners[COLOR_NB];
-  Bitboard   checkSquares[PIECE_TYPE_NB];
-  int        repetition;
+  StateInfo* previous{};
+  Bitboard   blockersForKing[COLOR_NB]{};
+  Bitboard   pinners[COLOR_NB]{};
+  Bitboard   checkSquares[PIECE_TYPE_NB]{};
+  int        repetition{};
 
 #if defined(EVAL_NNUE)
   Eval::NNUE::Accumulator accumulator;
@@ -229,21 +229,21 @@ private:
 #endif  // defined(EVAL_NNUE)
 
   // Data members
-  Piece board[SQUARE_NB];
-  Bitboard byTypeBB[PIECE_TYPE_NB];
-  Bitboard byColorBB[COLOR_NB];
-  int pieceCount[PIECE_NB];
-  Square pieceList[PIECE_NB][16];
-  int index[SQUARE_NB];
-  int castlingRightsMask[SQUARE_NB];
-  Square castlingRookSquare[CASTLING_RIGHT_NB];
-  Bitboard castlingPath[CASTLING_RIGHT_NB];
-  int gamePly;
+  Piece board[SQUARE_NB]{};
+  Bitboard byTypeBB[PIECE_TYPE_NB]{};
+  Bitboard byColorBB[COLOR_NB]{};
+  int pieceCount[PIECE_NB]{};
+  Square pieceList[PIECE_NB][16]{};
+  int index[SQUARE_NB]{};
+  int castlingRightsMask[SQUARE_NB]{};
+  Square castlingRookSquare[CASTLING_RIGHT_NB]{};
+  Bitboard castlingPath[CASTLING_RIGHT_NB]{};
+  int gamePly{};
   Color sideToMove;
   Score psq;
-  Thread* thisThread;
-  StateInfo* st;
-  bool chess960;
+  Thread* thisThread{};
+  StateInfo* st{};
+  bool chess960{};
 
 #if defined(EVAL_NNUE) || defined(EVAL_LEARN)
   // List of pieces used in the evaluation function
@@ -426,7 +426,7 @@ inline bool Position::capture_or_promotion(const Move m) const {
 inline bool Position::capture(const Move m) const {
   assert(is_ok(m));
   // Castling is encoded as "king captures rook"
-  return !empty(to_sq(m)) && type_of(m) != CASTLING || type_of(m) == ENPASSANT;
+  return (!empty(to_sq(m)) && type_of(m) != CASTLING) || type_of(m) == ENPASSANT;
 }
 
 inline Piece Position::captured_piece() const {

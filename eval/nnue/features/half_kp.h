@@ -20,10 +20,10 @@ template <Side AssociatedKing>
 			public:
 				// feature quantity name
 				static constexpr const char* kName =
-					AssociatedKing == Side::kFriend ? "HalfKP(Friend)" : "HalfKP(Enemy)";
+					(AssociatedKing == Side::kFriend) ? "HalfKP(Friend)" : "HalfKP(Enemy)";
 				// Hash value embedded in the evaluation function file
 				static constexpr std::uint32_t kHashValue =
-					0x5D69D5B9u ^ AssociatedKing == Side::kFriend;
+					0x5D69D5B9u ^ (AssociatedKing == Side::kFriend);
 				// number of feature dimensions
 				static constexpr IndexType kDimensions =
 					static_cast<IndexType>(SQUARE_NB) * static_cast<IndexType>(fe_end);

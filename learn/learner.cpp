@@ -307,7 +307,7 @@ namespace Learner
 	// -----------------------------------
 
 	// Class to generate sfen with multiple threads
-	struct MultiThinkGenSfen : public MultiThink
+	struct MultiThinkGenSfen : MultiThink
 	{
 		MultiThinkGenSfen(const int search_depth_, const int search_depth2_, SfenWriter& sw_)
 			: search_depth(search_depth_), search_depth2(search_depth2_), sw(sw_)
@@ -574,7 +574,7 @@ namespace Learner
 					if (pos.is_draw(0)) {
 #if defined (LEARN_GENSFEN_USE_DRAW_RESULT)
 						// When writing a draw
-						flush_psv(is_win);
+						flush_psv(1);
 #endif
 						break;
 					}
@@ -1488,7 +1488,7 @@ namespace Learner
 	};
 
 	// Class to generate sfen with multiple threads
-	struct LearnerThink : public MultiThink
+	struct LearnerThink : MultiThink
 	{
 		LearnerThink(SfenReader& sr_) :sr(sr_), stop_flag(false), save_only_once(false)
 		{

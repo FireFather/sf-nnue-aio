@@ -12,7 +12,7 @@ namespace Eval::NNUE::Features
 	void K::AppendActiveIndices(
 		const Position& pos, const Color perspective, IndexList* active) {
 		// do nothing if array size is small to avoid compiler warning
-		if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
+		if constexpr (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 
 		const BonaPiece* pieces = perspective == BLACK ?
 			pos.eval_list()->piece_list_fb() :

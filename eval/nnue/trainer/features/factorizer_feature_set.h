@@ -18,7 +18,6 @@ namespace Eval {
 			// Specialization for FeatureSet
 			template <typename FirstFeatureType, typename... RemainingFeatureTypes>
 			class Factorizer<FeatureSet<FirstFeatureType, RemainingFeatureTypes...>> {
-			private:
 				using Head = Factorizer<FeatureSet<FirstFeatureType>>;
 				using Tail = Factorizer<FeatureSet<RemainingFeatureTypes...>>;
 

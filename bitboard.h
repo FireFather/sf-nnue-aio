@@ -28,7 +28,7 @@
 namespace Bitbases {
 
 void init();
-bool probe(Square wksq, Square wpsq, Square bksq, Color us);
+bool probe(Square wksq, Square wpsq, Square bksq, Color stm);
 
 }
 
@@ -126,11 +126,11 @@ inline Bitboard  operator^(const Square s, const Bitboard b) { return b ^ s; }
 inline Bitboard  operator|(const Square s, const Square s2) { return square_bb(s) | s2; }
 
 constexpr bool more_than_one(const Bitboard b) {
-  return b & b - 1;
+  return b & (b - 1);
 }
 
 constexpr bool opposite_colors(const Square s1, const Square s2) {
-  return s1 + rank_of(s1) + s2 + rank_of(s2) & 1;
+  return (s1 + rank_of(s1) + s2 + rank_of(s2)) & 1;
 }
 
 
@@ -206,7 +206,7 @@ inline Bitboard adjacent_files_bb(const Square s) {
 
 inline Bitboard between_bb(const Square s1, const Square s2) {
 	const auto b = LineBB[s1][s2] & (AllSquares << s1 ^ AllSquares << s2);
-  return b & b - 1; //exclude lsb
+  return b & (b - 1); //exclude lsb
 }
 
 

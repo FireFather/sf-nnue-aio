@@ -95,7 +95,7 @@ struct LimitsType {
   }
 
   std::vector<Move> searchmoves;
-  TimePoint time[COLOR_NB], inc[COLOR_NB], npmsec, movetime, startTime;
+  TimePoint time[COLOR_NB]{}, inc[COLOR_NB]{}, npmsec, movetime, startTime{};
   int movestogo, depth, mate, perft, infinite;
   int64_t nodes;
   // Silent mode that does not output to the screen (for continuous self-play in the process)

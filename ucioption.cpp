@@ -187,9 +187,9 @@ namespace UCI {
 
 		assert(!type.empty());
 
-		if (type != "button" && v.empty()
-			|| type == "check" && v != "true" && v != "false"
-			|| type == "spin" && (stof(v) < min || stof(v) > max))
+		if ((type != "button" && v.empty())
+			|| (type == "check" && v != "true" && v != "false")
+			|| (type == "spin" && (stof(v) < min || stof(v) > max)))
 			return *this;
 
 		if (type == "combo")

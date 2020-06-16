@@ -296,5 +296,8 @@
     <ClInclude Include="syzygy\tbprobe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="eval\nnue\trainer\trainer_feature_transformer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

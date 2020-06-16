@@ -198,14 +198,14 @@ namespace Eval {
 	template <typename T, size_t Size>
 	struct HashTable {
 		HashTable() { clear(); }
-		T* operator [] (const Key k) { return entries_ + (static_cast<size_t>(k) & Size - 1); }
+		T* operator [] (const Key k) { return entries_ + (static_cast<size_t>(k) & (Size - 1)); }
 		void clear() { memset(entries_, 0, sizeof(T) * Size); }
 
 		// Check that Size is a power of 2
-		static_assert((Size& Size - 1) == 0, "");
+		static_assert((Size & (Size - 1)) == 0, "");
 
-	private:
-		T entries_[Size];
+		private:
+			T entries_[Size];
 	};
 
 	//HashTable to save the evaluated ones (the so-called ehash)

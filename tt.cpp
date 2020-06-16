@@ -137,8 +137,8 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
 		// nature we add 263 (256 is the modulus plus 7 to keep the unrelated
 		// lowest three bits from affecting the result) to calculate the entry
 		// age correctly even after generation8 overflows into the next cycle.
-		if (replace->depth8 - (263 + generation8 - replace->genBound8 & 0xF8)
-	> tte[i].depth8 - (263 + generation8 - tte[i].genBound8 & 0xF8))
+		if (replace->depth8 - ((263 + generation8 - replace->genBound8) & 0xF8)
+			> tte[i].depth8 - ((263 + generation8 - tte[i].genBound8) & 0xF8))
 			replace = &tte[i];
 
 	return found = false, replace;

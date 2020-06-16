@@ -16,7 +16,6 @@ namespace Eval {
 		// Learning: Affine transformation layer
 		template <typename PreviousLayer>
 		class Trainer<Layers::ClippedReLU<PreviousLayer>> {
-		private:
 			// type of layer to learn
 			using LayerType = Layers::ClippedReLU<PreviousLayer>;
 

@@ -60,38 +60,38 @@ public:
 
   Pawns::Table pawnsTable;
   Material::Table materialTable;
-  size_t pvIdx, pvLast;
-  uint64_t ttHitAverage;
-  int selDepth, nmpMinPly;
+  size_t pvIdx{}, pvLast{};
+  uint64_t ttHitAverage{};
+  int selDepth{}, nmpMinPly{};
   Color nmpColor;
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
 
   Position rootPos;
   Search::RootMoves rootMoves;
-  Depth rootDepth, completedDepth;
-  CounterMoveHistory counterMoves;
-  ButterflyHistory mainHistory;
-  LowPlyHistory lowPlyHistory;
-  CapturePieceToHistory captureHistory;
-  ContinuationHistory continuationHistory[2][2];
+  Depth rootDepth{}, completedDepth{};
+  CounterMoveHistory counterMoves{};
+  ButterflyHistory mainHistory{};
+  LowPlyHistory lowPlyHistory{};
+  CapturePieceToHistory captureHistory{};
+  ContinuationHistory continuationHistory[2][2]{};
   Score contempt;
 };
 
 
 /// MainThread is a derived class specific for main thread
 
-struct MainThread : public Thread {
+struct MainThread : Thread {
 
   using Thread::Thread;
 
   void search() override;
   void check_time();
 
-  double previousTimeReduction;
+  double previousTimeReduction{};
   Value bestPreviousScore;
-  Value iterValue[4];
-  int callsCnt;
-  bool stopOnPonderhit;
+  Value iterValue[4]{};
+  int callsCnt{};
+  bool stopOnPonderhit{};
   std::atomic_bool ponder;
 };
 
@@ -100,7 +100,7 @@ struct MainThread : public Thread {
 /// parking and, most importantly, launching a thread. All the access to threads
 /// is done through this class.
 
-struct ThreadPool : public std::vector<Thread*> {
+struct ThreadPool : std::vector<Thread*> {
 
   void start_thinking(Position&, StateListPtr&, const Search::LimitsType&, bool = false);
   void clear();

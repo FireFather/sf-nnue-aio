@@ -36,184 +36,183 @@ namespace Eval {
 	void evaluate_with_no_return(const Position& pos);
 
 #if defined(EVAL_NNUE) || defined(EVAL_LEARN)
-// Read the evaluation function file.
-// This is only called once in response to the "is_ready" command. It is not supposed to be called twice.
-// (However, if isready is sent again after EvalDir (evaluation function folder) has been changed, read it again.)
-void load_eval();
+	// Read the evaluation function file.
+	// This is only called once in response to the "is_ready" command. It is not supposed to be called twice.
+	// (However, if isready is sent again after EvalDir (evaluation function folder) has been changed, read it again.)
+	void load_eval();
 
-static uint64_t calc_check_sum() {return 0;}
+	static uint64_t calc_check_sum() { return 0; }
 
-static void print_softname(uint64_t check_sum) {}
+	static void print_softname(uint64_t check_sum) {}
 
-// --- enum corresponding to P of constant KPP (ball and arbitrary 2 pieces) used in evaluation function
+	// --- enum corresponding to P of constant KPP (ball and arbitrary 2 pieces) used in evaluation function
 
-// (BonaPiece wants to define freely in experiment of evaluation function, so I don't define it here.)
+	// (BonaPiece wants to define freely in experiment of evaluation function, so I don't define it here.)
 
 
-// A type that represents P(Piece) when calling KKP/KPP in Bonanza.
-// When you ask for ? KPP, you need a unique number for each box and piece type, like the 39th step.
-enum BonaPiece :int32_t
-{
-// Meaning of f = friend (?first move). The meaning of e = enemy (?rear)
+	// A type that represents P(Piece) when calling KKP/KPP in Bonanza.
+	// When you ask for ? KPP, you need a unique number for each box and piece type, like the 39th step.
+	enum BonaPiece :int32_t
+	{
+		// Meaning of f = friend (?first move). The meaning of e = enemy (?rear)
 
-// Value when uninitialized
-BONA_PIECE_NOT_INIT = -1,
+		// Value when uninitialized
+		BONA_PIECE_NOT_INIT = -1,
 
-// Invalid piece. If you drop a piece, move unnecessary pieces here.
-BONA_PIECE_ZERO = 0,
+		// Invalid piece. If you drop a piece, move unnecessary pieces here.
+		BONA_PIECE_ZERO = 0,
 
-fe_hand_end = BONA_PIECE_ZERO + 1,
+		fe_hand_end = BONA_PIECE_ZERO + 1,
 
-// Don't pack the numbers of unrealistic walks and incense on the board like Bonanza.
-// Reason 1) At the time of learning, there are times when the relative PP has an incense in the first row, and it is difficult to display it correctly in the inverse transformation.
-// Reason 2) It is difficult to convert from Square if it is a vertical Bitboard.
+		// Don't pack the numbers of unrealistic walks and incense on the board like Bonanza.
+		// Reason 1) At the time of learning, there are times when the relative PP has an incense in the first row, and it is difficult to display it correctly in the inverse transformation.
+		// Reason 2) It is difficult to convert from Square if it is a vertical Bitboard.
 
-// --- pieces on the board
-f_pawn = fe_hand_end,
-e_pawn = f_pawn + SQUARE_NB,
-f_knight = e_pawn + SQUARE_NB,
-e_knight = f_knight + SQUARE_NB,
-f_bishop = e_knight + SQUARE_NB,
-e_bishop = f_bishop + SQUARE_NB,
-f_rook = e_bishop + SQUARE_NB,
-e_rook = f_rook + SQUARE_NB,
-f_queen = e_rook + SQUARE_NB,
-e_queen = f_queen + SQUARE_NB,
-fe_end = e_queen + SQUARE_NB,
-f_king = fe_end,
-e_king = f_king + SQUARE_NB,
-fe_end2 = e_king + SQUARE_NB, // Last number including balls.
-};
+		// --- pieces on the board
+		f_pawn = fe_hand_end,
+		e_pawn = f_pawn + SQUARE_NB,
+		f_knight = e_pawn + SQUARE_NB,
+		e_knight = f_knight + SQUARE_NB,
+		f_bishop = e_knight + SQUARE_NB,
+		e_bishop = f_bishop + SQUARE_NB,
+		f_rook = e_bishop + SQUARE_NB,
+		e_rook = f_rook + SQUARE_NB,
+		f_queen = e_rook + SQUARE_NB,
+		e_queen = f_queen + SQUARE_NB,
+		fe_end = e_queen + SQUARE_NB,
+		f_king = fe_end,
+		e_king = f_king + SQUARE_NB,
+		fe_end2 = e_king + SQUARE_NB, // Last number including balls.
+	};
 
 #define ENABLE_INCR_OPERATORS_ON(T) \
 inline T& operator++(T& d) {return d = T(int(d) + 1);} \
 inline T& operator--(T& d) {return d = T(int(d)-1);}
 
-ENABLE_INCR_OPERATORS_ON(BonaPiece)
+	ENABLE_INCR_OPERATORS_ON(BonaPiece)
 
 #undef ENABLE_INCR_OPERATORS_ON
 
-// When you look at BonaPiece from the back (the 39 steps from the back are 71 steps from the back)
-// Let's call the paired one the ExtBonaPiece type.
-union ExtBonaPiece
-{
-struct {
-BonaPiece fw; // from white
-BonaPiece fb; // from black
-};
-BonaPiece from[2];
+		// When you look at BonaPiece from the back (the 39 steps from the back are 71 steps from the back)
+		// Let's call the paired one the ExtBonaPiece type.
+		union ExtBonaPiece
+	{
+		struct {
+			BonaPiece fw; // from white
+			BonaPiece fb; // from black
+		};
+		BonaPiece from[2]{};
 
-ExtBonaPiece() {}
-ExtBonaPiece(const BonaPiece fw_, const BonaPiece fb_): fw(fw_), fb(fb_) {}
-};
+		ExtBonaPiece() {}
+		ExtBonaPiece(const BonaPiece fw_, const BonaPiece fb_) : fw(fw_), fb(fb_) {}
+	};
 
-// Information about where the piece moved from where to by this move.
-// Assume the piece is an ExtBonaPiece expression.
-struct ChangedBonaPiece
-{
-ExtBonaPiece old_piece;
-ExtBonaPiece new_piece;
-};
+	// Information about where the piece moved from where to by this move.
+	// Assume the piece is an ExtBonaPiece expression.
+	struct ChangedBonaPiece
+	{
+		ExtBonaPiece old_piece;
+		ExtBonaPiece new_piece;
+	};
 
-// An array for finding the BonaPiece corresponding to the piece pc on the board of the KPP table.
-// example)
-// BonaPiece fb = kpp_board_index[pc].fb + sq; // BonaPiece corresponding to pc in sq seen from the front
-// BonaPiece fw = kpp_board_index[pc].fw + sq; // BonaPiece corresponding to pc in sq seen from behind
-extern ExtBonaPiece kpp_board_index[PIECE_NB];
+	// An array for finding the BonaPiece corresponding to the piece pc on the board of the KPP table.
+	// example)
+	// BonaPiece fb = kpp_board_index[pc].fb + sq; // BonaPiece corresponding to pc in sq seen from the front
+	// BonaPiece fw = kpp_board_index[pc].fw + sq; // BonaPiece corresponding to pc in sq seen from behind
+	extern ExtBonaPiece kpp_board_index[PIECE_NB];
 
-// List of pieces used in the evaluation function. Structure holding which piece (PieceNumber) is and where (BonaPiece)
-struct EvalList
-{
-// List of frame numbers used in evaluation function (FV38 type)
-[[nodiscard]] BonaPiece* piece_list_fw() const {return const_cast<BonaPiece*>(pieceListFw);}
-[[nodiscard]] BonaPiece* piece_list_fb() const {return const_cast<BonaPiece*>(pieceListFb);}
+	// List of pieces used in the evaluation function. Structure holding which piece (PieceNumber) is and where (BonaPiece)
+	struct EvalList
+	{
+		// List of frame numbers used in evaluation function (FV38 type)
+		[[nodiscard]] BonaPiece* piece_list_fw() const { return const_cast<BonaPiece*>(pieceListFw); }
+		[[nodiscard]] BonaPiece* piece_list_fb() const { return const_cast<BonaPiece*>(pieceListFb); }
 
-// Convert the specified piece_no piece to ExtBonaPiece type and return it.
-[[nodiscard]] ExtBonaPiece bona_piece(const PieceNumber piece_no) const
-{
-ExtBonaPiece bp;
-bp.fw = pieceListFw[piece_no];
-bp.fb = pieceListFb[piece_no];
-return bp;
-}
+		// Convert the specified piece_no piece to ExtBonaPiece type and return it.
+		[[nodiscard]] ExtBonaPiece bona_piece(const PieceNumber piece_no) const
+		{
+			ExtBonaPiece bp;
+			bp.fw = pieceListFw[piece_no];
+			bp.fb = pieceListFb[piece_no];
+			return bp;
+		}
 
-// Place the piece_no pc piece in the sq box on the board
-void put_piece(const PieceNumber piece_no, const Square sq, const Piece pc) {
-set_piece_on_board(piece_no, BonaPiece(kpp_board_index[pc].fw + sq), BonaPiece(kpp_board_index[pc].fb + Inv(sq)), sq);
-}
+		// Place the piece_no pc piece in the sq box on the board
+		void put_piece(const PieceNumber piece_no, const Square sq, const Piece pc) {
+			set_piece_on_board(piece_no, BonaPiece(kpp_board_index[pc].fw + sq), BonaPiece(kpp_board_index[pc].fb + Inv(sq)), sq);
+		}
 
-// Returns the PieceNumber corresponding to a box on the board.
-[[nodiscard]] PieceNumber piece_no_of_board(const Square sq) const {return piece_no_list_board[sq];}
+		// Returns the PieceNumber corresponding to a box on the board.
+		[[nodiscard]] PieceNumber piece_no_of_board(const Square sq) const { return piece_no_list_board[sq]; }
 
-// Initialize the pieceList.
-// Set the value of unused pieces to BONA_PIECE_ZERO in case you want to deal with dropped pieces.
-// A normal evaluation function can be used as a missing piece evaluation function.
-// piece_no_list is initialized with PIECE_NUMBER_NB to facilitate debugging.
-void clear()
-{
+		// Initialize the pieceList.
+		// Set the value of unused pieces to BONA_PIECE_ZERO in case you want to deal with dropped pieces.
+		// A normal evaluation function can be used as a missing piece evaluation function.
+		// piece_no_list is initialized with PIECE_NUMBER_NB to facilitate debugging.
+		void clear()
+		{
 
-for (auto& p: pieceListFw)
-p = BONA_PIECE_ZERO;
+			for (auto& p : pieceListFw)
+				p = BONA_PIECE_ZERO;
 
-for (auto& p: pieceListFb)
-p = BONA_PIECE_ZERO;
+			for (auto& p : pieceListFb)
+				p = BONA_PIECE_ZERO;
 
-for (auto& v :piece_no_list_board)
-v = PIECE_NUMBER_NB;
-}
+			for (auto& v : piece_no_list_board)
+				v = PIECE_NUMBER_NB;
+		}
 
-// Check if the internally held pieceListFw[] is a valid BonaPiece.
-// Note: For debugging. slow.
-bool is_valid(const Position& pos);
+		// Check if the internally held pieceListFw[] is a valid BonaPiece.
+		// Note: For debugging. slow.
+		bool is_valid(const Position& pos);
 
-// Set that the BonaPiece of the piece_no piece on sq on the board is fb, fw.
-void set_piece_on_board(const PieceNumber piece_no, const BonaPiece fw, const BonaPiece fb, const Square sq)
-{
-assert(is_ok(piece_no));
-pieceListFw[piece_no] = fw;
-pieceListFb[piece_no] = fb;
-piece_no_list_board[sq] = piece_no;
-}
+		// Set that the BonaPiece of the piece_no piece on sq on the board is fb, fw.
+		void set_piece_on_board(const PieceNumber piece_no, const BonaPiece fw, const BonaPiece fb, const Square sq)
+		{
+			assert(is_ok(piece_no));
+			pieceListFw[piece_no] = fw;
+			pieceListFb[piece_no] = fb;
+			piece_no_list_board[sq] = piece_no;
+		}
 
-// Piece list. Piece Number Shows how many pieces are there (Bona Piece). Used in FV38 etc.
+		// Piece list. Piece Number Shows how many pieces are there (Bona Piece). Used in FV38 etc.
 
-// Length of piece list
-// 38 fixed
-public:
-[[nodiscard]] static int length() {return PIECE_NUMBER_KING;}
+		// Length of piece list
+		// 38 fixed
+		[[nodiscard]] static int length() { return PIECE_NUMBER_KING; }
 
-// Must be a multiple of 4 to use VPGATHERDD.
-// In addition, KPPT type evaluation functions, etc. are based on the assumption that the 39th and 40th elements are zero.
-// Please note that there is a place to access.
-static const int MAX_LENGTH = 32;
+		// Must be a multiple of 4 to use VPGATHERDD.
+		// In addition, KPPT type evaluation functions, etc. are based on the assumption that the 39th and 40th elements are zero.
+		// Please note that there is a place to access.
+		static const int MAX_LENGTH = 32;
 
-// Array that holds the piece number (PieceNumber) for the pieces on the board
-// Hold up to +1 for when the ball is moving to SQUARE_NB,
-// SQUARE_NB balls are not moved, so this value should never be used.
-PieceNumber piece_no_list_board[SQUARE_NB_PLUS1];
-private:
+		// Array that holds the piece number (PieceNumber) for the pieces on the board
+		// Hold up to +1 for when the ball is moving to SQUARE_NB,
+		// SQUARE_NB balls are not moved, so this value should never be used.
+		PieceNumber piece_no_list_board[SQUARE_NB_PLUS1];
+	private:
 
-BonaPiece pieceListFw[MAX_LENGTH] = {};
-BonaPiece pieceListFb[MAX_LENGTH] = {};
-};
+		BonaPiece pieceListFw[MAX_LENGTH] = {};
+		BonaPiece pieceListFb[MAX_LENGTH] = {};
+	};
 
-// For management of evaluation value difference calculation
-// A structure for managing the number of pieces that have moved from the previous stage
-// Up to 2 moving pieces.
-struct DirtyPiece
-{
-// What changed from the piece with that piece number
-ChangedBonaPiece changed_piece[2];
+	// For management of evaluation value difference calculation
+	// A structure for managing the number of pieces that have moved from the previous stage
+	// Up to 2 moving pieces.
+	struct DirtyPiece
+	{
+		// What changed from the piece with that piece number
+		ChangedBonaPiece changed_piece[2];
 
-// Number of dirty pieces
-PieceNumber pieceNo[2];
+		// Number of dirty pieces
+		PieceNumber pieceNo[2]{};
 
-// The number of dirty.
-// It may be 0 for null move.
-// Maximum of 2 moving pieces and taken pieces.
-int dirty_num;
+		// The number of dirty.
+		// It may be 0 for null move.
+		// Maximum of 2 moving pieces and taken pieces.
+		int dirty_num{};
 
-};
+	};
 #endif // defined(EVAL_NNUE) || defined(EVAL_LEARN)
 }
 

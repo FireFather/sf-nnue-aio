@@ -40,7 +40,7 @@ namespace Eval::NNUE::Features
 	void HalfRelativeKP<AssociatedKing>::AppendActiveIndices(
 		const Position& pos, const Color perspective, IndexList* active) {
 		// do nothing if array size is small to avoid compiler warning
-		if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
+		if constexpr (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 
 		BonaPiece* pieces;
 		Square sq_target_k;

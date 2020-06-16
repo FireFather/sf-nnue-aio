@@ -286,7 +286,7 @@ evalList.clear();
 		st->epSquare = make_square(File(col - 'a'), Rank(row - '1'));
 
 		if (!(attackers_to(st->epSquare) & pieces(sideToMove, PAWN))
-			|| !(pieces(~sideToMove, PAWN) & st->epSquare + pawn_push(~sideToMove)))
+			|| !(pieces(~sideToMove, PAWN) & (st->epSquare + pawn_push(~sideToMove))))
 			st->epSquare = SQ_NONE;
 	}
 	else
@@ -532,7 +532,7 @@ bool Position::legal(const Move m) const {
 	{
 		const auto ksq = square<KING>(us);
 		const auto capsq = to - pawn_push(us);
-		const auto occupied = pieces() ^ from ^ capsq | to;
+		const auto occupied = (pieces() ^ from ^ capsq) | to;
 
 		assert(to == ep_square());
 		assert(moved_piece(m) == make_piece(us, PAWN));
@@ -680,7 +680,7 @@ bool Position::gives_check(const Move m) const {
 	case ENPASSANT:
 	{
 		const auto capsq = make_square(file_of(to), rank_of(from));
-		const auto b = pieces() ^ from ^ capsq | to;
+		const auto b = (pieces() ^ from ^ capsq) | to;
 
 		return  (attacks_bb<  ROOK>(square<KING>(~sideToMove), b) & pieces(sideToMove, QUEEN, ROOK))
 			| (attacks_bb<BISHOP>(square<KING>(~sideToMove), b) & pieces(sideToMove, QUEEN, BISHOP));
@@ -693,7 +693,7 @@ bool Position::gives_check(const Move m) const {
 		const auto rto = relative_square(sideToMove, rfrom > kfrom ? SQ_F1 : SQ_D1);
 
 		return attacks_bb<ROOK>(rto) & square<KING>(~sideToMove)
-			&& attacks_bb<ROOK>(rto, pieces() ^ kfrom ^ rfrom | rto | kto) & square<KING>(~sideToMove);
+			&& (attacks_bb<ROOK>(rto, (pieces() ^ kfrom ^ rfrom) | rto | kto) & square<KING>(~sideToMove));
 	}
 	default:
 		assert(false);
@@ -1399,11 +1399,11 @@ bool Position::pos_is_ok() const {
 
 	constexpr auto Fast = true; // Quick (default) or full check?
 
-	if (sideToMove != WHITE && sideToMove != BLACK
+	if ((sideToMove != WHITE && sideToMove != BLACK)
 		|| piece_on(square<KING>(WHITE)) != W_KING
 		|| piece_on(square<KING>(BLACK)) != B_KING
-		|| ep_square() != SQ_NONE
-		&& relative_rank(sideToMove, ep_square()) != RANK_6)
+		|| (ep_square() != SQ_NONE
+		&& relative_rank(sideToMove, ep_square()) != RANK_6))
 		assert(0 && "pos_is_ok: Default");
 
 	if (Fast)

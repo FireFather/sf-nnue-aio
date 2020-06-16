@@ -110,7 +110,7 @@ template<typename T, int LE> T number(void* addr)
 
     T v;
 
-    if (reinterpret_cast<uintptr_t>(addr) & alignof(T) - 1) // Unaligned pointer (very rare)
+    if (reinterpret_cast<uintptr_t>(addr) & (alignof(T) - 1)) // Unaligned pointer (very rare)
         std::memcpy(&v, addr, sizeof(T));
     else
         v = *static_cast<T*>(addr);
@@ -377,8 +377,8 @@ TBTable<WDL>::TBTable(const std::string& code) : TBTable() {
     // Set the leading color. In case both sides have pawns the leading color
     // is the side with less pawns because this leads to better compression.
     const auto c =   !pos.count<PAWN>(BLACK)
-            || pos.count<PAWN>(WHITE)
-            && pos.count<PAWN>(BLACK) >= pos.count<PAWN>(WHITE);
+		|| (pos.count<PAWN>(WHITE)
+  		&& pos.count<PAWN>(BLACK) >= pos.count<PAWN>(WHITE));
 
     pawnCount[0] = pos.count<PAWN>(c ? WHITE : BLACK);
     pawnCount[1] = pos.count<PAWN>(c ? BLACK : WHITE);
@@ -425,7 +425,7 @@ class TBTables {
     std::deque<TBTable<DTZ>> dtzTable;
 
     void insert(Key key, TBTable<WDL>* wdl, TBTable<DTZ>* dtz) {
-	    auto homeBucket = static_cast<uint32_t>(key) & Size - 1;
+	    auto homeBucket = static_cast<uint32_t>(key) & (Size - 1);
         Entry entry{ key, wdl, dtz };
 
         // Ensure last element is empty to avoid overflow when looking up
@@ -438,7 +438,7 @@ class TBTables {
 
             // Robin Hood hashing: If we've probed for longer than this element,
             // insert here and search for a new spot for the other element instead.
-	        const auto otherHomeBucket = static_cast<uint32_t>(otherKey) & Size - 1;
+	        auto otherHomeBucket = static_cast<uint32_t>(otherKey) & (Size - 1);
             if (otherHomeBucket > homeBucket) {
                 std::swap(entry, hashTable[bucket]);
                 key = otherKey;
@@ -452,7 +452,7 @@ class TBTables {
 public:
     template<TBType Type>
     TBTable<Type>* get(const Key key) {
-        for (const Entry* entry = &hashTable[static_cast<uint32_t>(key) & Size - 1]; ; ++entry) {
+        for (const Entry* entry = &hashTable[static_cast<uint32_t>(key) & (Size - 1)]; ; ++entry) {
             if (entry->key == key || !entry->get<Type>())
                 return entry->get<Type>();
         }
@@ -579,7 +579,7 @@ int decompress_pairs(PairsData* d, const uint64_t idx) {
         // All the symbols of a given length are consecutive integers (numerical
         // sequence property), so we can compute the offset of our symbol of
         // length len, stored at the beginning of buf64.
-        sym = Sym(buf64 - d->base64[len] >> 64 - len - d->minSymLen);
+        sym = Sym((buf64 - d->base64[len]) >> (64 - len - d->minSymLen));
 
         // Now add the value of the lowest symbol of length len to get our symbol
         sym += number<Sym, LittleEndian>(&d->lowestSym[len]);
@@ -597,7 +597,7 @@ int decompress_pairs(PairsData* d, const uint64_t idx) {
 
         if (buf64Size <= 32) { // Refill the buffer
             buf64Size += 32;
-            buf64 |= static_cast<uint64_t>(number<uint32_t, BigEndian>(ptr++)) << 64 - buf64Size;
+            buf64 |= static_cast<uint64_t>(number<uint32_t, BigEndian>(ptr++)) << (64 - buf64Size);
         }
     }
 
@@ -628,7 +628,7 @@ bool check_dtz_stm(TBTable<WDL>*, int, File) { return true; }
 bool check_dtz_stm(TBTable<DTZ>* entry, const int stm, const File f) {
 	const auto flags = entry->get(stm, f)->flags;
     return   (flags & STM) == stm
-          || entry->key == entry->key2 && !entry->hasPawns;
+          || ((entry->key == entry->key2) && !entry->hasPawns);
 }
 
 // DTZ scores are sorted by frequency of occurrence and then assigned the
@@ -654,8 +654,8 @@ int map_score(TBTable<DTZ>* entry, const File f, int value, const WDLScore wdl) 
 
     // DTZ tables store distance to zero in number of moves or plies. We
     // want to return plies, so we have convert to plies when needed.
-    if (   wdl == WDLWin  && !(flags & WinPlies)
-        || wdl == WDLLoss && !(flags & LossPlies)
+    if (   (wdl == WDLWin  && !(flags & WinPlies))
+        || (wdl == WDLLoss && !(flags & LossPlies))
         ||  wdl == WDLCursedWin
         ||  wdl == WDLBlessedLoss)
         value *= 2;
@@ -1121,7 +1121,7 @@ void set(T& e, uint8_t* data) {
 
     for (auto f = FILE_A; f <= maxFile; ++f)
         for (auto i = 0; i < sides; i++) {
-            data = reinterpret_cast<uint8_t*>(reinterpret_cast<uintptr_t>(data) + 0x3F & ~0x3F); // 64 byte alignment
+            data = reinterpret_cast<uint8_t*>((reinterpret_cast<uintptr_t>(data) + 0x3F) & ~0x3F); // 64 byte alignment
             (d = e.get(i, f))->data = data;
             data += d->blocksNum * d->sizeofBlock;
         }

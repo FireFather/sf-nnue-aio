@@ -59,7 +59,7 @@ public:
 /// values with the << operator, while the last parameters (Size and Sizes)
 /// encode the dimensions of the array.
 template <typename T, int D, int Size, int... Sizes>
-struct Stats : public std::array<Stats<T, D, Sizes...>, Size>
+struct Stats : std::array<Stats<T, D, Sizes...>, Size>
 {
   typedef Stats<T, D, Size, Sizes...> stats;
 
@@ -75,7 +75,7 @@ struct Stats : public std::array<Stats<T, D, Sizes...>, Size>
 };
 
 template <typename T, int D, int Size>
-struct Stats<T, D, Size> : public std::array<StatsEntry<T, D>, Size> {};
+struct Stats<T, D, Size> : std::array<StatsEntry<T, D>, Size> {};
 
 /// In stats table, D=0 means that the template parameter is not used
 enum StatsParams { NOT_USED = 0 };

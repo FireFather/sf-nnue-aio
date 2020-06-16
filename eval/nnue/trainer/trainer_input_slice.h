@@ -154,7 +154,6 @@ namespace Eval {
 		// Learning: Input layer
 		template <IndexType OutputDimensions, IndexType Offset>
 		class Trainer<Layers::InputSlice<OutputDimensions, Offset>> {
-		private:
 			// type of layer to learn
 			using LayerType = Layers::InputSlice<OutputDimensions, Offset>;
 

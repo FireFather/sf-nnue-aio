@@ -12,7 +12,7 @@ namespace Eval::NNUE::Features
 	void CastlingRight::AppendActiveIndices(
 		const Position& pos, const Color perspective, IndexList* active) {
 		// do nothing if array size is small to avoid compiler warning
-		if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
+		if constexpr (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 
 		const auto castling_rights = pos.state()->castlingRights;
 		int relative_castling_rights;
@@ -21,8 +21,8 @@ namespace Eval::NNUE::Features
 		}
 		else {
 			// Invert the perspective.
-			relative_castling_rights = (castling_rights & 3) << 2
-				& (castling_rights >> 2 & 3);
+          relative_castling_rights = ((castling_rights & 3) << 2)
+            & ((castling_rights >> 2) & 3);
 		}
 
 		for (auto i = 0; i < kDimensions; ++i) {

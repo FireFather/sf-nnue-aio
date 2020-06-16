@@ -52,6 +52,17 @@
 #pragma warning(disable: 4800) // Forcing value to bool 'true' or 'false'
 #endif
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#pragma GCC diagnostic ignored "-Wattributes"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
+
 /// Predefined macros hell:
 ///
 /// __GNUC__           Compiler is gcc, Clang or Intel on Linux
@@ -462,7 +473,7 @@ constexpr Move reverse_move(const Move m) {
 
 template<MoveType T>
 constexpr Move make(const Square from, const Square to, const PieceType pt = KNIGHT) {
-  return Move(T + (pt - KNIGHT << 12) + (from << 6) + to);
+  return Move(T + ((pt - KNIGHT) << 12) + (from << 6) + to);
 }
 
 constexpr bool is_ok(const Move m) {

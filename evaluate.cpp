@@ -370,7 +370,7 @@ namespace {
 				else if (mob <= 3)
 				{
 					const auto kf = file_of(pos.square<KING>(Us));
-					if (kf < FILE_E == file_of(s) < kf)
+					if ((kf < FILE_E) == (file_of(s) < kf))
 						score -= TrappedRook * (1 + !pos.castling_rights(Us));
 				}
 			}
@@ -978,7 +978,7 @@ namespace Eval {
 			for (auto pc = NO_PIECE; pc < PIECE_NB; ++pc)
 			{
 				const auto pt = type_of(pc);
-				if (pt == NO_PIECE || pt == 7) // Pieces that do not exist
+				if (pt == NO_PIECE_TYPE || pt == 7) // Pieces that do not exist
 					continue;
 
 				// BonaPiece start number of piece pc

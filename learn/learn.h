@@ -164,7 +164,7 @@ typedef float LearnFloatType;
 
 // When you reach a draw, write it out as a teacher
 // It's subtle whether it's better to do this.
-// #define LEARN_GENSFEN_USE_DRAW_RESULT
+#define LEARN_GENSFEN_USE_DRAW_RESULT
 
 
 // ======================

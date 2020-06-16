@@ -5,7 +5,6 @@
 
 #if defined(EVAL_NNUE)
 
-#include "../../../evaluate.h"
 #include "../nnue_common.h"
 
 namespace Eval {

@@ -17,7 +17,6 @@ namespace Eval {
 
 		// Input feature converter
 		class FeatureTransformer {
-		private:
 			// number of output dimensions for one side
 			static constexpr IndexType kHalfDimensions = kTransformedFeatureDimensions;
 

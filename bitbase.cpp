@@ -43,7 +43,7 @@ namespace {
 	// bit 13-14: white pawn file (from FILE_A to FILE_D)
 	// bit 15-17: white pawn RANK_7 - rank (from RANK_7 - RANK_7 to RANK_7 - RANK_2)
 	unsigned index(const Color stm, const Square bksq, const Square wksq, const Square psq) {
-		return static_cast<int>(wksq) | bksq << 6 | stm << 12 | file_of(psq) << 13 | RANK_7 - rank_of(psq) << 15;
+		return static_cast<int>(wksq) | (bksq << 6) | (stm << 12) | (file_of(psq) << 13) | ((RANK_7 - rank_of(psq)) << 15);
 	}
 
 	enum Result {
@@ -69,7 +69,7 @@ namespace {
 } // namespace
 
 
-bool Bitbases::probe(const Square wksq, const Square wpsq, const Square bksq, Color stm) {
+bool Bitbases::probe(const Square wksq, const Square wpsq, const Square bksq, const Color stm) {
 
 	assert(file_of(wpsq) <= FILE_D);
 
@@ -112,7 +112,7 @@ namespace {
 		if (distance(ksq[WHITE], ksq[BLACK]) <= 1
 			|| ksq[WHITE] == psq
 			|| ksq[BLACK] == psq
-			|| stm == WHITE && pawn_attacks_bb(WHITE, psq) & ksq[BLACK])
+			|| (stm == WHITE && (pawn_attacks_bb(WHITE, psq) & ksq[BLACK])))
 			result = INVALID;
 
 		// Immediate win if a pawn can be promoted without getting captured
@@ -120,13 +120,13 @@ namespace {
 			&& rank_of(psq) == RANK_7
 			&& ksq[stm] != psq + NORTH
 			&& (distance(ksq[~stm], psq + NORTH) > 1
-				|| attacks_bb<KING>(ksq[stm]) & psq + NORTH))
+				|| (attacks_bb<KING>(ksq[stm]) & (psq + NORTH))))
 			result = WIN;
 
 		// Immediate draw if it is a stalemate or a king captures undefended pawn
 		else if (stm == BLACK
 			&& (!(attacks_bb<KING>(ksq[stm]) & ~(attacks_bb<KING>(ksq[~stm]) | pawn_attacks_bb(~stm, psq)))
-				|| attacks_bb<KING>(ksq[stm]) & psq & ~attacks_bb<KING>(ksq[~stm])))
+				|| (attacks_bb<KING>(ksq[stm]) & psq & ~attacks_bb<KING>(ksq[~stm]))))
 			result = DRAW;
 
 		// Position will be classified later

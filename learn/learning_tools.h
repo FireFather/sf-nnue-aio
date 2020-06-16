@@ -289,7 +289,7 @@ namespace EvalLearningTools
 
 	};
 
-	struct KK :public SerializerBase
+	struct KK : SerializerBase
 	{
 	protected:
 		KK(const Square king0, const Square king1, const bool inverse) : king0_(king0), king1_(king1), inverse_sign(inverse) {}
@@ -388,7 +388,7 @@ namespace EvalLearningTools
 	}
 
 	// Same as KK. For KKP.
-	struct KKP : public SerializerBase
+	struct KKP : SerializerBase
 	{
 	protected:
 		KKP(const Square king0, const Square king1, const Eval::BonaPiece p) :king0_(king0), king1_(king1), piece_(p), inverse_sign(false) {}
@@ -489,7 +489,7 @@ namespace EvalLearningTools
 		os << "KKP(" << rhs.king0() << "," << rhs.king1() << "," << rhs.piece() << ")";
 		return os;
 	}
-	struct KPP : public SerializerBase
+	struct KPP : SerializerBase
 	{
 	protected:
 		KPP(const Square king, const Eval::BonaPiece p0, const Eval::BonaPiece p1) : king_(king), piece0_(p0), piece1_(p1) {}
@@ -675,7 +675,7 @@ namespace EvalLearningTools
 	// Later, regarding the pieces0,1,2 returned by this class,
 	// piece0() >piece1() >piece2()
 	// It is , and it is necessary to keep this constraint even when passing piece0,1,2 in the constructor.
-	struct KPPP : public SerializerBase
+	struct KPPP : SerializerBase
 	{
 	protected:
 		KPPP(const int king, const Eval::BonaPiece p0, const Eval::BonaPiece p1, const Eval::BonaPiece p2) :

@@ -18,7 +18,6 @@ namespace Eval {
 		// Learning: Affine transformation layer
 		template <typename PreviousLayer, IndexType OutputDimensions>
 		class Trainer<Layers::AffineTransform<PreviousLayer, OutputDimensions>> {
-		private:
 			// type of layer to learn
 			using LayerType = Layers::AffineTransform<PreviousLayer, OutputDimensions>;
 
