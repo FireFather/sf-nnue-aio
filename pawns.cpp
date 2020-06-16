@@ -192,7 +192,7 @@ Entry* probe(const Position& pos) {
 /// penalty for a king, looking at the king file and the two closest files.
 
 template<Color Us>
-Score Entry::evaluate_shelter(const Position& pos, Square ksq) {
+Score Entry::evaluate_shelter(const Position& pos, const Square ksq) {
 
   constexpr auto Them = ~Us;
 
@@ -232,7 +232,7 @@ Score Entry::do_king_safety(const Position& pos) {
 	const auto ksq = pos.square<KING>(Us);
   kingSquares[Us] = ksq;
   castlingRights[Us] = pos.castling_rights(Us);
-  auto compare = [](Score a, Score b) { return mg_value(a) < mg_value(b); };
+  auto compare = [](const Score a, const Score b) { return mg_value(a) < mg_value(b); };
 
   Score shelter = evaluate_shelter<Us>(pos, ksq);
 

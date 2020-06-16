@@ -104,7 +104,7 @@ BonaPiece fb; // from black
 BonaPiece from[2];
 
 ExtBonaPiece() {}
-ExtBonaPiece(BonaPiece fw_, BonaPiece fb_): fw(fw_), fb(fb_) {}
+ExtBonaPiece(const BonaPiece fw_, const BonaPiece fb_): fw(fw_), fb(fb_) {}
 };
 
 // Information about where the piece moved from where to by this move.
@@ -129,7 +129,7 @@ struct EvalList
 [[nodiscard]] BonaPiece* piece_list_fb() const {return const_cast<BonaPiece*>(pieceListFb);}
 
 // Convert the specified piece_no piece to ExtBonaPiece type and return it.
-[[nodiscard]] ExtBonaPiece bona_piece(PieceNumber piece_no) const
+[[nodiscard]] ExtBonaPiece bona_piece(const PieceNumber piece_no) const
 {
 ExtBonaPiece bp;
 bp.fw = pieceListFw[piece_no];
@@ -138,12 +138,12 @@ return bp;
 }
 
 // Place the piece_no pc piece in the sq box on the board
-void put_piece(PieceNumber piece_no, Square sq, Piece pc) {
+void put_piece(const PieceNumber piece_no, const Square sq, const Piece pc) {
 set_piece_on_board(piece_no, BonaPiece(kpp_board_index[pc].fw + sq), BonaPiece(kpp_board_index[pc].fb + Inv(sq)), sq);
 }
 
 // Returns the PieceNumber corresponding to a box on the board.
-[[nodiscard]] PieceNumber piece_no_of_board(Square sq) const {return piece_no_list_board[sq];}
+[[nodiscard]] PieceNumber piece_no_of_board(const Square sq) const {return piece_no_list_board[sq];}
 
 // Initialize the pieceList.
 // Set the value of unused pieces to BONA_PIECE_ZERO in case you want to deal with dropped pieces.
@@ -167,7 +167,7 @@ v = PIECE_NUMBER_NB;
 bool is_valid(const Position& pos);
 
 // Set that the BonaPiece of the piece_no piece on sq on the board is fb, fw.
-void set_piece_on_board(PieceNumber piece_no, BonaPiece fw, BonaPiece fb, Square sq)
+void set_piece_on_board(const PieceNumber piece_no, const BonaPiece fw, const BonaPiece fb, const Square sq)
 {
 assert(is_ok(piece_no));
 pieceListFw[piece_no] = fw;

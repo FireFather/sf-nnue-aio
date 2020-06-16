@@ -42,24 +42,24 @@ namespace Trace {
 
 	Score scores[TERM_NB][COLOR_NB];
 
-	double to_cp(Value v) { return static_cast<double>(v) / PawnValueEg; }
+	double to_cp(const Value v) { return static_cast<double>(v) / PawnValueEg; }
 
-	void add(int idx, Color c, Score s) {
+	void add(const int idx, const Color c, const Score s) {
 		scores[idx][c] = s;
 	}
 
-	void add(int idx, Score w, Score b = SCORE_ZERO) {
+	void add(const int idx, const Score w, const Score b = SCORE_ZERO) {
 		scores[idx][WHITE] = w;
 		scores[idx][BLACK] = b;
 	}
 
-	std::ostream& operator<<(std::ostream& os, Score s) {
+	std::ostream& operator<<(std::ostream& os, const Score s) {
 		os << std::setw(5) << to_cp(mg_value(s)) << " "
 			<< std::setw(5) << to_cp(eg_value(s));
 		return os;
 	}
 
-	std::ostream& operator<<(std::ostream& os, Term t) {
+	std::ostream& operator<<(std::ostream& os, const Term t) {
 
 		if (t == MATERIAL || t == IMBALANCE || t == INITIATIVE || t == TOTAL)
 			os << " ----  ----" << " | " << " ----  ----";
@@ -601,7 +601,7 @@ namespace {
 		constexpr auto Up = pawn_push(Us);
 		constexpr auto Down = -Up;
 
-		auto king_proximity = [&](Color c, Square s) {
+		auto king_proximity = [&](const Color c, const Square s) {
 			return std::min(distance(pos.square<KING>(c), s), 5);
 		};
 
@@ -728,7 +728,7 @@ namespace {
 	// known attacking/defending status of the players.
 
 	template<Tracing T>
-	Score Evaluation<T>::initiative(Score score) const {
+	Score Evaluation<T>::initiative(const Score score) const {
 		const auto outflanking = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
 			- distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
 
@@ -771,7 +771,7 @@ namespace {
 	// Evaluation::scale_factor() computes the scale factor for the winning side
 
 	template<Tracing T>
-	ScaleFactor Evaluation<T>::scale_factor(Value eg) const {
+	ScaleFactor Evaluation<T>::scale_factor(const Value eg) const {
 		const auto strongSide = eg > VALUE_DRAW ? WHITE : BLACK;
 		int sf = me->scale_factor(pos, strongSide);
 

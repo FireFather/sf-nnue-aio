@@ -49,7 +49,7 @@ struct MultiThink
 	uint64_t callback_seconds = 600;
 
 	// Set the number of times worker processes (calls Search::think()).
-	void set_loop_max(uint64_t loop_max_) { loop_max = loop_max_; }
+	void set_loop_max(const uint64_t loop_max_) { loop_max = loop_max_; }
 
 		// Get the value set by set_loop_max().
 		uint64_t get_loop_max() const { return loop_max; }
@@ -105,7 +105,7 @@ struct TaskDispatcher
 	typedef std::function<void(size_t /* thread_id */)> Task;
 
 	// slave calls this function during idle.
-	void on_idle(size_t thread_id)
+	void on_idle(const size_t thread_id)
 	{
 		Task task;
 		while ((task = get_task_async()) != nullptr)
@@ -122,7 +122,7 @@ struct TaskDispatcher
 	}
 
 	// Allocate size elements in advance for the task array.
-	void task_reserve(size_t size)
+	void task_reserve(const size_t size)
 	{
 		tasks.reserve(size);
 	}

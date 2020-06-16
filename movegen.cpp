@@ -26,7 +26,7 @@
 namespace {
 
 	template<GenType Type, Direction D>
-	ExtMove* make_promotions(ExtMove* moveList, Square to, Square ksq) {
+	ExtMove* make_promotions(ExtMove* moveList, const Square to, Square ksq) {
 
 		if (Type == CAPTURES || Type == EVASIONS || Type == NON_EVASIONS)
 			*moveList++ = make<PROMOTION>(to - D, to, QUEEN);
@@ -50,7 +50,7 @@ namespace {
 
 
 	template<Color Us, GenType Type>
-	ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard target) {
+	ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, const Bitboard target) {
 
 		constexpr auto Them = ~Us;
 		constexpr auto TRank7BB = Us == WHITE ? Rank7BB : Rank2BB;

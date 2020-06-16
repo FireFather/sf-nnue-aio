@@ -72,7 +72,7 @@ namespace EvalLearningTools
 		static uint64_t eta2_epoch;
 
 		// Batch initialization of eta. If 0 is passed, the default value will be set.
-		static void init_eta(double eta1, double eta2, double eta3, uint64_t eta1_epoch, uint64_t eta2_epoch)
+		static void init_eta(const double eta1, const double eta2, const double eta3, const uint64_t eta1_epoch, const uint64_t eta2_epoch)
 		{
 			Weight::eta1 = eta1 != 0 ? eta1 : 30.0;
 			Weight::eta2 = eta2 != 0 ? eta2 : 30.0;
@@ -82,7 +82,7 @@ namespace EvalLearningTools
 		}
 
 		// Set eta according to epoch.
-		static void calc_eta(uint64_t epoch)
+		static void calc_eta(const uint64_t epoch)
 		{
 			if (eta1_epoch == 0) // Exclude eta2
 				eta = eta1;
@@ -117,7 +117,7 @@ namespace EvalLearningTools
 		// Guaranteed by the caller. It does not have to be an atomic operation.
 		// k is a coefficient for eta. 1.0 is usually sufficient. If you want to lower eta for the turn item, set this to 1/8.0 etc.
 		template <typename T>
-		void updateFV(T& v, double k)
+		void updateFV(T& v, const double k)
 		{
 			// Update formula of AdaGrad
 			// Gradient vector is g, vector to be updated is v, η(eta) is a constant,
@@ -253,10 +253,10 @@ namespace EvalLearningTools
 		[[nodiscard]] virtual uint64_t size() const = 0;
 
 		// Determine if the given index is more than min_index() and less than max_index().
-		/*final*/ bool is_ok(uint64_t index) const { return min_index() <= index && index < max_index(); }
+		/*final*/ bool is_ok(const uint64_t index) const { return min_index() <= index && index < max_index(); }
 
 		// Be sure to use this set() by calling it. Otherwise, construct an instance using fromKK()/fromIndex() on the derived class side and use it.
-		virtual void set(int max_king_sq, uint64_t fe_end, uint64_t min_index)
+		virtual void set(const int max_king_sq, const uint64_t fe_end, const uint64_t min_index)
 		{
 			max_king_sq_ = max_king_sq;
 			fe_end_ = fe_end;
@@ -292,14 +292,14 @@ namespace EvalLearningTools
 	struct KK :public SerializerBase
 	{
 	protected:
-		KK(Square king0, Square king1, bool inverse) : king0_(king0), king1_(king1), inverse_sign(inverse) {}
+		KK(const Square king0, const Square king1, const bool inverse) : king0_(king0), king1_(king1), inverse_sign(inverse) {}
 	public:
 		KK() {}
 
 		[[nodiscard]] virtual uint64_t size() const { return max_king_sq_ * max_king_sq_; }
 
 		// builder that creates KK object from index (serial number)
-		[[nodiscard]] KK fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
+		[[nodiscard]] KK fromIndex(const uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
 
 		// builder that creates KK object from raw_index (number starting from 0, not serial number)
 		[[nodiscard]] KK fromRawIndex(uint64_t raw_index) const
@@ -311,7 +311,7 @@ namespace EvalLearningTools
 			return fromKK(static_cast<Square>(king0), static_cast<Square>(king1), false);
 		}
 
-		[[nodiscard]] KK fromKK(Square king0, Square king1, bool inverse) const
+		[[nodiscard]] KK fromKK(const Square king0, const Square king1, const bool inverse) const
 		{
 			// The variable name kk is used in the Eval::kk array etc., so it needs to be different. (The same applies to KKP and KPP classes, etc.)
 			KK my_kk(king0, king1, inverse);
@@ -319,7 +319,7 @@ namespace EvalLearningTools
 			return my_kk;
 		}
 
-		[[nodiscard]] KK fromKK(Square king0, Square king1) const { return fromKK(king0, king1, false); }
+		[[nodiscard]] KK fromKK(const Square king0, const Square king1) const { return fromKK(king0, king1, false); }
 
 		// When you construct this object using fromIndex(), you can get information with the following accessors.
 		[[nodiscard]] Square king0() const { return king0_; }
@@ -391,15 +391,15 @@ namespace EvalLearningTools
 	struct KKP : public SerializerBase
 	{
 	protected:
-		KKP(Square king0, Square king1, Eval::BonaPiece p) :king0_(king0), king1_(king1), piece_(p), inverse_sign(false) {}
-		KKP(Square king0, Square king1, Eval::BonaPiece p, bool inverse) :king0_(king0), king1_(king1), piece_(p), inverse_sign(inverse) {}
+		KKP(const Square king0, const Square king1, const Eval::BonaPiece p) :king0_(king0), king1_(king1), piece_(p), inverse_sign(false) {}
+		KKP(const Square king0, const Square king1, const Eval::BonaPiece p, const bool inverse) :king0_(king0), king1_(king1), piece_(p), inverse_sign(inverse) {}
 	public:
 		KKP() {}
 
 		[[nodiscard]] virtual uint64_t size() const { return static_cast<uint64_t>(max_king_sq_) * static_cast<uint64_t>(max_king_sq_) * static_cast<uint64_t>(fe_end_); }
 
 		// builder that creates KKP object from index (serial number)
-		[[nodiscard]] KKP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
+		[[nodiscard]] KKP fromIndex(const uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
 
 		// builder that creates KKP object from raw_index (number starting from 0, not serial number)
 		[[nodiscard]] KKP fromRawIndex(uint64_t raw_index) const
@@ -413,14 +413,14 @@ namespace EvalLearningTools
 			return fromKKP(static_cast<Square>(king0), static_cast<Square>(king1), static_cast<Eval::BonaPiece>(piece), false);
 		}
 
-		[[nodiscard]] KKP fromKKP(Square king0, Square king1, Eval::BonaPiece p, bool inverse) const
+		[[nodiscard]] KKP fromKKP(const Square king0, const Square king1, const Eval::BonaPiece p, const bool inverse) const
 		{
 			KKP my_kkp(king0, king1, p, inverse);
 			my_kkp.set(max_king_sq_, fe_end_, min_index());
 			return my_kkp;
 		}
 
-		[[nodiscard]] KKP fromKKP(Square king0, Square king1, Eval::BonaPiece p) const { return fromKKP(king0, king1, p, false); }
+		[[nodiscard]] KKP fromKKP(const Square king0, const Square king1, const Eval::BonaPiece p) const { return fromKKP(king0, king1, p, false); }
 
 		// fromIndex()を用いてこのオブジェクトを構築したときに、以下のアクセッサで情報が得られる。
 		[[nodiscard]] Square king0() const { return king0_; }
@@ -492,7 +492,7 @@ namespace EvalLearningTools
 	struct KPP : public SerializerBase
 	{
 	protected:
-		KPP(Square king, Eval::BonaPiece p0, Eval::BonaPiece p1) : king_(king), piece0_(p0), piece1_(p1) {}
+		KPP(const Square king, const Eval::BonaPiece p0, const Eval::BonaPiece p1) : king_(king), piece0_(p0), piece1_(p1) {}
 
 	public:
 		KPP() {}
@@ -507,7 +507,7 @@ namespace EvalLearningTools
 		[[nodiscard]] virtual uint64_t size() const { return static_cast<uint64_t>(max_king_sq_) * static_cast<uint64_t>(triangle_fe_end); }
 #endif
 
-		virtual void set(int max_king_sq, uint64_t fe_end, uint64_t min_index)
+		virtual void set(const int max_king_sq, const uint64_t fe_end, const uint64_t min_index)
 		{
 			// This value is used in size() and size() is used in SerializerBase::set(), so calculate first.
 			triangle_fe_end = static_cast<uint64_t>(fe_end) * (static_cast<uint64_t>(fe_end) + 1) / 2;
@@ -516,7 +516,7 @@ namespace EvalLearningTools
 		}
 
 		// builder that creates KPP object from index (serial number)
-		[[nodiscard]] KPP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
+		[[nodiscard]] KPP fromIndex(const uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
 
 		// A builder that creates KPP objects from raw_index (a number that starts from 0, not a serial number)
 		[[nodiscard]] KPP fromRawIndex(uint64_t raw_index) const
@@ -552,7 +552,7 @@ namespace EvalLearningTools
 			return fromKPP(static_cast<Square>(king), static_cast<Eval::BonaPiece>(piece0), static_cast<Eval::BonaPiece>(piece1));
 		}
 
-		[[nodiscard]] KPP fromKPP(Square king, Eval::BonaPiece p0, Eval::BonaPiece p1) const
+		[[nodiscard]] KPP fromKPP(const Square king, const Eval::BonaPiece p0, const Eval::BonaPiece p1) const
 		{
 			KPP my_kpp(king, p0, p1);
 			my_kpp.set(max_king_sq_, fe_end_, min_index());
@@ -610,7 +610,7 @@ namespace EvalLearningTools
 
 #else
 			// Macro similar to the one used in Bonanza 6.0
-			auto PcPcOnSq = [&](Square k, Eval::BonaPiece i, Eval::BonaPiece j)
+			auto PcPcOnSq = [&](const Square k, const Eval::BonaPiece i, const Eval::BonaPiece j)
 			{
 
 				// (i,j) in this triangular array is the element in the i-th row and the j-th column.
@@ -678,7 +678,7 @@ namespace EvalLearningTools
 	struct KPPP : public SerializerBase
 	{
 	protected:
-		KPPP(int king, Eval::BonaPiece p0, Eval::BonaPiece p1, Eval::BonaPiece p2) :
+		KPPP(const int king, const Eval::BonaPiece p0, const Eval::BonaPiece p1, const Eval::BonaPiece p2) :
 			king_(king), piece0_(p0), piece1_(p1), piece2_(p2)
 		{
 			assert(piece0_ > piece1_ && piece1_ > piece2_);
@@ -696,7 +696,7 @@ namespace EvalLearningTools
 		// 3 steps x 3 mirrors = 3 steps x 5 lines = 15
 		// 2 steps x 2 mirrors without mirrors = 18
 		// Set this first using set() on the side that uses this KPPP class.
-		virtual void set(int max_king_sq, uint64_t fe_end, uint64_t min_index) {
+		virtual void set(const int max_king_sq, const uint64_t fe_end, const uint64_t min_index) {
 			// This value is used in size() and size() is used in SerializerBase::set(), so calculate first.
 			triangle_fe_end = fe_end * (fe_end - 1) * (fe_end - 2) / 6;
 
@@ -729,7 +729,7 @@ namespace EvalLearningTools
 		}
 
 		// builder that creates KPPP object from index (serial number)
-		[[nodiscard]] KPPP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
+		[[nodiscard]] KPPP fromIndex(const uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
 
 		// A builder that creates KPPP objects from raw_index (a number that starts from 0, not a serial number)
 		[[nodiscard]] KPPP fromRawIndex(uint64_t raw_index) const
@@ -809,7 +809,7 @@ namespace EvalLearningTools
 
 		// Specify k,p0,p1,p2 to build KPPP instance.
 		// The king_sq and fe_end passed by set() which is internally retained are inherited.
-		[[nodiscard]] KPPP fromKPPP(int king, Eval::BonaPiece p0, Eval::BonaPiece p1, Eval::BonaPiece p2) const
+		[[nodiscard]] KPPP fromKPPP(const int king, const Eval::BonaPiece p0, const Eval::BonaPiece p1, const Eval::BonaPiece p2) const
 		{
 			KPPP kppp(king, p0, p1, p2);
 			kppp.set(max_king_sq_, fe_end_, min_index());
@@ -822,7 +822,7 @@ namespace EvalLearningTools
 			// Macro similar to that used in Bonanza 6.0
 			// Precondition) i> j> k.
 			// NG in case of i==j,j==k.
-			auto PcPcPcOnSq = [this](int king, Eval::BonaPiece i, Eval::BonaPiece j, Eval::BonaPiece k)
+			auto PcPcPcOnSq = [this](const int king, const Eval::BonaPiece i, const Eval::BonaPiece j, const Eval::BonaPiece k)
 			{
 				// (i,j,k) in this triangular array is the element in the i-th row and j-th column.
 				// 0th row 0th column 0th is the sum of the elements up to that point, so 0 + 0 + 1 + 3 + 6 + ... + (i)*(i-1)/2 = i*( i-1)*(i-2)/6
@@ -897,7 +897,7 @@ namespace EvalLearningTools
 	struct KKPP : SerializerBase
 	{
 	protected:
-		KKPP(int king, Eval::BonaPiece p0, Eval::BonaPiece p1) :
+		KKPP(const int king, const Eval::BonaPiece p0, const Eval::BonaPiece p1) :
 			king_(king), piece0_(p0), piece1_(p1)
 		{
 			assert(piece0_ > piece1_);
@@ -914,7 +914,7 @@ namespace EvalLearningTools
 		// king_sq: The number of balls to handle in KPPP.
 		// 9 steps x mirrors 9 steps x 5 squares of squares (balls before and after) = 45*45 = 2025.
 		// Set this first using set() on the side that uses this KKPP class.
-		void set(int max_king_sq, uint64_t fe_end, uint64_t min_index) {
+		void set(const int max_king_sq, const uint64_t fe_end, const uint64_t min_index) {
 			// This value is used in size() and size() is used in SerializerBase::set(), so calculate first.
 			triangle_fe_end = fe_end * (fe_end - 1) / 2;
 
@@ -937,7 +937,7 @@ namespace EvalLearningTools
 		}
 
 		// builder that creates KKPP object from index (serial number)
-		[[nodiscard]] KKPP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
+		[[nodiscard]] KKPP fromIndex(const uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
 
 		// A builder that creates a KKPP object from raw_index (a number that starts from 0, not a serial number)
 		[[nodiscard]] KKPP fromRawIndex(uint64_t raw_index) const
@@ -967,7 +967,7 @@ namespace EvalLearningTools
 
 		// Specify k,p0,p1 to build KKPP instance.
 		// The king_sq and fe_end passed by set() which is internally retained are inherited.
-		[[nodiscard]] KKPP fromKKPP(int king, Eval::BonaPiece p0, Eval::BonaPiece p1) const
+		[[nodiscard]] KKPP fromKKPP(const int king, const Eval::BonaPiece p0, const Eval::BonaPiece p1) const
 		{
 			KKPP kkpp(king, p0, p1);
 			kkpp.set(max_king_sq_, fe_end_, min_index());
@@ -980,7 +980,7 @@ namespace EvalLearningTools
 			// Macro similar to that used in Bonanza 6.0
 			// Precondition) i> j.
 			// NG in case of i==j,j==k.
-			auto PcPcOnSq = [this](int king, Eval::BonaPiece i, Eval::BonaPiece j)
+			auto PcPcOnSq = [this](const int king, const Eval::BonaPiece i, const Eval::BonaPiece j)
 			{
 				assert(i > j);
 

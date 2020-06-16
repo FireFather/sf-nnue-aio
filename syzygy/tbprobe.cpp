@@ -65,8 +65,8 @@ enum TBType { WDL, DTZ }; // Used as template parameter
 // Each table has a set of flags: all of them refer to DTZ tables, the last one to WDL tables
 enum TBFlag { STM = 1, Mapped = 2, WinPlies = 4, LossPlies = 8, Wide = 16, SingleValue = 128 };
 
-WDLScore operator-(WDLScore d) { return WDLScore(-static_cast<int>(d)); }
-Square operator^(Square s, int i) { return Square(static_cast<int>(s) ^ i); }
+WDLScore operator-(const WDLScore d) { return WDLScore(-static_cast<int>(d)); }
+Square operator^(const Square s, const int i) { return Square(static_cast<int>(s) ^ i); }
 
 const std::string PieceToChar = " PNBRQK  pnbrqk";
 
@@ -80,8 +80,8 @@ int LeadPawnIdx[6][SQUARE_NB]; // [leadPawnsCnt][SQUARE_NB]
 int LeadPawnsSize[6][4];       // [leadPawnsCnt][FILE_A..FILE_D]
 
 // Comparison function to sort leading pawns in ascending MapPawns[] order
-bool pawns_comp(Square i, Square j) { return MapPawns[i] < MapPawns[j]; }
-int off_A1H8(Square sq) { return static_cast<int>(rank_of(sq)) - file_of(sq); }
+bool pawns_comp(const Square i, const Square j) { return MapPawns[i] < MapPawns[j]; }
+int off_A1H8(const Square sq) { return static_cast<int>(rank_of(sq)) - file_of(sq); }
 
 constexpr Value WDL_to_value[] = {
    -VALUE_MATE + MAX_PLY + 1,
@@ -123,7 +123,7 @@ template<typename T, int LE> T number(void* addr)
 // DTZ tables don't store valid scores for moves that reset the rule50 counter
 // like captures and pawn moves but we can easily recover the correct dtz of the
 // previous move if we know the position's WDL score.
-int dtz_before_zeroing(WDLScore wdl) {
+int dtz_before_zeroing(const WDLScore wdl) {
     return wdl == WDLWin         ?  1   :
            wdl == WDLCursedWin   ?  101 :
            wdl == WDLBlessedLoss ? -101 :
@@ -202,7 +202,7 @@ public:
 
     // Memory map the file and check it. File should be already open and will be
     // closed after mapping.
-    uint8_t* map(void** baseAddress, uint64_t* mapping, TBType type) {
+    uint8_t* map(void** baseAddress, uint64_t* mapping, const TBType type) {
 
         assert(is_open());
 
@@ -284,7 +284,7 @@ public:
         return data + 4; // Skip Magics's header
     }
 
-    static void unmap(void* baseAddress, uint64_t mapping) {
+    static void unmap(void* baseAddress, const uint64_t mapping) {
 
 #ifndef _WIN32
         munmap(baseAddress, mapping);
@@ -344,7 +344,7 @@ struct TBTable {
     uint8_t pawnCount[2]{}; // [Lead color / other color]
     PairsData items[Sides][4]; // [wtm / btm][FILE_A..FILE_D or 0]
 
-    PairsData* get(int stm, int f) {
+    PairsData* get(const int stm, const int f) {
         return &items[stm % Sides][hasPawns ? f : 0];
     }
 
@@ -451,7 +451,7 @@ class TBTables {
 
 public:
     template<TBType Type>
-    TBTable<Type>* get(Key key) {
+    TBTable<Type>* get(const Key key) {
         for (const Entry* entry = &hashTable[static_cast<uint32_t>(key) & Size - 1]; ; ++entry) {
             if (entry->key == key || !entry->get<Type>())
                 return entry->get<Type>();
@@ -511,7 +511,8 @@ void TBTables::add(const std::vector<PieceType>& pieces) {
 // Huffman codes is the same for all blocks in the table. A non-symmetric pawnless TB file
 // will have one table for wtm and one for btm, a TB file with pawns will have tables per
 // file a,b,c,d also in this case one set for wtm and one for btm.
-int decompress_pairs(PairsData* d, uint64_t idx) {
+// 
+int decompress_pairs(PairsData* d, const uint64_t idx) {
 
     // Special case where all table positions store the same value
     if (d->flags & SingleValue)
@@ -624,7 +625,7 @@ int decompress_pairs(PairsData* d, uint64_t idx) {
 
 bool check_dtz_stm(TBTable<WDL>*, int, File) { return true; }
 
-bool check_dtz_stm(TBTable<DTZ>* entry, int stm, File f) {
+bool check_dtz_stm(TBTable<DTZ>* entry, const int stm, const File f) {
 	const auto flags = entry->get(stm, f)->flags;
     return   (flags & STM) == stm
           || entry->key == entry->key2 && !entry->hasPawns;
@@ -634,9 +635,9 @@ bool check_dtz_stm(TBTable<DTZ>* entry, int stm, File f) {
 // values 0, 1, 2, ... in order of decreasing frequency. This is done for each
 // of the four WDLScore values. The mapping information necessary to reconstruct
 // the original values is stored in the TB file and read during map[] init.
-WDLScore map_score(TBTable<WDL>*, File, int value, WDLScore) { return WDLScore(value - 2); }
+WDLScore map_score(TBTable<WDL>*, File, const int value, WDLScore) { return WDLScore(value - 2); }
 
-int map_score(TBTable<DTZ>* entry, File f, int value, WDLScore wdl) {
+int map_score(TBTable<DTZ>* entry, const File f, int value, const WDLScore wdl) {
 
     constexpr int WDLMap[] = { 1, 3, 0, 2, 0 };
 
@@ -865,7 +866,7 @@ encode_remaining:
         // groups (similar to what done earlier for leading group pieces).
         for (auto i = 0; i < d->groupLen[next]; ++i)
         {
-            auto f = [&](Square s) { return groupSq[i] > s; };
+            auto f = [&](const Square s) { return groupSq[i] > s; };
             auto adjust = std::count_if(squares, groupSq, f);
             n += Binomial[i + 1][groupSq[i] - adjust - 8 * remainingPawns];
         }
@@ -890,7 +891,7 @@ encode_remaining:
 // The actual grouping depends on the TB generator and can be inferred from the
 // sequence of pieces in piece[] array.
 template<typename T>
-void set_groups(T& e, PairsData* d, int order[], File f) {
+void set_groups(T& e, PairsData* d, int order[], const File f) {
 
     int n = 0, firstLen = e.hasPawns ? 0 : e.hasUniquePieces ? 3 : 2;
     d->groupLen[n] = 1;
@@ -946,7 +947,7 @@ void set_groups(T& e, PairsData* d, int order[], File f) {
 // In Recursive Pairing each symbol represents a pair of childern symbols. So
 // read d->btree[] symbols data and expand each one in his left and right child
 // symbol until reaching the leafs that represent the symbol value.
-uint8_t set_symlen(PairsData* d, Sym s, std::vector<bool>& visited) {
+uint8_t set_symlen(PairsData* d, const Sym s, std::vector<bool>& visited) {
 
     visited[s] = true; // We can set it now because tree is acyclic
     const auto sr = d->btree[s].get<LR::Right>();
@@ -1032,7 +1033,7 @@ uint8_t* set_sizes(PairsData* d, uint8_t* data) {
 
 uint8_t* set_dtz_map(TBTable<WDL>&, uint8_t* data, File) { return data; }
 
-uint8_t* set_dtz_map(TBTable<DTZ>& e, uint8_t* data, File maxFile) {
+uint8_t* set_dtz_map(TBTable<DTZ>& e, uint8_t* data, const File maxFile) {
 
     e.map = data;
 

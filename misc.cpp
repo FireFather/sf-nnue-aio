@@ -75,7 +75,7 @@ namespace {
 		Tie(streambuf* b, streambuf* l) : buf(b), logBuf(l) {}
 
 		int sync() override { return logBuf->pubsync(), buf->pubsync(); }
-		int overflow(int c) override { return log(buf->sputc(static_cast<char>(c)), "<< "); }
+		int overflow(const int c) override { return log(buf->sputc(static_cast<char>(c)), "<< "); }
 		int underflow() override { return buf->sgetc(); }
 		int uflow() override { return log(buf->sbumpc(), ">> "); }
 
@@ -232,9 +232,9 @@ const std::string compiler_info() {
 /// Debug functions used mainly to collect run-time statistics
 static std::atomic<int64_t> hits[2], means[2];
 
-void dbg_hit_on(bool b) { ++hits[0]; if (b) ++hits[1]; }
-void dbg_hit_on(bool c, bool b) { if (c) dbg_hit_on(b); }
-void dbg_mean_of(int v) { ++means[0]; means[1] += v; }
+void dbg_hit_on(const bool b) { ++hits[0]; if (b) ++hits[1]; }
+void dbg_hit_on(const bool c, const bool b) { if (c) dbg_hit_on(b); }
+void dbg_mean_of(const int v) { ++means[0]; means[1] += v; }
 
 void dbg_print() {
 
@@ -251,7 +251,7 @@ void dbg_print() {
 /// Used to serialize access to std::cout to avoid multiple threads writing at
 /// the same time.
 
-std::ostream& operator<<(std::ostream& os, SyncCout sc) {
+std::ostream& operator<<(std::ostream& os, const SyncCout sc) {
 
 	static std::mutex m;
 
@@ -428,7 +428,7 @@ namespace WinProcGroup {
 	/// API and returns the best group id for the thread with index idx. Original
 	/// code from Texel by Peter Österlund.
 
-	int best_group(size_t idx) {
+	int best_group(const size_t idx) {
 		auto threads = 0;
 		auto nodes = 0;
 		auto cores = 0;
@@ -496,7 +496,7 @@ namespace WinProcGroup {
 
 	/// bindThisThread() set the group affinity of the current thread
 
-	void bindThisThread(size_t idx) {
+	void bindThisThread(const size_t idx) {
 
 		// Use only local variables to be thread-safe
 		auto group = best_group(idx);
@@ -542,12 +542,12 @@ std::string now_string()
 	return result;
 }
 
-void sleep(int ms)
+void sleep(const int ms)
 {
 	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-void* aligned_malloc(size_t size, size_t align)
+void* aligned_malloc(const size_t size, const size_t align)
 {
 	auto* p = _mm_malloc(size, align);
 	if (p == nullptr)
@@ -601,7 +601,7 @@ int read_file_to_memory(const std::string& filename, const std::function<void* (
 	return 0;
 }
 
-int write_memory_to_file(const std::string& filename, void* ptr, uint64_t size)
+int write_memory_to_file(const std::string& filename, void* ptr, const uint64_t size)
 {
 	fstream fs(filename, ios::out | ios::binary);
 	if (fs.fail())

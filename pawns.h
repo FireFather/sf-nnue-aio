@@ -31,10 +31,10 @@ namespace Pawns {
 /// pointer to an Entry object.
 
 struct Entry {
-	[[nodiscard]] Score pawn_score(Color c) const { return scores[c]; }
-	[[nodiscard]] Bitboard pawn_attacks(Color c) const { return pawnAttacks[c]; }
-	[[nodiscard]] Bitboard passed_pawns(Color c) const { return passedPawns[c]; }
-	[[nodiscard]] Bitboard pawn_attacks_span(Color c) const { return pawnAttacksSpan[c]; }
+	[[nodiscard]] Score pawn_score(const Color c) const { return scores[c]; }
+	[[nodiscard]] Bitboard pawn_attacks(const Color c) const { return pawnAttacks[c]; }
+	[[nodiscard]] Bitboard passed_pawns(const Color c) const { return passedPawns[c]; }
+	[[nodiscard]] Bitboard pawn_attacks_span(const Color c) const { return pawnAttacksSpan[c]; }
 	[[nodiscard]] int passed_count() const { return popcount(passedPawns[WHITE] | passedPawns[BLACK]); }
 	[[nodiscard]] int blocked_count() const { return blockedCount; }
 

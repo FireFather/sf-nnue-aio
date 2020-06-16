@@ -33,7 +33,7 @@ const UCI::Option* LastOption = nullptr;
 BoolConditions Conditions;
 static std::map<std::string, int> TuneResults;
 
-string Tune::next(string& names, bool pop) {
+string Tune::next(string& names, const bool pop) {
 
 	string name;
 

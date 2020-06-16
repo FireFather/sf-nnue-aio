@@ -34,7 +34,7 @@ ThreadPool Threads; // Global object
 /// Thread constructor launches the thread and waits until it goes to sleep
 /// in idle_loop(). Note that 'searching' and 'exit' should be already set.
 
-Thread::Thread(size_t n) : idx(n), stdThread(&Thread::idle_loop, this) {
+Thread::Thread(const size_t n) : idx(n), stdThread(&Thread::idle_loop, this) {
 
 	wait_for_search_finished();
 }
@@ -54,7 +54,7 @@ Thread::~Thread() {
 
 /// Thread::bestMoveCount(Move move) return best move counter for the given root move
 
-int Thread::best_move_count(Move move) const {
+int Thread::best_move_count(const Move move) const {
 
 	auto rm = std::find(rootMoves.begin() + pvIdx,
 		rootMoves.begin() + pvLast, move);
@@ -134,7 +134,7 @@ void Thread::idle_loop() {
 /// Created and launched threads will immediately go to sleep in idle_loop.
 /// Upon resizing, threads are recreated to allow for binding if necessary.
 
-void ThreadPool::set(size_t requested) {
+void ThreadPool::set(const size_t requested) {
 
 	if (size() > 0) { // destroy any existing thread(s)
 		main()->wait_for_search_finished();
@@ -174,7 +174,7 @@ void ThreadPool::clear() {
 /// returns immediately. Main thread will wake up other threads and start the search.
 
 void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
-	const Search::LimitsType& limits, bool ponderMode) {
+	const Search::LimitsType& limits, const bool ponderMode) {
 
 	main()->wait_for_search_finished();
 

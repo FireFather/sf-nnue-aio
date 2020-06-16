@@ -116,7 +116,7 @@ namespace Learner
 	struct SfenWriter
 	{
 		// File name to write and number of threads to create
-		SfenWriter(const string& filename, int thread_num)
+		SfenWriter(const string& filename, const int thread_num)
 		{
 			sfen_buffers_pool.reserve(static_cast<size_t>(thread_num) * 10);
 			sfen_buffers.resize(thread_num);
@@ -144,7 +144,7 @@ namespace Learner
 		const size_t SFEN_WRITE_SIZE = 5000;
 
 		// Write one by pairing the phase and evaluation value (in packed sfen format)
-		void write(size_t thread_id, const PackedSfenValue& psv)
+		void write(const size_t thread_id, const PackedSfenValue& psv)
 		{
 			// We have a buffer for each thread and add it there.
 			// If the buffer overflows, write it to a file.
@@ -177,7 +177,7 @@ namespace Learner
 		}
 
 		// Move what remains in the buffer for your thread to a buffer for writing to a file.
-		void finalize(size_t thread_id)
+		void finalize(const size_t thread_id)
 		{
 			std::unique_lock<std::mutex> lk(mutex);
 
@@ -309,7 +309,7 @@ namespace Learner
 	// Class to generate sfen with multiple threads
 	struct MultiThinkGenSfen : public MultiThink
 	{
-		MultiThinkGenSfen(int search_depth_, int search_depth2_, SfenWriter& sw_)
+		MultiThinkGenSfen(const int search_depth_, const int search_depth2_, SfenWriter& sw_)
 			: search_depth(search_depth_), search_depth2(search_depth2_), sw(sw_)
 		{
 			hash.resize(GENSFEN_HASH_SIZE);
@@ -412,7 +412,7 @@ namespace Learner
 			// lastTurnIsWin: win/loss in the next phase after the final phase in a_psv
 			// 1 when winning. -1 when losing. Pass 0 for a draw.
 			// Return value: true when it ends because the specified number of phases has already been reached.
-			auto flush_psv = [&](int8_t lastTurnIsWin)
+			auto flush_psv = [&](const int8_t lastTurnIsWin)
 			{
 				auto isWin = lastTurnIsWin;
 
@@ -936,7 +936,7 @@ namespace Learner
 			// Just in case, reassign the random numbers.
 			for (auto i = 0; i < 10; ++i)
 				r.rand(1);
-			auto to_hex = [](uint64_t u) {
+			auto to_hex = [](const uint64_t u) {
 				std::stringstream ss;
 				ss << std::hex << u;
 				return ss.str();
@@ -1001,13 +1001,13 @@ namespace Learner
 	// -----------------------------------
 
 	// ordinary sigmoid function
-	double sigmoid(double x)
+	double sigmoid(const double x)
 	{
 		return 1.0 / (1.0 + std::exp(-x));
 	}
 
 	// A function that converts the evaluation value to the winning rate [0,1]
-	double winning_percentage(double value)
+	double winning_percentage(const double value)
 	{
 		// The constant 600.0 is a ponanza constant. (in the sense that ponanza seems to do so)
 		// It may be better to match it to the progress of the game, but the effect is unknown.
@@ -1015,7 +1015,7 @@ namespace Learner
 	}
 
 	// Derivative of ordinary sigmoid function.
-	double dsigmoid(double x)
+	double dsigmoid(const double x)
 	{
 		// Sigmoid function
 		// f(x) = 1/(1+exp(-x))
@@ -1104,7 +1104,7 @@ namespace Learner
 	double ELMO_LAMBDA2 = 0.33;
 	double ELMO_LAMBDA_LIMIT = 32000;
 
-	double calc_grad(Value deep, Value shallow, const PackedSfenValue& psv)
+	double calc_grad(const Value deep, const Value shallow, const PackedSfenValue& psv)
 	{
 		// elmo (WCSC27) method
 		// Correct based on the actual game win/loss.
@@ -1128,9 +1128,9 @@ namespace Learner
 
 	// Calculate cross entropy during learning
 	// The individual cross entropy of the win/loss term and win rate term of the elmo expression is returned to the arguments cross_entropy_eval and cross_entropy_win.
-	void calc_cross_entropy(Value deep, Value shallow, const PackedSfenValue& psv,
-		double& cross_entropy_eval, double& cross_entropy_win, double& cross_entropy,
-		double& entropy_eval, double& entropy_win, double& entropy)
+	void calc_cross_entropy(const Value deep, const Value shallow, const PackedSfenValue& psv,
+	                        double& cross_entropy_eval, double& cross_entropy_win, double& cross_entropy,
+	                        double& entropy_eval, double& entropy_win, double& entropy)
 	{
 		const auto p /* teacher_winrate */ = winning_percentage(deep);
 		const auto q /* eval_winrate */ = winning_percentage(shallow);
@@ -1163,14 +1163,14 @@ namespace Learner
 
 	// Other variations may be prepared as the objective function..
 
-	double calc_grad(Value shallow, const PackedSfenValue& psv) {
+	double calc_grad(const Value shallow, const PackedSfenValue& psv) {
 		return calc_grad(static_cast<Value>(psv.score), shallow, psv);
 	}
 
 	// Sfen reader
 	struct SfenReader
 	{
-		SfenReader(int thread_num) :prng(std::random_device()())
+		SfenReader(const int thread_num) :prng(std::random_device()())
 		{
 			packed_sfens.resize(thread_num);
 			total_read = 0;
@@ -1223,7 +1223,7 @@ namespace Learner
 			}
 		}
 
-		void read_validation_set(const string& file_name, int eval_limit)
+		void read_validation_set(const string& file_name, const int eval_limit)
 		{
 			ifstream fs(file_name, ios::binary);
 
@@ -1256,7 +1256,7 @@ namespace Learner
 		const size_t SFEN_READ_SIZE = LEARN_SFEN_READ_SIZE;
 
 		// [ASYNC] Thread returns one aspect. Otherwise returns false.
-		bool read_to_thread_buffer(size_t thread_id, PackedSfenValue& ps)
+		bool read_to_thread_buffer(const size_t thread_id, PackedSfenValue& ps)
 		{
 			// If there are any positions left in the thread buffer, retrieve one and return it.
 			auto& thread_ps = packed_sfens[thread_id];
@@ -1284,7 +1284,7 @@ namespace Learner
 		}
 
 		// [ASYNC] Read some aspect to thread buffer.
-		bool read_to_thread_buffer_impl(size_t thread_id)
+		bool read_to_thread_buffer_impl(const size_t thread_id)
 		{
 			while (true)
 			{
@@ -1442,7 +1442,7 @@ namespace Learner
 
 		// Determine if it is a phase for rmse calculation.
 		// (The computational phase of rmse should not be used for learning.)
-		bool is_for_rmse(Key key) const
+		bool is_for_rmse(const Key key) const
 		{
 			return sfen_for_mse_hash.count(key) != 0;
 		}
@@ -1580,7 +1580,7 @@ namespace Learner
 		TaskDispatcher task_dispatcher;
 	};
 
-	void LearnerThink::calc_loss(size_t thread_id, uint64_t done)
+	void LearnerThink::calc_loss(const size_t thread_id, const uint64_t done)
 	{
 		// There is no point in hitting the substitution table, so at this timing the generation of the substitution table is updated.
 		// It doesn't matter if you have disabled the substitution table.
@@ -1632,7 +1632,7 @@ namespace Learner
 		{
 			// Assign work to each thread using TaskDispatcher.
 			// A task definition for that.
-			auto task = [&ps, &test_sum_cross_entropy_eval, &test_sum_cross_entropy_win, &test_sum_cross_entropy, &test_sum_entropy_eval, &test_sum_entropy_win, &test_sum_entropy, &sum_norm, &task_count, &move_accord_count](size_t thread_id)
+			auto task = [&ps, &test_sum_cross_entropy_eval, &test_sum_cross_entropy_win, &test_sum_cross_entropy, &test_sum_entropy_eval, &test_sum_entropy_win, &test_sum_entropy, &sum_norm, &task_count, &move_accord_count](const size_t thread_id)
 			{
 				// Does C++ properly capture a new ps instance for each loop?
 				auto* th = Threads[thread_id];
@@ -1782,7 +1782,7 @@ namespace Learner
 	}
 
 
-	void LearnerThink::thread_worker(size_t thread_id)
+	void LearnerThink::thread_worker(const size_t thread_id)
 	{
 #if defined(_OPENMP)
 		omp_set_num_threads((int)Options["Threads"]);
@@ -2094,7 +2094,7 @@ namespace Learner
 	}
 
 	// Write evaluation function file.
-	bool LearnerThink::save(bool is_final)
+	bool LearnerThink::save(const bool is_final)
 	{
 		// Calculate and output check sum before saving. (To check if it matches the next time)
 		std::cout << "Check Sum = " << std::hex << Eval::calc_check_sum() << std::dec << std::endl;
@@ -2225,7 +2225,7 @@ namespace Learner
 
 	// Subcontracting the teacher shuffle "learn shuffle" command.
 	// output_file_name: Name of the output file where the shuffled teacher positions will be written
-	void shuffle_files(const vector<string>& filenames, const string& output_file_name, uint64_t buffer_size)
+	void shuffle_files(const vector<string>& filenames, const string& output_file_name, const uint64_t buffer_size)
 	{
 		// The output folder is
 		// tmp/ for temporary writing
@@ -2249,7 +2249,7 @@ namespace Learner
 		PRNG prng((std::random_device())());
 
 		// generate the name of the temporary file
-		auto make_filename = [](uint64_t i)
+		auto make_filename = [](const uint64_t i)
 		{
 			return "tmp/" + to_string(i) + ".bin";
 		};
@@ -2257,7 +2257,7 @@ namespace Learner
 		// Exported tmp/ folder files, number of teacher positions stored in each
 		vector<uint64_t> a_count;
 
-		auto write_buffer = [&](uint64_t size)
+		auto write_buffer = [&](const uint64_t size)
 		{
 			// shuffle from buf[0] to buf[size-1]
 			for (uint64_t i = 0; i < size; ++i)
@@ -2371,7 +2371,7 @@ namespace Learner
 		for (auto filename : filenames)
 		{
 			std::cout << "read : " << filename << std::endl;
-			read_file_to_memory(filename, [&buf](uint64_t size) {
+			read_file_to_memory(filename, [&buf](const uint64_t size) {
 				assert(size % sizeof(PackedSfenValue) == 0);
 				// Expand the buffer and read after the last time.
 				const auto last = buf.size();

@@ -33,7 +33,7 @@ namespace {
 
 	// partial_insertion_sort() sorts moves in descending order up to and including
 	// a given limit. The order of moves smaller than the limit is left unspecified.
-	void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
+	void partial_insertion_sort(ExtMove* begin, ExtMove* end, const int limit) {
 
 		for (auto sortedEnd = begin, p = begin + 1; p < end; ++p)
 			if (p->value >= limit)
@@ -56,8 +56,8 @@ namespace {
 /// ordering is at the current node.
 
 /// MovePicker constructor for the main search
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh, const LowPlyHistory* lp,
-	const CapturePieceToHistory* cph, const PieceToHistory** ch, Move cm, Move* killers, int pl)
+MovePicker::MovePicker(const Position& p, const Move ttm, const Depth d, const ButterflyHistory* mh, const LowPlyHistory* lp,
+	const CapturePieceToHistory* cph, const PieceToHistory** ch, const Move cm, Move* killers, const int pl)
 	: pos(p), mainHistory(mh), lowPlyHistory(lp), captureHistory(cph), continuationHistory(ch),
 	ttMove(ttm), refutations{ {killers[0], 0}, {killers[1], 0}, {cm, 0} }, depth(d), ply(pl) {
 
@@ -68,8 +68,8 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 }
 
 /// MovePicker constructor for quiescence search
-MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHistory* mh,
-	const CapturePieceToHistory* cph, const PieceToHistory** ch, Square rs)
+MovePicker::MovePicker(const Position& p, const Move ttm, const Depth d, const ButterflyHistory* mh,
+	const CapturePieceToHistory* cph, const PieceToHistory** ch, const Square rs)
 	: pos(p), mainHistory(mh), captureHistory(cph), continuationHistory(ch), ttMove(ttm), recaptureSquare(rs), depth(d) {
 
 	assert(d <= 0);
@@ -81,7 +81,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 
 /// MovePicker constructor for ProbCut: we generate captures with SEE greater
 /// than or equal to the given threshold.
-MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePieceToHistory* cph)
+MovePicker::MovePicker(const Position& p, const Move ttm, const Value th, const CapturePieceToHistory* cph)
 	: pos(p), captureHistory(cph), ttMove(ttm), threshold(th) {
 
 	assert(!pos.checkers());
@@ -145,7 +145,7 @@ Move MovePicker::select(Pred filter) {
 /// MovePicker::next_move() is the most important method of the MovePicker class. It
 /// returns a new pseudo legal move every time it is called until there are no more
 /// moves left, picking the move with the highest score from a list of generated moves.
-Move MovePicker::next_move(bool skipQuiets) {
+Move MovePicker::next_move(const bool skipQuiets) {
 
 top:
 	switch (stage) {

@@ -31,13 +31,13 @@ namespace HalfFloat
 		// --- constructors
 
 		float16() {}
-		float16(int16_t n) { from_float(static_cast<float>(n)); }
-		float16(int32_t n) { from_float(static_cast<float>(n)); }
-		float16(float n) { from_float(n); }
-		float16(double n) { from_float(static_cast<float>(n)); }
+		float16(const int16_t n) { from_float(static_cast<float>(n)); }
+		float16(const int32_t n) { from_float(static_cast<float>(n)); }
+		float16(const float n) { from_float(n); }
+		float16(const double n) { from_float(static_cast<float>(n)); }
 
 		// build from a float
-		void from_float(float f) { *this = to_float16(f); }
+		void from_float(const float f) { *this = to_float16(f); }
 
 		// --- implicit converters
 
@@ -47,17 +47,17 @@ namespace HalfFloat
 
 		// --- operators
 
-		float16 operator += (float16 rhs) { from_float(to_float(*this) + to_float(rhs)); return *this; }
-		float16 operator -= (float16 rhs) { from_float(to_float(*this) - to_float(rhs)); return *this; }
-		float16 operator *= (float16 rhs) { from_float(to_float(*this) * to_float(rhs)); return *this; }
-		float16 operator /= (float16 rhs) { from_float(to_float(*this) / to_float(rhs)); return *this; }
-		float16 operator + (float16 rhs) const { return float16(*this) += rhs; }
-		float16 operator - (float16 rhs) const { return float16(*this) -= rhs; }
-		float16 operator * (float16 rhs) const { return float16(*this) *= rhs; }
-		float16 operator / (float16 rhs) const { return float16(*this) /= rhs; }
+		float16 operator += (const float16 rhs) { from_float(to_float(*this) + to_float(rhs)); return *this; }
+		float16 operator -= (const float16 rhs) { from_float(to_float(*this) - to_float(rhs)); return *this; }
+		float16 operator *= (const float16 rhs) { from_float(to_float(*this) * to_float(rhs)); return *this; }
+		float16 operator /= (const float16 rhs) { from_float(to_float(*this) / to_float(rhs)); return *this; }
+		float16 operator + (const float16 rhs) const { return float16(*this) += rhs; }
+		float16 operator - (const float16 rhs) const { return float16(*this) -= rhs; }
+		float16 operator * (const float16 rhs) const { return float16(*this) *= rhs; }
+		float16 operator / (const float16 rhs) const { return float16(*this) /= rhs; }
 		float16 operator - () const { return float16(-to_float(*this)); }
-		bool operator == (float16 rhs) const { return this->v_ == rhs.v_; }
-		bool operator != (float16 rhs) const { return !(*this == rhs); }
+		bool operator == (const float16 rhs) const { return this->v_ == rhs.v_; }
+		bool operator != (const float16 rhs) const { return !(*this == rhs); }
 
 static void UnitTest() { unit_test(); }
 
@@ -69,7 +69,7 @@ private:
 
 	// --- conversion between float and float16
 
-	static float16 to_float16(float f)
+	static float16 to_float16(const float f)
 	{
 		float32_converter c;
 		c.f = f;
@@ -90,7 +90,7 @@ private:
 		return f_;
 	}
 
-	static float to_float(float16 v)
+	static float to_float(const float16 v)
 	{
 		const uint32_t sign_bit = (v.v_ & 0x8000) << 16;
 		const uint32_t exponent = ((v.v_ >> 10 & 0x1f) - 15 + 127 & 0xff) << 23;

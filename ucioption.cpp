@@ -48,7 +48,7 @@ namespace UCI {
 	bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const {
 
 		return std::lexicographical_compare(s1.begin(), s1.end(), s2.begin(), s2.end(),
-			[](char c1, char c2) { return tolower(c1) < tolower(c2); });
+			[](const char c1, const char c2) { return tolower(c1) < tolower(c2); });
 	}
 
 	/// init() initializes the UCI options to their hard-coded default values
@@ -128,25 +128,25 @@ namespace UCI {
 
 	/// Option class constructors and conversion operators
 
-	Option::Option(const char* v, OnChange f) : type("string"), min(0), max(0), on_change(f)
+	Option::Option(const char* v, const OnChange f) : type("string"), min(0), max(0), on_change(f)
 	{
 		defaultValue = currentValue = v;
 	}
 
-	Option::Option(bool v, OnChange f) : type("check"), min(0), max(0), on_change(f)
+	Option::Option(const bool v, const OnChange f) : type("check"), min(0), max(0), on_change(f)
 	{
 		defaultValue = currentValue = v ? "true" : "false";
 	}
 
-	Option::Option(OnChange f) : type("button"), min(0), max(0), on_change(f)
+	Option::Option(const OnChange f) : type("button"), min(0), max(0), on_change(f)
 	{}
 
-	Option::Option(double v, int minv, int maxv, OnChange f) : type("spin"), min(minv), max(maxv), on_change(f)
+	Option::Option(const double v, const int minv, const int maxv, const OnChange f) : type("spin"), min(minv), max(maxv), on_change(f)
 	{
 		defaultValue = currentValue = std::to_string(v);
 	}
 
-	Option::Option(const char* v, const char* cur, OnChange f) : type("combo"), min(0), max(0), on_change(f)
+	Option::Option(const char* v, const char* cur, const OnChange f) : type("combo"), min(0), max(0), on_change(f)
 	{
 		defaultValue = v; currentValue = cur;
 	}

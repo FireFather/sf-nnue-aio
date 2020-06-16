@@ -30,14 +30,14 @@ typedef std::pair<int, int> Range; // Option's min-max values
 typedef Range (RangeFun) (int);
 
 // Default Range function, to calculate Option's min-max values
-inline Range default_range(int v) {
+inline Range default_range(const int v) {
   return v > 0 ? Range(0, 2 * v) : Range(2 * v, 0);
 }
 
 struct SetRange {
   explicit SetRange(RangeFun f) : fun(f) {}
   SetRange(int min, int max) : fun(nullptr), range(min, max) {}
-  Range operator()(int v) const { return fun ? fun(v) : range; }
+  Range operator()(const int v) const { return fun ? fun(v) : range; }
 
   RangeFun* fun;
   Range range;
@@ -54,7 +54,7 @@ struct SetRange {
 /// probability that depnends on the parameter under tuning.
 
 struct BoolConditions {
-  void init(size_t size) { values.resize(size, defaultValue), binary.resize(size, 0); }
+  void init(const size_t size) { values.resize(size, defaultValue), binary.resize(size, 0); }
   void set();
 
   std::vector<int> binary, values;

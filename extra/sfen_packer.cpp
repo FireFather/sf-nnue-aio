@@ -31,7 +31,7 @@ struct BitStream
 
 	// Write 1bit to the stream.
 	// If b is non-zero, write out 1. If 0, write 0.
-	void write_one_bit(int b)
+	void write_one_bit(const int b)
 	{
 		if (b)
 			data[bit_cursor / 8] |= 1 << (bit_cursor & 7);
@@ -50,7 +50,7 @@ struct BitStream
 
 	// write n bits of data
 	// The data shall be written out from the lower order of d.
-	void write_n_bit(int d, int n)
+	void write_n_bit(const int d, const int n)
 	{
 		for (auto i = 0; i < n; ++i)
 			write_one_bit(d & 1 << i);
@@ -58,7 +58,7 @@ struct BitStream
 
 	// read n bits of data
 	// Reverse conversion of write_n_bit().
-	int read_n_bit(int n)
+	int read_n_bit(const int n)
 	{
 		auto result = 0;
 		for (auto i = 0; i < n; ++i)
@@ -211,7 +211,7 @@ struct SfenPacker
 	BitStream stream;
 
 	// Output the pieces on the board to stream.
-	void write_board_piece_to_stream(Piece pc)
+	void write_board_piece_to_stream(const Piece pc)
 	{
 		// piece type
 		const auto pr = type_of(pc);
@@ -261,7 +261,7 @@ struct SfenPacker
 // Add a function that directly unpacks for speed. It's pretty tough.
 // Write it by combining packer::unpack() and Position::set().
 // If there is a problem with the passed phase and there is an error, non-zero is returned.
-int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread* th, bool mirror)
+int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread* th, const bool mirror)
 {
 	SfenPacker packer;
 	auto& stream = packer.stream;

@@ -62,17 +62,17 @@ namespace {
 	Endgame<KPKP>   ScaleKPKP[] = { Endgame<KPKP>(WHITE),   Endgame<KPKP>(BLACK) };
 
 	// Helper used to detect a given material distribution
-	bool is_KXK(const Position& pos, Color us) {
+	bool is_KXK(const Position& pos, const Color us) {
 		return  !more_than_one(pos.pieces(~us))
 			&& pos.non_pawn_material(us) >= RookValueMg;
 	}
 
-	bool is_KBPsK(const Position& pos, Color us) {
+	bool is_KBPsK(const Position& pos, const Color us) {
 		return   pos.non_pawn_material(us) == BishopValueMg
 			&& pos.count<PAWN  >(us) >= 1;
 	}
 
-	bool is_KQKRPs(const Position& pos, Color us) {
+	bool is_KQKRPs(const Position& pos, const Color us) {
 		return  !pos.count<PAWN>(us)
 			&& pos.non_pawn_material(us) == QueenValueMg
 			&& pos.count<ROOK>(~us) == 1

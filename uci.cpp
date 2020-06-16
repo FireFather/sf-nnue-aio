@@ -226,7 +226,7 @@ namespace {
 
 // Make is_ready_cmd() callable from outside. (Because I want to call it from the bench command etc.)
 // Note that the phase is not initialized.
-void is_ready(bool skipCorruptCheck)
+void is_ready(const bool skipCorruptCheck)
 {
 #if defined(EVAL_NNUE)
 	// After receiving "isready", modify so that a line feed is sent every 5 seconds until "readyok" is returned. (Keep alive processing)
@@ -336,7 +336,7 @@ void search_cmd(Position& pos, istringstream& is)
 /// run 'bench', once the command is executed the function returns immediately.
 /// In addition to the UCI ones, also some additional debug commands are supported.
 
-void UCI::loop(int argc, char* argv[]) {
+void UCI::loop(const int argc, char* argv[]) {
 
 	Position pos;
 	string token, cmd;
@@ -419,7 +419,7 @@ void UCI::loop(int argc, char* argv[]) {
 /// mate <y>  Mate in y moves, not plies. If the engine is getting mated
 ///           use negative values for y.
 
-string UCI::value(Value v) {
+string UCI::value(const Value v) {
 
 	assert(-VALUE_INFINITE < v&& v < VALUE_INFINITE);
 
@@ -436,7 +436,7 @@ string UCI::value(Value v) {
 
 /// UCI::square() converts a Square to a string in algebraic notation (g1, a7, etc.)
 
-std::string UCI::square(Square s) {
+std::string UCI::square(const Square s) {
 	return std::string{ static_cast<char>('a' + file_of(s)), static_cast<char>('1' + rank_of(s)) };
 }
 
@@ -446,7 +446,7 @@ std::string UCI::square(Square s) {
 /// normal chess mode, and in e1h1 notation in chess960 mode. Internally all
 /// castling moves are always encoded as 'king captures rook'.
 
-string UCI::move(Move m, bool chess960) {
+string UCI::move(const Move m, const bool chess960) {
 	const auto from = from_sq(m);
 	auto to = to_sq(m);
 

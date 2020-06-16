@@ -32,7 +32,7 @@ TimeManagement Time; // Our global time management object
 //      1) x basetime (+z increment)
 //      2) x moves in y seconds (+z increment)
 
-void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
+void TimeManagement::init(Search::LimitsType& limits, const Color us, const int ply) {
 	auto minThinkingTime = TimePoint(Options["Minimum Thinking Time"]);
 	auto moveOverhead = TimePoint(Options["Move Overhead"]);
 	auto slowMover = TimePoint(Options["Slow Mover"]);

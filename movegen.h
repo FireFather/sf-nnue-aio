@@ -41,7 +41,7 @@ struct ExtMove {
   int value;
 
   operator Move() const { return move; }
-  void operator=(Move m) { move = m; }
+  void operator=(const Move m) { move = m; }
 
   // Inhibit unwanted implicit conversions to Move
   // with an ambiguity that yields to a compile error.
@@ -65,12 +65,12 @@ struct MoveList {
   [[nodiscard]] const ExtMove* end() const { return last; }
   [[nodiscard]] size_t size() const { return last - moveList; }
 
-  [[nodiscard]] bool contains(Move move) const {
+  [[nodiscard]] bool contains(const Move move) const {
     return std::find(begin(), end(), move) != end();
   }
 
-  // i�Ԗڂ̗v�f��Ԃ�
-  [[nodiscard]] const ExtMove at(size_t i) const { assert(0 <= i && i < size()); return begin()[i]; }
+  // returns the i th element
+  [[nodiscard]] const ExtMove at(const size_t i) const { assert(0 <= i && i < size()); return begin()[i]; }
 
 private:
   ExtMove moveList[MAX_MOVES], *last;

@@ -66,24 +66,24 @@ namespace {
 
   // Razor and futility margins
   constexpr int RazorMargin = 531;
-  Value futility_margin(Depth d, bool improving) {
+  Value futility_margin(const Depth d, const bool improving) {
     return Value(217 * (d - improving));
   }
 
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
-  Depth reduction(bool i, Depth d, int mn) {
+  Depth reduction(const bool i, const Depth d, const int mn) {
 	  const auto r = Reductions[d] * Reductions[mn];
     return (r + 511) / 1024 + (!i && r > 1007);
   }
 
-  constexpr int futility_move_count(bool improving, Depth depth) {
+  constexpr int futility_move_count(const bool improving, const Depth depth) {
     return (4 + depth * depth) / (2 - improving);
   }
 
   // History and stats update bonus, based on depth
-  int stat_bonus(Depth d) {
+  int stat_bonus(const Depth d) {
     return d > 15 ? -8 : 19 * d * d + 155 * d - 132;
   }
 
@@ -94,9 +94,9 @@ namespace {
 
   // Skill structure is used to implement strength limit
   struct Skill {
-    explicit Skill(int l) : level(l) {}
+    explicit Skill(const int l) : level(l) {}
     [[nodiscard]] bool enabled() const { return level < 20; }
-    [[nodiscard]] bool time_to_pick(Depth depth) const { return depth == 1 + level; }
+    [[nodiscard]] bool time_to_pick(const Depth depth) const { return depth == 1 + level; }
     Move pick_best(size_t multiPV);
 
     int level;
@@ -114,7 +114,7 @@ namespace {
   // node for potential reductions. A free node will be marked upon entering the moves
   // loop by the constructor, and unmarked upon leaving that loop by the destructor.
   struct ThreadHolding {
-    explicit ThreadHolding(Thread* thisThread, Key posKey, int ply) {
+    explicit ThreadHolding(Thread* thisThread, const Key posKey, const int ply) {
        location = ply < 8 ? &breadcrumbs[posKey & breadcrumbs.size() - 1] : nullptr;
        otherThread = false;
        owning = false;
@@ -163,7 +163,7 @@ namespace {
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
   template<bool Root>
-  uint64_t perft(Position& pos, Depth depth) {
+  uint64_t perft(Position& pos, const Depth depth) {
 
     StateInfo st;
     uint64_t cnt, nodes = 0;
@@ -1412,7 +1412,7 @@ moves_loop: // When in check, search starts from here
   // qsearch() is the quiescence search function, which is called by the main search
   // function with zero depth, or recursively with further decreasing depth per call.
   template <NodeType NT>
-  Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth) {
+  Value qsearch(Position& pos, Stack* ss, Value alpha, const Value beta, const Depth depth) {
 
     constexpr auto PvNode = NT == PV;
 
@@ -1626,7 +1626,7 @@ moves_loop: // When in check, search starts from here
   // "plies to mate from the current position". standard scores are unchanged.
   // The function is called before storing a value in the transposition table.
 
-  Value value_to_tt(Value v, int ply) {
+  Value value_to_tt(const Value v, const int ply) {
 
     assert(v != VALUE_NONE);
 
@@ -1641,7 +1641,7 @@ moves_loop: // When in check, search starts from here
   // However, for mate scores, to avoid potentially false mate scores related to the 50 moves rule,
   // and the graph history interaction, return an optimal TB score instead.
 
-  Value value_from_tt(Value v, int ply, int r50c) {
+  Value value_from_tt(const Value v, const int ply, const int r50c) {
 
     if (v == VALUE_NONE)
         return VALUE_NONE;
@@ -1668,7 +1668,7 @@ moves_loop: // When in check, search starts from here
 
   // update_pv() adds current move and appends child pv[]
 
-  void update_pv(Move* pv, Move move, Move* childPv) {
+  void update_pv(Move* pv, const Move move, Move* childPv) {
 
     for (*pv++ = move; childPv && *childPv != MOVE_NONE; )
         *pv++ = *childPv++;
@@ -1678,8 +1678,8 @@ moves_loop: // When in check, search starts from here
 
   // update_all_stats() updates stats at the end of search() when a bestMove is found
 
-  void update_all_stats(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Square prevSq,
-                        Move* quietsSearched, int quietCount, Move* capturesSearched, int captureCount, Depth depth) {
+  void update_all_stats(const Position& pos, Stack* ss, const Move bestMove, const Value bestValue, const Value beta, const Square prevSq,
+                        Move* quietsSearched, const int quietCount, Move* capturesSearched, const int captureCount, const Depth depth) {
 	  const auto us = pos.side_to_move();
 	  auto* thisThread = pos.this_thread();
 	  auto& captureHistory = thisThread->captureHistory;
@@ -1723,7 +1723,7 @@ moves_loop: // When in check, search starts from here
   // update_continuation_histories() updates histories of the move pairs formed
   // by moves at ply -1, -2, -4, and -6 with current move.
 
-  void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
+  void update_continuation_histories(Stack* ss, const Piece pc, const Square to, const int bonus) {
 
     for (auto i : {1, 2, 4, 6})
     {
@@ -1737,7 +1737,7 @@ moves_loop: // When in check, search starts from here
 
   // update_quiet_stats() updates move sorting heuristics
 
-  void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus, int depth) {
+  void update_quiet_stats(const Position& pos, Stack* ss, const Move move, const int bonus, const int depth) {
 
     if (ss->killers[0] != move)
     {
@@ -1766,7 +1766,7 @@ moves_loop: // When in check, search starts from here
   // When playing with strength handicap, choose best move among a set of RootMoves
   // using a statistical rule dependent on 'level'. Idea by Heinz van Saanen.
 
-  Move Skill::pick_best(size_t multiPV) {
+  Move Skill::pick_best(const size_t multiPV) {
 
     const auto& rootMoves = Threads.main()->rootMoves;
     static PRNG rng(now()); // PRNG sequence should be non-deterministic
@@ -1834,7 +1834,7 @@ void MainThread::check_time() {
 /// UCI::pv() formats PV information according to the UCI protocol. UCI requires
 /// that all (if any) unsearched PV lines are sent using a previous search score.
 
-string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
+string UCI::pv(const Position& pos, const Depth depth, const Value alpha, const Value beta) {
 
   std::stringstream ss;
   const auto elapsed = Time.elapsed() + 1;
@@ -2131,7 +2131,7 @@ namespace Learner
   // After returning from search(), if Threads.stop == true, do not use the search result.
   // Also, note that before calling, if you do not call in the state of Threads.stop == false, the search will be interrupted and it will return.
 
-  ValueAndPV search(Position& pos, int depth_, size_t multiPV /* = 1 */, uint64_t nodesLimit /* = 0 */)
+  ValueAndPV search(Position& pos, const int depth_, size_t multiPV /* = 1 */, uint64_t nodesLimit /* = 0 */)
   {
     std::vector<Move> pvs;
 
