@@ -390,18 +390,18 @@ void UCI::loop(const int argc, char* argv[]) {
 		else if (token == "learn") Learner::learn(pos, is);
 
 #if defined (GENSFEN2019)
-		// 開発中の教師局面生成コマンド
-		else if (token == "gensfen2019") Learner::gen_sfen2019(pos, is);
+// Command to generate teacher phase under development
+else if (token == "gensfen2019") Learner::gen_sfen2019(pos, is);
 #endif
-		// テスト用にqsearch(),search()を直接呼ぶコマンド
-		else if (token == "qsearch") qsearch_cmd(pos);
-		else if (token == "search") search_cmd(pos, is);
+// Command to call qsearch(),search() directly for testing
+else if (token == "qsearch") qsearch_cmd(pos);
+else if (token == "search") search_cmd(pos, is);
 
 #endif
 
 #if defined(EVAL_NNUE) && defined(ENABLE_TEST_CMD)
-		// テストコマンド
-		else if (token == "test") test_cmd(pos, is);
+// test command
+else if (token == "test") test_cmd(pos, is);
 #endif
 		else
 			sync_cout << "Unknown command: " << cmd << sync_endl;

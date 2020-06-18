@@ -256,6 +256,8 @@ namespace Eval {
 			else
 				std::cout << "info string NNUE " << NNUE::kFileName << " found & loaded..." << std::endl;
 		}
+		else
+		std::cout << "info string NNUE " << NNUE::kFileName << " not loaded..." << std::endl;
 	}
 
 	// Initialization
