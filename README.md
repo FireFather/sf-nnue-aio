@@ -24,7 +24,11 @@ Clang-tidy recommendations/fixes applied:
 -The 'empty' method should be used to check for emptiness instead of 'size' [readability-container-size-empty]
 -Redundant declaration [readability-redundant-declaration]
 
-Modernized from c++14 to c++17 & fully translated to English
+Modernized from c++14 to c++17
+
+Fully translated to English
+
+All functions have been combined into a single halfkp_256x2-32-32 x64 binary (stockfish-nnue.exe)
 
 New 5% faster Intel compile
 
