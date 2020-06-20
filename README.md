@@ -4,7 +4,7 @@ Stockfish NNUE (efficiently updateable neural network)
 forked from:
 https://github.com/nodchip/Stockfish/releases/tag/stockfish-nnue-2020-06-09
 
--Clang-tidy recommendations/fixes applied:
+Clang-tidy recommendations/fixes applied:
 
 -Use auto when initializing with a cast to avoid duplicating the type name [modernize-use-auto]
 
@@ -42,6 +42,7 @@ https://github.com/nodchip/Stockfish/releases/tag/stockfish-nnue-2020-06-09
 
 
 Modernized from c++14 to c++17 & fully translated to English
+
 New 5% faster Intel compile
 
 Please see
