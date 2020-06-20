@@ -42,8 +42,9 @@ namespace EvalLearningTools
 
 		const auto size = g_kpp.max_index();
 		min_index_flag.resize(size);
-
+#if defined(_OPENMP)
 #pragma omp parallel
+#endif
 		{
 #if defined(_OPENMP)
 			// To prevent logical 64 cores from being used when there are two CPUs under Windows
@@ -51,8 +52,9 @@ namespace EvalLearningTools
 			int thread_index = omp_get_thread_num(); // get your thread number
 			WinProcGroup::bindThisThread(thread_index);
 #endif
-
+#if defined(_OPENMP)
 #pragma omp for schedule(dynamic,20000)
+#endif
 
 			for (int64_t index_ = 0; index_ < static_cast<int64_t>(size); ++index_)
 			{

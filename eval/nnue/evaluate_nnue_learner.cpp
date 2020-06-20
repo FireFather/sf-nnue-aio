@@ -73,7 +73,7 @@ namespace Eval {
 		assert(network);
 		trainer = Trainer<Network>::Create(network.get(), feature_transformer.get());
 
-		if (Options["SkipLoadingEval"]) {
+		if (!Options["LoadEval"]) {
 			trainer->Initialize(rng);
 		}
 
@@ -211,7 +211,7 @@ void save_eval(const std::string& dir_name) {
 	// Also, assume that the folders up to EvalSaveDir have been dug.
 	Dependency::mkdir(eval_dir);
 
-	if (Options["SkipLoadingEval"] && NNUE::trainer) {
+	if (!Options["LoadEval"] && NNUE::trainer) {
 		NNUE::SendMessages({ {"clear_unobserved_feature_weights"} });
 	}
 

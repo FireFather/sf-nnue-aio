@@ -86,7 +86,7 @@ namespace UCI {
 		// Abends before executing this command.
 		// Therefore, with this hidden option, you can suppress the loading of the evaluation function when isready,
 		// Hit the test eval convert command.
-		o["SkipLoadingEval"] << Option(false);
+		o["LoadEval"] << Option(true);
 		// how many moves to use a fixed move
 		o["BookMoves"] << Option(16, 0, 10000);
 

@@ -385,23 +385,22 @@ void UCI::loop(const int argc, char* argv[]) {
 		else if (token == "d")        sync_cout << pos << sync_endl;
 		else if (token == "eval")     sync_cout << Eval::trace(pos) << sync_endl;
 		else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
+
 #if defined (EVAL_LEARN)
 		else if (token == "gensfen") Learner::gen_sfen(pos, is);
 		else if (token == "learn") Learner::learn(pos, is);
-
 #if defined (GENSFEN2019)
-// Command to generate teacher phase under development
-else if (token == "gensfen2019") Learner::gen_sfen2019(pos, is);
+		// Command to generate teacher phase under development
+		else if (token == "gensfen2019") Learner::gen_sfen2019(pos, is);
 #endif
-// Command to call qsearch(),search() directly for testing
-else if (token == "qsearch") qsearch_cmd(pos);
-else if (token == "search") search_cmd(pos, is);
-
+		// Command to call qsearch(),search() directly for testing
+		else if (token == "qsearch") qsearch_cmd(pos);
+		else if (token == "search") search_cmd(pos, is);
 #endif
 
 #if defined(EVAL_NNUE) && defined(ENABLE_TEST_CMD)
-// test command
-else if (token == "test") test_cmd(pos, is);
+		// test command
+		else if (token == "test") test_cmd(pos, is);
 #endif
 		else
 			sync_cout << "Unknown command: " << cmd << sync_endl;

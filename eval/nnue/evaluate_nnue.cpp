@@ -235,7 +235,7 @@ namespace Eval {
 	void load_eval() {
 		NNUE::Initialize();
 
-		if (!Options["SkipLoadingEval"])
+		if (Options["LoadEval"])
 		{
 			const std::string dir_name = Options["EvalDir"];
 			const auto file_name = Path::Combine(dir_name, NNUE::kFileName);

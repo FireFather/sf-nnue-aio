@@ -90,7 +90,9 @@ namespace Eval {
 				}
 				batch_ = &batch;
 				// affine transform
+#if defined(_OPENMP)
 #pragma omp parallel for
+#endif
 				for (IndexType b = 0; b < batch.size(); ++b) {
 					const auto batch_offset = kOutputDimensions * b;
 					for (IndexType c = 0; c < 2; ++c) {
@@ -161,7 +163,9 @@ namespace Eval {
 				}
 				cblas_saxpy(kHalfDimensions, -local_learning_rate,
 					biases_diff_, 1, biases_, 1);
+#if defined(_OPENMP)
 #pragma omp parallel
+#endif
 				{
 #if defined(_OPENMP)
 					const IndexType num_threads = omp_get_num_threads();
@@ -255,7 +259,9 @@ namespace Eval {
 						Round<typename LayerType::BiasType>(biases_[i] * kBiasScale);
 				}
 				std::vector<TrainingFeature> training_features;
+#if defined(_OPENMP)
 #pragma omp parallel for private(training_features)
+#endif
 				for (IndexType j = 0; j < RawFeatures::kDimensions; ++j) {
 					training_features.clear();
 					Features::Factorizer<RawFeatures>::AppendTrainingFeatures(
