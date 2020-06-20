@@ -157,7 +157,7 @@ namespace UCI {
 	}
 
 	Option::operator std::string() const {
-		assert(type == "string");
+		//assert(type == "string");
 		return currentValue;
 	}
 
