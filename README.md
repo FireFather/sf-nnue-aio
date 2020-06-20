@@ -28,7 +28,7 @@ Modernized from c++14 to c++17
 
 Fully translated to English
 
-All functions have been combined into a single halfkp_256x2-32-32 x64 binary (stockfish-nnue.exe)
+All functions have been combined into one halfkp_256x2-32-32 x64 binary
 
 New 5% faster Intel compile
 
