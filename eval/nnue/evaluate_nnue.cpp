@@ -323,4 +323,4 @@ namespace Eval {
 
 } // namespace Eval
 
-#endif // defined(EVAL_NNUE)
+#endif

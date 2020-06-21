@@ -2096,6 +2096,7 @@ namespace Learner
 	// Write evaluation function file.
 	bool LearnerThink::save(const bool is_final)
 	{
+#if defined(EVAL_NNUE)
 		// Calculate and output check sum before saving. (To check if it matches the next time)
 		std::cout << "Check Sum = " << std::hex << Eval::calc_check_sum() << std::dec << std::endl;
 
@@ -2116,7 +2117,7 @@ namespace Learner
 			static auto dir_number = 0;
 			const auto dir_name = std::to_string(dir_number++);
 			Eval::save_eval(dir_name);
-#if defined(EVAL_NNUE)
+
 			if (newbob_decay != 1.0 && latest_loss_count > 0) {
 				static auto trials = newbob_num_trials;
 				const auto latest_loss = latest_loss_sum / latest_loss_count;
@@ -2151,8 +2152,8 @@ namespace Learner
 					return true;
 				}
 			}
-#endif
 		}
+#endif
 		return false;
 	}
 
