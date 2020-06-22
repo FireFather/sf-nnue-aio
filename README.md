@@ -28,7 +28,7 @@ Modernized from c++14 to c++17
 
 Fully translated to English
 
-New 5% faster Intel compiles
+Windows 64-bit pext (Intel-compiled) executables included
 
 Please see
 README.txt
