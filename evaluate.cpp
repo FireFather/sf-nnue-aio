@@ -801,7 +801,7 @@ namespace {
 	template<Tracing T>
 	Value Evaluation<T>::value() {
 
-		assert(!pos.checkers());
+		//assert(!pos.checkers());
 
 		// Probe the material hash table
 		me = Material::probe(pos);
