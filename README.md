@@ -25,10 +25,12 @@ Clang-tidy recommendations/fixes applied:
 -Redundant declaration [readability-redundant-declaration]
 
 Modernized from c++14 to c++17
+Translated to English
 
-Fully translated to English
-
-Windows 64-bit pext (Intel-compiled) executables included
+3 Windows 64-bit pext (Intel-compiled) executables included:
+sf-nnue gen (halfkp-256x2-32-32) x64-pext.exe
+sf-nnue learn (halfkp-256x2-32-32) x64-pext.exe
+sf-nnue run (halfkp-256x2-32-32) x64-pext.exe
 
 Please see
 README.txt
