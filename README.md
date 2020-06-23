@@ -27,10 +27,7 @@ Clang-tidy recommendations/fixes applied:
 Modernized from c++14 to c++17
 Translated to English
 
-3 Windows 64-bit pext (Intel-compiled) executables included:
-sf-nnue gen (halfkp-256x2-32-32) x64-pext.exe
-sf-nnue learn (halfkp-256x2-32-32) x64-pext.exe
-sf-nnue run (halfkp-256x2-32-32) x64-pext.exe
+Windows 64-bit pext & popcnt (Intel-compiled) executables included:
 
 Please see
 README.txt
