@@ -501,6 +501,9 @@ namespace Learner
 
 				if (pos.is_draw(ply)) {
 					// Do not write if draw.
+#if defined (LEARN_GENSFEN_USE_DRAW_RESULT)
+				flush_psv(0);
+#endif
 					break;
 				}
 
@@ -509,7 +512,12 @@ namespace Learner
 				{
 					// (write up to the previous phase of this phase)
 					// Write the positions other than this position if checkmated.
+                if (pos.checkers())
 					flush_psv(-1);
+#if defined (LEARN_GENSFEN_USE_DRAW_RESULT)
+                else
+                    flush_psv(0);
+#endif
 					break;
 				}
 
@@ -572,9 +580,9 @@ namespace Learner
 					// Processing according to each thousand-day hand.
 
 					if (pos.is_draw(0)) {
-#if defined (LEARN_GENSFEN_USE_DRAW_RESULT)
+#if defined	(LEARN_GENSFEN_USE_DRAW_RESULT)
 						// When writing a draw
-						flush_psv(1);
+						flush_psv(0);
 #endif
 						break;
 					}

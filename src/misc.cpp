@@ -150,7 +150,7 @@ const string engine_info(bool to_uci) {
 	//}
 
 	ss << (Is64Bit ? " x64" : "")
-		<< (HasPext ? " pext" : HasPopCnt ? " popcnt" : "")
+		<< (HasPext ? " bmi2" : HasAvx2 ? " avx2" : HasPopCnt ? " popc" : "")
 		<< (to_uci ? "\nid author " : " by ")
 		<< "T. Romstad, M. Costalba, J. Kiiski, G. Linscott, Hisayori Noda";
 

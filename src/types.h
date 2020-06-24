@@ -76,6 +76,13 @@
 #  define IS_64BIT
 #endif
 
+#if defined(USE_PEXT)
+#  include <immintrin.h> // Header for _pext_u64() intrinsic
+#  define pext(b, m) _pext_u64(b, m)
+#else
+#  define pext(b, m) 0
+#endif
+
 #if defined(USE_POPCNT) && (defined(__INTEL_COMPILER) || defined(_MSC_VER))
 #  include <nmmintrin.h> // Intel and Microsoft header for _mm_popcnt_u64()
 #endif
@@ -84,23 +91,22 @@
 #  include <xmmintrin.h> // Intel and Microsoft header for _mm_prefetch()
 #endif
 
-#if defined(USE_PEXT)
-#  include <immintrin.h> // Header for _pext_u64() intrinsic
-#  define pext(b, m) _pext_u64(b, m)
+#ifdef USE_AVX2
+constexpr bool HasAvx2 = true;
 #else
-#  define pext(b, m) 0
-#endif
-
-#ifdef USE_POPCNT
-constexpr bool HasPopCnt = true;
-#else
-constexpr bool HasPopCnt = false;
+constexpr bool HasAvx2 = false;
 #endif
 
 #ifdef USE_PEXT
 constexpr bool HasPext = true;
 #else
 constexpr bool HasPext = false;
+#endif
+
+#ifdef USE_POPCNT
+constexpr bool HasPopCnt = true;
+#else
+constexpr bool HasPopCnt = false;
 #endif
 
 #ifdef IS_64BIT

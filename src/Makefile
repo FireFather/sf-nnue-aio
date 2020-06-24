@@ -96,6 +96,7 @@ bits = 32
 prefetch = no
 popcnt = no
 sse = no
+avx2 = no
 pext = no
 
 ### 2.2 Architecture specific
@@ -134,12 +135,22 @@ ifeq ($(ARCH),x86-64-modern)
 	sse = yes
 endif
 
+ifeq ($(ARCH),x86-64-avx2)
+	arch = x86_64
+	bits = 64
+	prefetch = yes
+	popcnt = yes
+	sse = yes
+	avx2 = yes
+endif
+
 ifeq ($(ARCH),x86-64-bmi2)
 	arch = x86_64
 	bits = 64
 	prefetch = yes
 	popcnt = yes
 	sse = yes
+	avx2 = yes
 	pext = yes
 endif
 
@@ -218,7 +229,6 @@ ifeq ($(COMP),mingw)
 	CXXFLAGS += -Wextra -Wshadow
 	LDFLAGS += -static
 endif
-LDFLAGS += -static
 
 ifeq ($(COMP),icc)
 	comp=icc
@@ -246,6 +256,28 @@ ifeq ($(COMP),clang)
 		CXXFLAGS += -m$(bits)
 		LDFLAGS += -m$(bits)
 	endif
+endif
+
+ifeq ($(COMP),msys2)
+	comp=gcc
+	CXX=g++
+	CXXFLAGS += -pedantic -Wextra -Wshadow
+
+	ifeq ($(ARCH),armv7)
+		ifeq ($(OS),Android)
+			CXXFLAGS += -m$(bits)
+			LDFLAGS += -m$(bits)
+		endif
+	else
+		CXXFLAGS += -m$(bits)
+		LDFLAGS += -m$(bits)
+	endif
+
+	ifneq ($(KERNEL),Darwin)
+	   LDFLAGS += -Wl,--no-as-needed
+	endif
+
+	LDFLAGS += -static -Wl,-s
 endif
 
 ifeq ($(comp),icc)
@@ -336,19 +368,26 @@ endif
 ### 3.6 popcnt
 ifeq ($(popcnt),yes)
 	ifeq ($(arch),ppc64)
-		CXXFLAGS += -DUSE_POPCNT
+		CXXFLAGS += -DUSE_POPCNT -DUSE_SSE2
 	else ifeq ($(comp),icc)
-		CXXFLAGS += -msse3 -DUSE_POPCNT
+		CXXFLAGS += -msse3 -DUSE_POPCNT -DUSE_SSE2
 	else
-		CXXFLAGS += -msse3 -mpopcnt -DUSE_POPCNT
+		CXXFLAGS += -msse3 -mpopcnt -DUSE_POPCNT -DUSE_SSE2
+	endif
+endif
+
+ifeq ($(avx2),yes)
+	CXXFLAGS += -DUSE_AVX2
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+		CXXFLAGS += -mavx2
 	endif
 endif
 
 ### 3.7 pext
 ifeq ($(pext),yes)
 	CXXFLAGS += -DUSE_PEXT
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
-		CXXFLAGS += -mbmi2 -mavx2
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+		CXXFLAGS += -mbmi2
 	endif
 endif
 
@@ -357,7 +396,7 @@ endif
 ### needs access to the optimization flags.
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
-	ifeq ($(comp),$(filter $(comp),gcc clang))
+	ifeq ($(comp),$(filter $(comp),gcc clang msys2))
 		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS)
 	endif
@@ -400,6 +439,7 @@ help:
 	@echo "Supported archs:"
 	@echo ""
 	@echo "x86-64-bmi2             > x86 64-bit with pext support (also enables SSE4)"
+	@echo "x86-64-avx2             > x86 64-bit with avx2 support (also enables SSE4)"
 	@echo "x86-64-modern           > x86 64-bit with popcnt support (also enables SSE3)"
 	@echo "x86-64                  > x86 64-bit generic"
 	@echo "x86-32                  > x86 32-bit (also enables SSE)"
@@ -416,6 +456,7 @@ help:
 	@echo "mingw                   > Gnu compiler with MinGW under Windows"
 	@echo "clang                   > LLVM Clang compiler"
 	@echo "icc                     > Intel compiler"
+	@echo "msys2                   > MSYS2"
 	@echo ""
 	@echo "Simple examples. If you don't know what to do, you likely want to run: "
 	@echo ""
@@ -495,6 +536,7 @@ config-sanity:
 	@echo "prefetch: '$(prefetch)'"
 	@echo "popcnt: '$(popcnt)'"
 	@echo "sse: '$(sse)'"
+	@echo "avx2: '$(avx2)'"
 	@echo "pext: '$(pext)'"
 	@echo ""
 	@echo "Flags:"
@@ -556,16 +598,16 @@ icc-profile-use:
 	all
 
 nnue: config-sanity
-	$(MAKE) CXXFLAGS='$(CXXFLAGS) -DEVAL_NNUE -DUSE_EVAL_HASH -DUSE_AVX2 -DUSE_SSE2 -DENABLE_TEST_CMD -fopenmp' LDFLAGS='$(LDFLAGS) -fopenmp' build
+	$(MAKE) CXXFLAGS='$(CXXFLAGS) -DEVAL_NNUE -DUSE_EVAL_HASH -DENABLE_TEST_CMD -fopenmp' LDFLAGS='$(LDFLAGS) -fopenmp' build
 
 nnue-gen-sfen-from-original-eval: config-sanity
-	$(MAKE) CXXFLAGS='$(CXXFLAGS) -DEVAL_LEARN -DUSE_EVAL_HASH -DLEARN_GENSFEN_USE_DRAW_RESULT -DUSE_AVX2 -DUSE_SSE2 -DENABLE_TEST_CMD -fopenmp' LDFLAGS='$(LDFLAGS) -fopenmp' build
+	$(MAKE) CXXFLAGS='$(CXXFLAGS) -DEVAL_LEARN -DUSE_EVAL_HASH -DENABLE_TEST_CMD -fopenmp' LDFLAGS='$(LDFLAGS) -fopenmp' build
 
 nnue-learn: config-sanity
-	$(MAKE) CXXFLAGS='$(CXXFLAGS) -DEVAL_LEARN -DEVAL_NNUE -DUSE_EVAL_HASH -DLEARN_GENSFEN_USE_DRAW_RESULT -DUSE_AVX2 -DUSE_SSE2 -DENABLE_TEST_CMD -fopenmp' LDFLAGS='$(LDFLAGS) -fopenmp' build
+	$(MAKE) CXXFLAGS='$(CXXFLAGS) -DEVAL_LEARN -DEVAL_NNUE -DUSE_EVAL_HASH -DENABLE_TEST_CMD -fopenmp' LDFLAGS='$(LDFLAGS) -fopenmp' build
 
 nnue-learn-use-blas: config-sanity
-	$(MAKE) CXXFLAGS='$(CXXFLAGS) -DEVAL_LEARN -DEVAL_NNUE -DUSE_EVAL_HASH -DLEARN_GENSFEN_USE_DRAW_RESULT -DUSE_AVX2 -DUSE_SSE2 -DENABLE_TEST_CMD -DUSE_BLAS -I/mingw64/include/OpenBLAS -fopenmp' LDFLAGS='$(LDFLAGS) -lopenblas -fopenmp' build
+	$(MAKE) CXXFLAGS='$(CXXFLAGS) -DEVAL_LEARN -DEVAL_NNUE -DUSE_EVAL_HASH -DENABLE_TEST_CMD -DUSE_BLAS -I/mingw64/include/OpenBLAS -fopenmp' LDFLAGS='$(LDFLAGS) -lopenblas -fopenmp' build
 
 .depend:
 	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
