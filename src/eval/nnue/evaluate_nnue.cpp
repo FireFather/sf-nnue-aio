@@ -250,14 +250,13 @@ namespace Eval {
 			if (!result)
 			{
 				// I'm troubled if it doesn't finish when there is a read error.
-				std::cout << "Error! :failed to read " << NNUE::kFileName << std::endl;
-				my_exit();
+			std::cout << "Error! " << NNUE::kFileName << " not found or wrong format" << std::endl;
 			}
-			else
-				std::cout << "info string NNUE " << NNUE::kFileName << " found & loaded..." << std::endl;
-		}
 		else
-		std::cout << "info string NNUE " << NNUE::kFileName << " not loaded..." << std::endl;
+	  		std::cout << "info string NNUE " << NNUE::kFileName << " found & loaded" << std::endl;
+  }
+  else
+    std::cout << "info string NNUE " << NNUE::kFileName << " not loaded" << std::endl;
 	}
 
 	// Initialization
