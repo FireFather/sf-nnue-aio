@@ -26,7 +26,7 @@ Clang-tidy recommendations/fixes applied:
 Modernized from c++14 to c++17
 Translated to English
 
-Windows 64-bit pext & popcnt (Intel-compiled) executables included
+Windows 64-bit bmi2, avx2, & popcnt executables included
 
 Please see
 README.txt
