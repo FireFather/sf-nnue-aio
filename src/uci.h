@@ -1,4 +1,4 @@
-﻿/*
+/*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
@@ -24,66 +24,70 @@
 #include <map>
 #include <string>
 
+#include "types.h"
+
 class Position;
 
 namespace UCI {
 
-	class Option;
+class Option;
 
-	/// Custom comparator because UCI options should be case insensitive
-	struct CaseInsensitiveLess {
-		bool operator() (const std::string&, const std::string&) const;
-	};
+/// Custom comparator because UCI options should be case insensitive
+struct CaseInsensitiveLess {
+  bool operator() (const std::string&, const std::string&) const;
+};
 
-	/// Our options container is actually a std::map
-	typedef std::map<std::string, Option, CaseInsensitiveLess> OptionsMap;
+/// Our options container is actually a std::map
+typedef std::map<std::string, Option, CaseInsensitiveLess> OptionsMap;
 
-	/// Option class implements an option as defined by UCI protocol
-	class Option {
+/// Option class implements an option as defined by UCI protocol
+class Option {
 
-		typedef void (*OnChange)(const Option&);
+  typedef void (*OnChange)(const Option&);
 
-	public:
-		Option(OnChange = nullptr);
-		Option(bool v, OnChange = nullptr);
-		Option(const char* v, OnChange = nullptr);
-		Option(double v, int minv, int maxv, OnChange = nullptr);
-		Option(const char* v, const char* cur, OnChange = nullptr);
+public:
+  Option(OnChange = nullptr);
+  Option(bool v, OnChange = nullptr);
+  Option(const char* v, OnChange = nullptr);
+  Option(double v, int minv, int maxv, OnChange = nullptr);
+  Option(const char* v, const char* cur, OnChange = nullptr);
 
-		Option& operator=(const std::string&);
-		void operator<<(const Option&);
-		operator double() const;
-		operator std::string() const;
-		bool operator==(const char*) const;
+  Option& operator=(const std::string&);
+  void operator<<(const Option&);
+  operator double() const;
+  operator std::string() const;
+  bool operator==(const char*) const;
 
-	private:
-		friend std::ostream& operator<<(std::ostream&, const OptionsMap&);
+private:
+  friend std::ostream& operator<<(std::ostream&, const OptionsMap&);
 
-		std::string defaultValue, currentValue, type;
-		int min, max;
-		size_t idx{};
-		OnChange on_change;
-	};
+  std::string defaultValue, currentValue, type;
+  int min, max;
+  size_t idx;
+  OnChange on_change;
+};
 
-	void init(OptionsMap&);
-	void loop(int argc, char* argv[]);
-	std::string value(Value v);
-	std::string square(Square s);
-	std::string move(Move m, bool chess960);
-	std::string pv(const Position& pos, Depth depth, Value alpha, Value beta);
-	Move to_move(const Position& pos, std::string& str);
+void init(OptionsMap&);
+void loop(int argc, char* argv[]);
+std::string value(Value v);
+std::string square(Square s);
+std::string move(Move m, bool chess960);
+std::string pv(const Position& pos, Depth depth, Value alpha, Value beta);
+std::string wdl(Value v, int ply);
+Move to_move(const Position& pos, std::string& str);
 
-	// Flag whether the evaluation function has been read. This is set to false when evaldir is changed.
-	extern bool load_eval_finished; // = false;
+// Flag that read the evaluation function. This is set to false when evaldir is changed.
+extern bool load_eval_finished; // = false;
 } // namespace UCI
 
 extern UCI::OptionsMap Options;
 
-// Processing when the USI "isready" command is called. At this time, the evaluation function is read.
-// Use when you want to load the evaluation function when "isready" does not come in the handler of benchmark command.
-// When skipCorruptCheck == true, skip memory corruption check by check sum when reading the evaluation function a second time.
+// Processing when USI "isready" command is called. At this time, the evaluation function is read.
+// Used when you want to load the evaluation function when "isready" does not come in handler of benchmark command etc.
+// If skipCorruptCheck == true, skip memory corruption check by check sum when reading the evaluation function a second time.
 // * This function is inconvenient if it is not available in Stockfish, so add it.
-void is_ready(bool skipCorruptCheck = false);
+
+void init_nnue(bool skipCorruptCheck = false);
 
 extern const char* StartFEN;
 

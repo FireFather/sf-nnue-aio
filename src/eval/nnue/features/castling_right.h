@@ -32,18 +32,17 @@ namespace Eval {
         static void AppendActiveIndices(const Position& pos, Color perspective,
           IndexList* active);
 
-        // Get a list of the indexes whose values ​​have changed from the previous one among the features
+        // Get a list of indices whose values ??have changed from the previous one in the feature quantity
         static void AppendChangedIndices(const Position& pos, Color perspective,
           IndexList* removed, IndexList* added);
       };
 
-    } // namespace Features
+    }  // namespace Features
 
-  } // namespace NNUE
+  }  // namespace NNUE
 
-} // namespace Eval
+}  // namespace Eval
 
-#endif // defined(EVAL_NNUE)
+#endif  // defined(EVAL_NNUE)
 
 #endif
-

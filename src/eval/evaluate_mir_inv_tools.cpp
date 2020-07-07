@@ -4,24 +4,25 @@
 
 namespace Eval
 {
+
 	// --- tables
 
 	// Value when a certain BonaPiece is seen from the other side
 	// BONA_PIECE_INIT is -1, so it must be a signed type.
 	// Even if KPPT is expanded, BonaPiece will not exceed 2^15 for the time being, so int16_t is good.
-	int16_t inv_piece_[fe_end];
+	int16_t inv_piece_[Eval::fe_end];
 
-	// Returns the one on the board that mirrors a BonaPiece.
-	int16_t mir_piece_[fe_end];
+	// Returns the one at the position where a BonaPiece on the board is mirrored.
+	int16_t mir_piece_[Eval::fe_end];
 
 
 	// --- methods
 
-	// Returns the value when a certain BonaPiece is seen from the other side
-	BonaPiece inv_piece(const BonaPiece p) { return static_cast<BonaPiece>(inv_piece_[p]); }
+// Returns the value when a certain BonaPiece is seen from the other side
+	Eval::BonaPiece inv_piece(Eval::BonaPiece p) { return (Eval::BonaPiece)inv_piece_[p]; }
 
-	// Returns the one on the board that mirrors a BonaPiece.
-	BonaPiece mir_piece(const BonaPiece p) { return static_cast<BonaPiece>(mir_piece_[p]); }
+	// Returns the one at the position where a BonaPiece on the board is mirrored.
+	Eval::BonaPiece mir_piece(Eval::BonaPiece p) { return (Eval::BonaPiece)mir_piece_[p]; }
 
 	std::function<void()> mir_piece_init_function;
 
@@ -30,47 +31,47 @@ namespace Eval
 		// Initialize the mirror and inverse tables.
 
 		// Initialization is limited to once.
-		static auto first = true;
+		static bool first = true;
 		if (!first) return;
 		first = false;
 
 		// exchange f and e
 		int t[] = {
-		f_pawn ,e_pawn,
-		f_knight ,e_knight,
-		f_bishop ,e_bishop,
-		f_rook ,e_rook,
-		f_queen ,e_queen,
+			f_pawn             , e_pawn            ,
+			f_knight           , e_knight          ,
+			f_bishop           , e_bishop          ,
+			f_rook             , e_rook            ,
+			f_queen            , e_queen           ,
 		};
 
 		// Insert uninitialized value.
-		for (auto p = BONA_PIECE_ZERO; p < fe_end; ++p)
+		for (BonaPiece p = BONA_PIECE_ZERO; p < fe_end; ++p)
 		{
 			inv_piece_[p] = BONA_PIECE_NOT_INIT;
 
 			// mirror does not work for hand pieces. Just return the original value.
-			mir_piece_[p] = p < f_pawn ? p : BONA_PIECE_NOT_INIT;
+			mir_piece_[p] = (p < f_pawn) ? p : BONA_PIECE_NOT_INIT;
 		}
 
-		for (auto p = BONA_PIECE_ZERO; p < fe_end; ++p)
+		for (BonaPiece p = BONA_PIECE_ZERO; p < fe_end; ++p)
 		{
-			for (auto i = 0; i < 32 /* t.size() */; i += 2)
+			for (int i = 0; i < 32 /* t.size() */; i += 2)
 			{
 				if (t[i] <= p && p < t[i + 1])
 				{
-					const auto sq = static_cast<Square>(p - t[i]);
+					Square sq = (Square)(p - t[i]);
 
 					// found!!
-					const auto q = p < fe_hand_end ? BonaPiece(sq + t[i + 1]) : static_cast<BonaPiece>(Inv(sq) + t[i + 1]);
+					BonaPiece q = (p < fe_hand_end) ? BonaPiece(sq + t[i + 1]) : (BonaPiece)(Inv(sq) + t[i + 1]);
 					inv_piece_[p] = q;
 					inv_piece_[q] = p;
 
 					/*
 					It's a bit tricky, but regarding p
-					p >= fe_hand_end
+										p >= fe_hand_end
 										When.
 
-					For this p, let n be an integer (i in the code above can only be an even number),
+					For this p, let n be an integer (i in the above code can only be an even number),
 					a) When t[2n + 0] <= p <t[2n + 1], the first piece
 					b) When t[2n + 1] <= p <t[2n + 2], the back piece
 					Is.
@@ -83,12 +84,12 @@ namespace Eval
 					if (p < fe_hand_end)
 						continue;
 
-					const auto r1 = static_cast<BonaPiece>(Mir(sq) + t[i]);
+					BonaPiece r1 = (BonaPiece)(Mir(sq) + t[i]);
 					mir_piece_[p] = r1;
 					mir_piece_[r1] = p;
 
-					const auto p2 = static_cast<BonaPiece>(sq + t[i + 1]);
-					const auto r2 = static_cast<BonaPiece>(Mir(sq) + t[i + 1]);
+					BonaPiece p2 = (BonaPiece)(sq + t[i + 1]);
+					BonaPiece r2 = (BonaPiece)(Mir(sq) + t[i + 1]);
 					mir_piece_[p2] = r2;
 					mir_piece_[r2] = p2;
 
@@ -100,7 +101,7 @@ namespace Eval
 		if (mir_piece_init_function)
 			mir_piece_init_function();
 
-		for (auto p = BONA_PIECE_ZERO; p < fe_end; ++p)
+		for (BonaPiece p = BONA_PIECE_ZERO; p < fe_end; ++p)
 		{
 			// It remains uninitialized. The initialization code in the table above is incorrect.
 			assert(mir_piece_[p] != BONA_PIECE_NOT_INIT && mir_piece_[p] < fe_end);
@@ -119,21 +120,21 @@ namespace Eval
 
 #if 0
 		// Pre-verification that it is okay to mirror the evaluation function
-		// There is an assertion when writing the value, so if mirroring is not possible,
+		// When writing a value, there is an assertion, so if you can't mirror it,
 		// Should get caught in the assert.
 
 		// Apery's WCSC26 evaluation function, kpp p1==0 or p1==20 (0th step on the back)
-		// There is dust in it, and if you do not avoid it, it will get caught in the assert.
+		// There is dust in it, and if you don't avoid it, it will get caught in the assert.
 
 		std::unordered_set<BonaPiece> s;
 		vector<int> a = {
-		f_hand_pawn - 1,e_hand_pawn - 1,
-		f_hand_lance - 1, e_hand_lance - 1,
-		f_hand_knight - 1, e_hand_knight - 1,
-		f_hand_silver - 1, e_hand_silver - 1,
-		f_hand_gold - 1, e_hand_gold - 1,
-		f_hand_bishop - 1, e_hand_bishop - 1,
-		f_hand_rook - 1, e_hand_rook - 1,
+			f_hand_pawn - 1,e_hand_pawn - 1,
+			f_hand_lance - 1, e_hand_lance - 1,
+			f_hand_knight - 1, e_hand_knight - 1,
+			f_hand_silver - 1, e_hand_silver - 1,
+			f_hand_gold - 1, e_hand_gold - 1,
+			f_hand_bishop - 1, e_hand_bishop - 1,
+			f_hand_rook - 1, e_hand_rook - 1,
 		};
 		for (auto b : a)
 			s.insert((BonaPiece)b);
@@ -155,7 +156,7 @@ namespace Eval
 					s.insert(inv_piece[b2]);
 				}
 
-				// Katsura on the first and second tier
+				// Katsura on the 1st and 2nd steps
 				BonaPiece b = BonaPiece(f_knight + (f | r));
 				s.insert(b);
 				s.insert(inv_piece[b]);
@@ -186,4 +187,4 @@ namespace Eval
 
 }
 
-#endif // defined(EVAL_NNUE) || defined(EVAL_LEARN)
+#endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)

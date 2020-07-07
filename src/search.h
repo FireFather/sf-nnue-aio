@@ -1,4 +1,4 @@
-﻿/*
+/*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
@@ -25,6 +25,7 @@
 
 #include "misc.h"
 #include "movepick.h"
+#include "types.h"
 
 class Position;
 
@@ -58,7 +59,7 @@ struct Stack {
 
 struct RootMove {
 
-  explicit RootMove(const Move m) : pv(1, m) {}
+  explicit RootMove(Move m) : pv(1, m) {}
   bool extract_ponder_from_tt(Position& pos);
   bool operator==(const Move& m) const { return pv[0] == m; }
   bool operator<(const RootMove& m) const { // Sort in descending order
@@ -90,15 +91,15 @@ struct LimitsType {
     silent = false;
   }
 
-  [[nodiscard]] bool use_time_management() const {
-    return !(mate | movetime | depth | nodes | perft | infinite);
+  bool use_time_management() const {
+    return time[WHITE] || time[BLACK];
   }
 
   std::vector<Move> searchmoves;
-  TimePoint time[COLOR_NB]{}, inc[COLOR_NB]{}, npmsec, movetime, startTime{};
+  TimePoint time[COLOR_NB], inc[COLOR_NB], npmsec, movetime, startTime;
   int movestogo, depth, mate, perft, infinite;
   int64_t nodes;
-  // Silent mode that does not output to the screen (for continuous self-play in the process)
+  // Silent mode that does not output to the screen (for continuous self-play in process)
   // Do not output PV at this time.
   bool silent;
 };

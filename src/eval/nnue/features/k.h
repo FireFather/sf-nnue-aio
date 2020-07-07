@@ -10,39 +10,39 @@
 
 namespace Eval {
 
-	namespace NNUE {
+namespace NNUE {
 
-		namespace Features {
+namespace Features {
 
-			// Feature K: Ball position
-			class K {
-			public:
-				// feature quantity name
-				static constexpr const char* kName = "K";
-				// Hash value embedded in the evaluation function file
-				static constexpr std::uint32_t kHashValue = 0xD3CEE169u;
-				// number of feature dimensions
-				static constexpr IndexType kDimensions = SQUARE_NB * 2;
-				// The maximum value of the number of indexes whose values ​​are 1 at the same time among the feature values
-				static constexpr IndexType kMaxActiveDimensions = 2;
-				// Timing of full calculation instead of difference calculation
-				static constexpr TriggerEvent kRefreshTrigger = TriggerEvent::kNone;
+// Feature K: Ball position
+class K {
+ public:
+  // feature quantity name
+  static constexpr const char* kName = "K";
+  // Hash value embedded in the evaluation function file
+  static constexpr std::uint32_t kHashValue = 0xD3CEE169u;
+  // number of feature dimensions
+  static constexpr IndexType kDimensions = SQUARE_NB * 2;
+  // The maximum value of the number of indexes whose value is 1 at the same time among the feature values
+  static constexpr IndexType kMaxActiveDimensions = 2;
+  // Timing of full calculation instead of difference calculation
+  static constexpr TriggerEvent kRefreshTrigger = TriggerEvent::kNone;
 
-				// Get a list of indices with a value of 1 among the features
-				static void AppendActiveIndices(const Position& pos, Color perspective,
-					IndexList* active);
+  // Get a list of indices with a value of 1 among the features
+  static void AppendActiveIndices(const Position& pos, Color perspective,
+                                  IndexList* active);
 
-				// Get a list of indexes whose values ​​have changed from the previous one among the feature quantities
-				static void AppendChangedIndices(const Position& pos, Color perspective,
-					IndexList* removed, IndexList* added);
-			};
+  // Get a list of indices whose values ​​have changed from the previous one in the feature quantity
+  static void AppendChangedIndices(const Position& pos, Color perspective,
+                                   IndexList* removed, IndexList* added);
+};
 
-		} // namespace Features
+}  // namespace Features
 
-	} // namespace NNUE
+}  // namespace NNUE
 
-} // namespace Eval
+}  // namespace Eval
 
-#endif // defined(EVAL_NNUE)
+#endif  // defined(EVAL_NNUE)
 
 #endif

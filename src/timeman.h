@@ -31,18 +31,17 @@
 class TimeManagement {
 public:
   void init(Search::LimitsType& limits, Color us, int ply);
-  [[nodiscard]] TimePoint optimum() const { return optimumTime; }
-  [[nodiscard]] TimePoint maximum() const { return maximumTime; }
+  TimePoint optimum() const { return optimumTime; }
+  TimePoint maximum() const { return maximumTime; }
+  TimePoint elapsed() const { return Search::Limits.npmsec ?
+                                     TimePoint(Threads.nodes_searched()) : now() - startTime; }
 
-  [[nodiscard]] TimePoint elapsed() const { return Search::Limits.npmsec ?
-	                                                   TimePoint(Threads.nodes_searched()) : now() - startTime; }
-
-  int64_t availableNodes{}; // When in 'nodes as time' mode
+  int64_t availableNodes; // When in 'nodes as time' mode
 
 private:
-  TimePoint startTime = 0;
-  TimePoint optimumTime = 0;
-  TimePoint maximumTime = 0;
+  TimePoint startTime;
+  TimePoint optimumTime;
+  TimePoint maximumTime;
 };
 
 extern TimeManagement Time;

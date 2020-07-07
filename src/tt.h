@@ -22,6 +22,7 @@
 #define TT_H_INCLUDED
 
 #include "misc.h"
+#include "types.h"
 
 /// TTEntry struct is the 10 bytes transposition table entry, defined as below:
 ///
@@ -35,12 +36,13 @@
 /// depth       8 bit
 
 struct TTEntry {
-	[[nodiscard]] Move  move()  const { return static_cast<Move>(move16); }
-	[[nodiscard]] Value value() const { return static_cast<Value>(value16); }
-	[[nodiscard]] Value eval()  const { return static_cast<Value>(eval16); }
-	[[nodiscard]] Depth depth() const { return static_cast<Depth>(depth8) + DEPTH_OFFSET; }
-	[[nodiscard]] bool is_pv()  const { return static_cast<bool>(genBound8 & 0x4); }
-	[[nodiscard]] Bound bound() const { return static_cast<Bound>(genBound8 & 0x3); }
+
+  Move  move()  const { return (Move )move16; }
+  Value value() const { return (Value)value16; }
+  Value eval()  const { return (Value)eval16; }
+  Depth depth() const { return (Depth)depth8 + DEPTH_OFFSET; }
+  bool is_pv()  const { return (bool)(genBound8 & 0x4); }
+  Bound bound() const { return (Bound)(genBound8 & 0x3); }
   void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
 
 private:
@@ -58,8 +60,8 @@ private:
 /// A TranspositionTable is an array of Cluster, of size clusterCount. Each
 /// cluster consists of ClusterSize number of TTEntry. Each non-empty TTEntry
 /// contains information on exactly one position. The size of a Cluster should
-/// divide the size of a cache line for best performance,
-/// as the cacheline is prefetched when possible.
+/// divide the size of a cache line for best performance, as the cacheline is
+/// prefetched when possible.
 
 class TranspositionTable {
 
@@ -75,14 +77,13 @@ class TranspositionTable {
 public:
  ~TranspositionTable() { aligned_ttmem_free(mem); }
   void new_search() { generation8 += 8; } // Lower 3 bits are used by PV flag and Bound
-  TTEntry* probe(Key key, bool& found) const;
-  [[nodiscard]] int hashfull() const;
+  TTEntry* probe(const Key key, bool& found) const;
+  int hashfull() const;
   void resize(size_t mbSize);
   void clear();
 
-  // The 32 lowest order bits of the key are used to get the index of the cluster
-  [[nodiscard]] TTEntry* first_entry(const Key key) const {
-    return &table[uint32_t(key) * uint64_t(clusterCount) >> 32].entry[0];
+  TTEntry* first_entry(const Key key) const {
+    return &table[mul_hi64(key, clusterCount)].entry[0];
   }
 
 private:

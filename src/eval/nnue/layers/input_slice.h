@@ -1,4 +1,4 @@
-﻿// Definition of InputSlice layer of NNUE evaluation function
+﻿// NNUE evaluation function layer InputSlice definition
 
 #ifndef _NNUE_LAYERS_INPUT_SLICE_H_
 #define _NNUE_LAYERS_INPUT_SLICE_H_
@@ -18,7 +18,7 @@ template <IndexType OutputDimensions, IndexType Offset = 0>
 class InputSlice {
  public:
   // need to maintain alignment
-  static_assert(Offset %kMaxSimdWidth == 0, "");
+  static_assert(Offset % kMaxSimdWidth == 0, "");
 
   // output type
   using OutputType = TransformedFeatureType;
@@ -31,8 +31,8 @@ class InputSlice {
 
   // Hash value embedded in the evaluation function file
   static constexpr std::uint32_t GetHashValue() {
-	  auto hash_value = 0xEC42E90Du;
-    hash_value ^= kOutputDimensions ^ Offset << 10;
+    std::uint32_t hash_value = 0xEC42E90Du;
+    hash_value ^= kOutputDimensions ^ (Offset << 10);
     return hash_value;
   }
 
@@ -44,31 +44,31 @@ class InputSlice {
   }
 
   // read parameters
-  static bool ReadParameters(std::istream& /*stream*/) {
+  bool ReadParameters(std::istream& /*stream*/) {
     return true;
   }
 
   // write parameters
-  static bool WriteParameters(std::ostream& /*stream*/)
-  {
+  bool WriteParameters(std::ostream& /*stream*/) const {
     return true;
   }
 
   // forward propagation
-  static const OutputType* Propagate(
+  const OutputType* Propagate(
       const TransformedFeatureType* transformed_features,
-      char* /*buffer*/)
-  {
+      char* /*buffer*/) const {
     return transformed_features + Offset;
   }
+
+ private:
 };
 
-} // namespace Layers
+}  // namespace Layers
 
-} // namespace NNUE
+}  // namespace NNUE
 
-} // namespace Eval
+}  // namespace Eval
 
-#endif // defined(EVAL_NNUE)
+#endif  // defined(EVAL_NNUE)
 
 #endif

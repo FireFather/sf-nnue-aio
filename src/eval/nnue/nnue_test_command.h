@@ -12,10 +12,10 @@ namespace NNUE {
 // USI extended command for NNUE evaluation function
 void TestCommand(Position& pos, std::istream& stream);
 
-} // namespace NNUE
+}  // namespace NNUE
 
-} // namespace Eval
+}  // namespace Eval
 
-#endif // defined(ENABLE_TEST_CMD) && defined(EVAL_NNUE)
+#endif  // defined(ENABLE_TEST_CMD) && defined(EVAL_NNUE)
 
 #endif

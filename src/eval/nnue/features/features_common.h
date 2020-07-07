@@ -5,42 +5,43 @@
 
 #if defined(EVAL_NNUE)
 
+#include "../../../evaluate.h"
 #include "../nnue_common.h"
 
 namespace Eval {
 
-	namespace NNUE {
+namespace NNUE {
 
-		namespace Features {
+namespace Features {
 
-			// Index list type
-			class IndexList;
+// Index list type
+class IndexList;
 
-			// Class template that represents the feature set
-			template <typename... FeatureTypes>
-			class FeatureSet;
+// Class template that represents the feature set
+template <typename... FeatureTypes>
+class FeatureSet;
 
-			// Kind of timing to perform all calculation instead of difference calculation
-			enum class TriggerEvent {
-				kNone, // Calculate the difference whenever possible
-				kFriendKingMoved, // calculate all if own ball moves
-				kEnemyKingMoved, // do all calculations when enemy ball moves
-				kAnyKingMoved, // do all calculations if either ball moves
-				kAnyPieceMoved, // always do all calculations
-			};
+// Type of timing to perform all calculations instead of difference calculation
+enum class TriggerEvent {
+  kNone, // Calculate the difference whenever possible
+  kFriendKingMoved, // calculate all when own ball moves
+  kEnemyKingMoved, // do all calculations when enemy balls move
+  kAnyKingMoved, // do all calculations if either ball moves
+  kAnyPieceMoved, // always do all calculations
+};
 
-			// turn side or other side
-			enum class Side {
-				kFriend, // turn side
-				kEnemy, // opponent
-			};
+// turn side or other side
+enum class Side {
+  kFriend, // turn side
+  kEnemy, // opponent
+};
 
-		} // namespace Features
+}  // namespace Features
 
-	} // namespace NNUE
+}  // namespace NNUE
 
-} // namespace Eval
+}  // namespace Eval
 
-#endif // defined(EVAL_NNUE)
+#endif  // defined(EVAL_NNUE)
 
 #endif

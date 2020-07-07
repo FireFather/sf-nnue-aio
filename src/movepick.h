@@ -27,6 +27,7 @@
 
 #include "movegen.h"
 #include "position.h"
+#include "types.h"
 
 /// StatsEntry stores the stat table value. It is usually a number but could
 /// be a move or even a nested history. We use a class instead of naked value
@@ -59,7 +60,7 @@ public:
 /// values with the << operator, while the last parameters (Size and Sizes)
 /// encode the dimensions of the array.
 template <typename T, int D, int Size, int... Sizes>
-struct Stats : std::array<Stats<T, D, Sizes...>, Size>
+struct Stats : public std::array<Stats<T, D, Sizes...>, Size>
 {
   typedef Stats<T, D, Size, Sizes...> stats;
 
@@ -75,7 +76,7 @@ struct Stats : std::array<Stats<T, D, Sizes...>, Size>
 };
 
 template <typename T, int D, int Size>
-struct Stats<T, D, Size> : std::array<StatsEntry<T, D>, Size> {};
+struct Stats<T, D, Size> : public std::array<StatsEntry<T, D>, Size> {};
 
 /// In stats table, D=0 means that the template parameter is not used
 enum StatsParams { NOT_USED = 0 };
@@ -85,13 +86,13 @@ enum StatsType { NoCaptures, Captures };
 /// unsuccessful during the current search, and is used for reduction and move
 /// ordering decisions. It uses 2 tables (one for each color) indexed by
 /// the move's from and to squares, see www.chessprogramming.org/Butterfly_Boards
-typedef Stats<int16_t, 10692, COLOR_NB, static_cast<int>(SQUARE_NB) * static_cast<int>(SQUARE_NB)> ButterflyHistory;
+typedef Stats<int16_t, 10692, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)> ButterflyHistory;
 
-/// LowPlyHistory at higher depths records successful quiet moves on plies 0 to 3
-/// and quiet moves which are/were in the PV (ttPv)
-/// It get cleared with each new search and get filled during iterative deepening
+/// At higher depths LowPlyHistory records successful quiet moves near the root and quiet
+/// moves which are/were in the PV (ttPv)
+/// It is cleared with each new search and filled during iterative deepening
 constexpr int MAX_LPH = 4;
-typedef Stats<int16_t, 10692, MAX_LPH, static_cast<int>(SQUARE_NB) * static_cast<int>(SQUARE_NB)> LowPlyHistory;
+typedef Stats<int16_t, 10692, MAX_LPH, int(SQUARE_NB) * int(SQUARE_NB)> LowPlyHistory;
 
 /// CounterMoveHistory stores counter moves indexed by [piece][to] of the previous
 /// move, see www.chessprogramming.org/Countermove_Heuristic
@@ -132,15 +133,15 @@ public:
                                            const CapturePieceToHistory*,
                                            const PieceToHistory**,
                                            Move,
-                                           Move*,
+                                           const Move*,
                                            int);
   Move next_move(bool skipQuiets = false);
 
 private:
   template<PickType T, typename Pred> Move select(Pred);
   template<GenType> void score();
-  ExtMove* begin() const { return cur; }
-  ExtMove* end() const { return endMoves; }
+  ExtMove* begin() { return cur; }
+  ExtMove* end() { return endMoves; }
 
   const Position& pos;
   const ButterflyHistory* mainHistory;

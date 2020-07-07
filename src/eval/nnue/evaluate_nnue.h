@@ -12,53 +12,53 @@
 
 namespace Eval {
 
-	namespace NNUE {
+namespace NNUE {
 
-		// Hash value of structure of evaluation function
-		constexpr std::uint32_t kHashValue =
-			FeatureTransformer::GetHashValue() ^ Network::GetHashValue();
+// hash value of evaluation function structure
+constexpr std::uint32_t kHashValue =
+    FeatureTransformer::GetHashValue() ^ Network::GetHashValue();
 
-		// Deleter for automating release of memory area
-		template <typename T>
-		struct AlignedDeleter {
-			void operator()(T* ptr) const {
-				ptr->~T();
-				aligned_free(ptr);
-			}
-		};
-		template <typename T>
-		using AlignedPtr = std::unique_ptr<T, AlignedDeleter<T>>;
+// Deleter for automating release of memory area
+template <typename T>
+struct AlignedDeleter {
+  void operator()(T* ptr) const {
+    ptr->~T();
+    aligned_free(ptr);
+  }
+};
+template <typename T>
+using AlignedPtr = std::unique_ptr<T, AlignedDeleter<T>>;
 
-		// Input feature converter
-		extern AlignedPtr<FeatureTransformer> feature_transformer;
+// Input feature converter
+extern AlignedPtr<FeatureTransformer> feature_transformer;
 
-		// Evaluation function
-		extern AlignedPtr<Network> network;
+// Evaluation function
+extern AlignedPtr<Network> network;
 
-		// Evaluation function file name
-		extern const char* const kFileName;
+// Evaluation function file name
+extern const char* const kFileName;
 
-		// Get a string that represents the structure of the evaluation function
-		std::string GetArchitectureString();
+// Get a string that represents the structure of the evaluation function
+std::string GetArchitectureString();
 
-		// read the header
-		bool ReadHeader(std::istream& stream,
-			std::uint32_t* hash_value, std::string* architecture);
+// read the header
+bool ReadHeader(std::istream& stream,
+    std::uint32_t* hash_value, std::string* architecture);
 
-		// write the header
-		bool WriteHeader(std::ostream& stream,
-			std::uint32_t hash_value, const std::string& architecture);
+// write the header
+bool WriteHeader(std::ostream& stream,
+    std::uint32_t hash_value, const std::string& architecture);
 
-		// read evaluation function parameters
-		bool ReadParameters(std::istream& stream);
+// read evaluation function parameters
+bool ReadParameters(std::istream& stream);
 
-		// write evaluation function parameters
-		bool WriteParameters(std::ostream& stream);
+// write evaluation function parameters
+bool WriteParameters(std::ostream& stream);
 
-	} // namespace NNUE
+}  // namespace NNUE
 
-} // namespace Eval
+}  // namespace Eval
 
-#endif // defined(EVAL_NNUE)
+#endif  // defined(EVAL_NNUE)
 
 #endif

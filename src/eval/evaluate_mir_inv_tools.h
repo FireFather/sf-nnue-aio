@@ -3,16 +3,17 @@
 
 #if defined(EVAL_NNUE) || defined(EVAL_LEARN)
 
-// BonaPiece's tools to get mirror (horizontal flip) and inverse (180 degree rotation on the board) pieces.
+// BonaPiece's mirror (horizontal flip) and inverse (180° on the board) tools to get pieces.
 
+#include "../types.h"
 #include "../evaluate.h"
 #include <functional>
 
 namespace Eval
 {
-	// ------------------------------------------------ -
-	// tables
-	// ------------------------------------------------ -
+	// -------------------------------------------------
+	//                  tables
+	// -------------------------------------------------
 
 	// --- Provide Mirror and Inverse to BonaPiece.
 
@@ -22,25 +23,25 @@ namespace Eval
 	// These arrays are referenced from the KK/KKP/KPP classes below.
 
 	// Returns the value when a certain BonaPiece is seen from the other side
-	extern BonaPiece inv_piece(BonaPiece p);
+	extern Eval::BonaPiece inv_piece(Eval::BonaPiece p);
 
-	// Returns the one on the board that mirrors a BonaPiece.
-	extern BonaPiece mir_piece(BonaPiece p);
+	// Returns the one at the position where a BonaPiece on the board is mirrored.
+	extern Eval::BonaPiece mir_piece(Eval::BonaPiece p);
 
 
 	// callback called when initializing mir_piece/inv_piece
 	// Used when extending fe_end on the user side.
 	// Inv_piece_ and inv_piece_ are exposed because they are necessary for this initialization.
-	// At the time mir_piece_init_function is called, until fe_old_end
+	// At the timing when mir_piece_init_function is called, until fe_old_end
 	// It is guaranteed that these tables have been initialized.
 	extern std::function<void()> mir_piece_init_function;
-	extern int16_t mir_piece_[fe_end];
-	extern int16_t inv_piece_[fe_end];
+	extern int16_t mir_piece_[Eval::fe_end];
+	extern int16_t inv_piece_[Eval::fe_end];
 
-	// The table above is initialized when you call this function explicitly or call init().
+	// The table above will be initialized when you call this function explicitly or call init().
 	extern void init_mir_inv_tables();
 }
 
-#endif // defined(EVAL_NNUE) || defined(EVAL_LEARN)
+#endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)
 
 #endif

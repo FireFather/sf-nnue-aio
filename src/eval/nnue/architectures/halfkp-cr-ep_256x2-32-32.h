@@ -12,28 +12,31 @@
 #include "../layers/affine_transform.h"
 #include "../layers/clipped_relu.h"
 
-namespace Eval::NNUE
-{
+namespace Eval {
 
-	// Input features used in evaluation function
-	using RawFeatures = Features::FeatureSet<
-		Features::HalfKP<Features::Side::kFriend>, Features::CastlingRight,
-		Features::EnPassant>;
+  namespace NNUE {
 
-	// Number of input feature dimensions after conversion
-	constexpr IndexType kTransformedFeatureDimensions = 256;
+    // Input features used in evaluation function
+    using RawFeatures = Features::FeatureSet<
+      Features::HalfKP<Features::Side::kFriend>, Features::CastlingRight,
+      Features::EnPassant>;
 
-	namespace Layers {
+    // Number of input feature dimensions after conversion
+    constexpr IndexType kTransformedFeatureDimensions = 256;
 
-		// define network structure
-		using InputLayer = InputSlice<kTransformedFeatureDimensions * 2>;
-		using HiddenLayer1 = ClippedReLU<AffineTransform<InputLayer, 32>>;
-		using HiddenLayer2 = ClippedReLU<AffineTransform<HiddenLayer1, 32>>;
-		using OutputLayer = AffineTransform<HiddenLayer2, 1>;
+    namespace Layers {
 
-	} // namespace Layers
+      // define network structure
+      using InputLayer = InputSlice<kTransformedFeatureDimensions * 2>;
+      using HiddenLayer1 = ClippedReLU<AffineTransform<InputLayer, 32>>;
+      using HiddenLayer2 = ClippedReLU<AffineTransform<HiddenLayer1, 32>>;
+      using OutputLayer = AffineTransform<HiddenLayer2, 1>;
 
-	using Network = Layers::OutputLayer;
-} // namespace Eval
+    }  // namespace Layers
 
+    using Network = Layers::OutputLayer;
+
+  }  // namespace NNUE
+
+}  // namespace Eval
 #endif // HALFKP_CR_EP_256X2_32_32_H

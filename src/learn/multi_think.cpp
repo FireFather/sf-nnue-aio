@@ -13,50 +13,50 @@ void MultiThink::go_think()
 	// Keep a copy to restore the Options settings later.
 	auto oldOptions = Options;
 
-	// When using a fixed track, it takes a lot of time to do it on the fly & the part to access the file is
+	// When using the constant track, it takes a lot of time to perform on the fly & the part to access the file is
 	// Since it is not thread safe, it is guaranteed here that it is being completely read in memory.
 	Options["BookOnTheFly"] = std::string("false");
 
-	// Read evaluation function etc.
+	// Read evaluation function, etc.
 	// In the case of the learn command, the value of the evaluation function may be corrected after reading the evaluation function, so
-	// Omit the memory corruption check.
-	is_ready(true);
+	// Skip memory corruption check.
+	init_nnue(true);
 
 	// Call the derived class's init().
 	init();
 
-	// It is assumed that the loop upper limit is set by set_loop_max().
+	// The loop upper limit is set with set_loop_max().
 	loop_count = 0;
 	done_count = 0;
 
 	// Create threads as many as Options["Threads"] and start thinking.
 	std::vector<std::thread> threads;
-	auto thread_num = static_cast<size_t>(Options["Threads"]);
+	auto thread_num = (size_t)Options["Threads"];
 
 	// Secure end flag of worker thread
 	thread_finished.resize(thread_num);
-
+	
 	// start worker thread
 	for (size_t i = 0; i < thread_num; ++i)
 	{
 		thread_finished[i] = 0;
-		threads.emplace_back([i, this]
-			{
-				// exhaust all processor threads.
-				WinProcGroup::bindThisThread(i);
+		threads.push_back(std::thread([i, this]
+		{ 
+			// exhaust all processor threads.
+			WinProcGroup::bindThisThread(i);
 
-				// execute the overridden process
-				this->thread_worker(i);
+			// execute the overridden process
+			this->thread_worker(i);
 
-				// Set the end flag because the thread has ended
-				this->thread_finished[i] = 1;
-			});
+			// Set the end flag because the thread has ended
+			this->thread_finished[i] = 1;
+		}));
 	}
 
 	// wait for all threads to finish
 	// for (auto& th :threads)
 	// th.join();
-	//If you write like, the thread will rush here while it is still working, so
+	// If you write like, the thread will rush here while it is still working,
 	// During that time, callback_func() cannot be called and you cannot save.
 	// Therefore, you need to check the end flag yourself.
 
@@ -78,7 +78,7 @@ void MultiThink::go_think()
 	};
 
 
-	for (uint64_t i = 0;;)
+	for (uint64_t i = 0 ; ; )
 	{
 		// If all threads have finished, exit the loop.
 		if (threads_done())
@@ -90,7 +90,7 @@ void MultiThink::go_think()
 		if (++i == callback_seconds)
 		{
 			do_a_callback();
-			// Since I am returning from ↑, I have reset the counter, so
+			// Since I am returning from ↑, I reset the counter, so
 			// no matter how long it takes to save() etc. in do_a_callback()
 			// The next call will take a certain amount of time.
 			i = 0;
@@ -108,12 +108,12 @@ void MultiThink::go_think()
 	for (auto& th : threads)
 		th.join();
 
-	// The writing thread etc. of file are still running just after all threads are finished
+	// The file writing thread etc. are still running only when all threads are finished
 	// Since the work itself may not have completed, output only that all threads have finished.
 	std::cout << "all threads are joined." << std::endl;
 
 	// Restored because Options were rewritten.
-	// The handler will not start unless you assign a value to it, so restore it like this.
+	// Restore the handler because the handler will not start unless you assign a value.
 	for (auto& s : oldOptions)
 		Options[s.first] = std::string(s.second);
 

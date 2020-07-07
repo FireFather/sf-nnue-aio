@@ -34,37 +34,35 @@ namespace EvalLearningTools
 		// Not involved in KPPP.
 
 		KK g_kk;
-		g_kk.set(SQUARE_NB, fe_end, 0);
+		g_kk.set(SQUARE_NB, Eval::fe_end, 0);
 		KKP g_kkp;
-		g_kkp.set(SQUARE_NB, fe_end, g_kk.max_index());
+		g_kkp.set(SQUARE_NB, Eval::fe_end, g_kk.max_index());
 		KPP g_kpp;
-		g_kpp.set(SQUARE_NB, fe_end, g_kkp.max_index());
+		g_kpp.set(SQUARE_NB, Eval::fe_end, g_kkp.max_index());
 
-		const auto size = g_kpp.max_index();
+		uint64_t size = g_kpp.max_index();
 		min_index_flag.resize(size);
-#if defined(_OPENMP)
+
 #pragma omp parallel
-#endif
 		{
 #if defined(_OPENMP)
-			// To prevent logical 64 cores from being used when there are two CPUs under Windows
+			// To prevent the logical 64 cores from being used when there are two CPUs under Windows
 			// explicitly assign to CPU here
 			int thread_index = omp_get_thread_num(); // get your thread number
 			WinProcGroup::bindThisThread(thread_index);
 #endif
-#if defined(_OPENMP)
-#pragma omp for schedule(dynamic,20000)
-#endif
 
-			for (int64_t index_ = 0; index_ < static_cast<int64_t>(size); ++index_)
+#pragma omp for schedule(dynamic,20000)
+
+			for (int64_t index_ = 0; index_ < (int64_t)size; ++index_)
 			{
 				// It seems that the loop variable must be a sign type due to OpenMP restrictions, but
-				// It is really difficult to use.
-				const auto index = static_cast<uint64_t>(index_);
+				// It's really difficult to use.
+				uint64_t index = (uint64_t)index_;
 
 				if (g_kk.is_ok(index))
 				{
-					// Make sure that the original index is restored by the conversion from index and the reverse conversion.
+					// Make sure that the original index will be restored by conversion from index and reverse conversion.
 					// It is a process that is executed only once at startup, so write it in assert.
 					assert(g_kk.fromIndex(index).toIndex() == index);
 
@@ -74,40 +72,40 @@ namespace EvalLearningTools
 					// Make sure that the first element of dimension reduction is the same as the original index.
 					assert(a[0].toIndex() == index);
 
-					auto min_index = UINT64_MAX;
+					uint64_t min_index = UINT64_MAX;
 					for (auto& e : a)
 						min_index = std::min(min_index, e.toIndex());
-					min_index_flag[index] = min_index == index;
+					min_index_flag[index] = (min_index == index);
 				}
 				else if (g_kkp.is_ok(index))
 				{
 					assert(g_kkp.fromIndex(index).toIndex() == index);
 
-					auto x = g_kkp.fromIndex(index);
+					KKP x = g_kkp.fromIndex(index);
 					KKP a[KKP_LOWER_COUNT];
 					x.toLowerDimensions(a);
 
 					assert(a[0].toIndex() == index);
 
-					auto min_index = UINT64_MAX;
+					uint64_t min_index = UINT64_MAX;
 					for (auto& e : a)
 						min_index = std::min(min_index, e.toIndex());
-					min_index_flag[index] = min_index == index;
+					min_index_flag[index] = (min_index == index);
 				}
 				else if (g_kpp.is_ok(index))
 				{
 					assert(g_kpp.fromIndex(index).toIndex() == index);
 
-					auto x = g_kpp.fromIndex(index);
+					KPP x = g_kpp.fromIndex(index);
 					KPP a[KPP_LOWER_COUNT];
 					x.toLowerDimensions(a);
 
 					assert(a[0].toIndex() == index);
 
-					auto min_index = UINT64_MAX;
+					uint64_t min_index = UINT64_MAX;
 					for (auto& e : a)
 						min_index = std::min(min_index, e.toIndex());
-					min_index_flag[index] = min_index == index;
+					min_index_flag[index] = (min_index == index);
 				}
 				else
 				{
@@ -125,31 +123,31 @@ namespace EvalLearningTools
 		// Determine if it is correct.
 
 		KK g_kk;
-		g_kk.set(SQUARE_NB, fe_end, 0);
+		g_kk.set(SQUARE_NB, Eval::fe_end, 0);
 		KKP g_kkp;
-		g_kkp.set(SQUARE_NB, fe_end, g_kk.max_index());
+		g_kkp.set(SQUARE_NB, Eval::fe_end, g_kk.max_index());
 		KPP g_kpp;
-		g_kpp.set(SQUARE_NB, fe_end, g_kkp.max_index());
+		g_kpp.set(SQUARE_NB, Eval::fe_end, g_kkp.max_index());
 
 		std::vector<bool> f;
 		f.resize(g_kpp.max_index() - g_kpp.min_index());
 
-		for (auto k = SQUARE_ZERO; k < SQUARE_NB; ++k)
-			for (auto p0 = BONA_PIECE_ZERO; p0 < fe_end; ++p0)
-				for (auto p1 = BONA_PIECE_ZERO; p1 < fe_end; ++p1)
+		for(auto k = SQUARE_ZERO ; k < SQUARE_NB ; ++k)
+			for(auto p0 = BonaPiece::BONA_PIECE_ZERO; p0 < fe_end ; ++p0)
+				for (auto p1 = BonaPiece::BONA_PIECE_ZERO; p1 < fe_end; ++p1)
 				{
-					auto kpp_org = g_kpp.fromKPP(k, p0, p1);
+					KPP kpp_org = g_kpp.fromKPP(k,p0,p1);
 					KPP kpp0;
-					auto kpp1 = g_kpp.fromKPP(Mir(k), mir_piece(p0), mir_piece(p1));
+					KPP kpp1 = g_kpp.fromKPP(Mir(k), mir_piece(p0), mir_piece(p1));
 					KPP kpp_array[2];
 
-					const auto index = kpp_org.toIndex();
+					auto index = kpp_org.toIndex();
 					assert(g_kpp.is_ok(index));
 
 					kpp0 = g_kpp.fromIndex(index);
 
 					//if (kpp0 != kpp_org)
-					// std::cout << "index = "<< index << "," << kpp_org << "," << kpp0 << std::endl;
+					//	std::cout << "index = " << index << "," << kpp_org << "," << kpp0 << std::endl;
 
 					kpp0.toLowerDimensions(kpp_array);
 
@@ -157,12 +155,12 @@ namespace EvalLearningTools
 					assert(kpp0 == kpp_org);
 					assert(kpp_array[1] == kpp1);
 
-					const auto index2 = kpp1.toIndex();
-					f[index - g_kpp.min_index()] = f[index2 - g_kpp.min_index()] = true;
+					auto index2 = kpp1.toIndex();
+					f[index - g_kpp.min_index()] = f[index2-g_kpp.min_index()] = true;
 				}
 
 		// Check if there is no missing index.
-		for (size_t index = 0; index < f.size(); index++)
+		for(size_t index = 0 ; index < f.size(); index++)
 			if (!f[index])
 			{
 				std::cout << index << g_kpp.fromIndex(index + g_kpp.min_index()) << std::endl;
@@ -171,20 +169,20 @@ namespace EvalLearningTools
 
 	void learning_tools_unit_test_kppp()
 	{
-		// test KPPP calculation for omissions
+		// Test for missing KPPP calculations
 
 		KPPP g_kppp;
-		g_kppp.set(15, fe_end, 0);
-		const auto min_index = g_kppp.min_index();
-		const auto max_index = g_kppp.max_index();
+		g_kppp.set(15, Eval::fe_end,0);
+		uint64_t min_index = g_kppp.min_index();
+		uint64_t max_index = g_kppp.max_index();
 
 		// Confirm last element.
 		//KPPP x = KPPP::fromIndex(max_index-1);
 		//std::cout << x << std::endl;
 
-		for (auto index = min_index; index < max_index; ++index)
+		for (uint64_t index = min_index; index < max_index; ++index)
 		{
-			auto x = g_kppp.fromIndex(index);
+			KPPP x = g_kppp.fromIndex(index);
 			//std::cout << x << std::endl;
 
 #if 0
@@ -192,17 +190,17 @@ namespace EvalLearningTools
 				std::cout << "index = " << index << std::endl;
 
 			// index = 9360000000
-			// done.
+			//	done.
 
 			if (x.toIndex() != index)
 			{
-				std::cout << "assertion failed, index = " << index << std::endl;
+				std::cout << "assertion failed , index = " << index << std::endl;
 			}
 #endif
 
 			assert(x.toIndex() == index);
 
-			// ASSERT((&kppp_ksq_pcpcpc(x.king(), x.piece0(), x.piece1(), x.piece2())-&kppp[0][0]) == (index-min_index));
+//			ASSERT((&kppp_ksq_pcpcpc(x.king(), x.piece0(), x.piece1(), x.piece2()) - &kppp[0][0]) == (index - min_index));
 		}
 
 	}
@@ -212,12 +210,12 @@ namespace EvalLearningTools
 		KKPP g_kkpp;
 		g_kkpp.set(SQUARE_NB, 10000, 0);
 		uint64_t n = 0;
-		for (auto k = 0; k < SQUARE_NB; ++k)
-			for (auto i = 0; i < 10000; ++i) // As a test, assuming a fairly large fe_end, try turning at 10000.
-				for (auto j = 0; j < i; ++j)
+		for (int k = 0; k<SQUARE_NB; ++k)
+			for (int i = 0; i<10000; ++i) // As a test, assuming a large fe_end, try turning at 10000.
+				for (int j = 0; j < i; ++j)
 				{
-					auto kkpp = g_kkpp.fromKKPP(k, static_cast<BonaPiece>(i), static_cast<BonaPiece>(j));
-					const auto r = kkpp.toRawIndex();
+					auto kkpp = g_kkpp.fromKKPP(k, (BonaPiece)i, (BonaPiece)j);
+					auto r = kkpp.toRawIndex();
 					assert(n++ == r);
 					auto kkpp2 = g_kkpp.fromIndex(r + g_kkpp.min_index());
 					assert(kkpp2.king() == k && kkpp2.piece0() == i && kkpp2.piece1() == j);
@@ -228,14 +226,14 @@ namespace EvalLearningTools
 	void init()
 	{
 		// Initialization is required only once after startup, so a flag for that.
-		static auto first = true;
+		static bool first = true;
 
 		if (first)
 		{
 			std::cout << "EvalLearningTools init..";
 
 			// Make mir_piece() and inv_piece() available.
-			// After this, the initialization of min_index_flag is done, but that is
+			// After this, the min_index_flag is initialized, but
 			// It depends on this, so you need to do this first.
 			init_mir_inv_tables();
 
@@ -243,7 +241,7 @@ namespace EvalLearningTools
 			//learning_tools_unit_test_kppp();
 			//learning_tools_unit_test_kkpp();
 
-			// It is okay at the end of executing UnitTest, but since init_min_index_flag() takes a long time
+			// It may be the last time to execute UnitTest, but since init_min_index_flag() takes a long time,
 			// I want to do this at the time of debugging.
 
 			init_min_index_flag();
