@@ -80,6 +80,12 @@
 #  define pext(b, m) 0
 #endif
 
+#ifdef USE_AVX2
+constexpr bool HasAvx2 = true;
+#else
+constexpr bool HasAvx2 = false;
+#endif
+
 #ifdef USE_POPCNT
 constexpr bool HasPopCnt = true;
 #else
@@ -463,7 +469,7 @@ constexpr bool is_ok(Move m) {
   return from_sq(m) != to_sq(m); // Catch MOVE_NULL and MOVE_NONE
 }
 
-// Return squares when turning the board 180Åã
+// Return squares when turning the board 180¬Å‚Äπ
 constexpr Square Inv(Square sq) { return (Square)((SQUARE_NB - 1) - sq); }
 
 // Return squares when mirroring the board
