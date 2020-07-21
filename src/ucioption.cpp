@@ -42,7 +42,14 @@ void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
 void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option& o) { Threads.set(size_t(o)); }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
-void on_eval_file(const Option& o) { load_eval_finished = false; init_nnue(); }
+void on_eval_file(const Option& o)
+{
+    if (Options["EvalNNUE"])
+    {
+    load_eval_finished = false;
+    init_nnue();
+    }
+}
 
 
 /// Our case insensitive less() function as required by UCI protocol
@@ -81,13 +88,15 @@ void init(OptionsMap& o) {
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
   // Evaluation function file name. When this is changed, it is necessary to reread the evaluation function at the next ucinewgame timing.
-  o["EvalFile"]              << Option("eval\\nn.bin", on_eval_file);
+  // Without the preceding "./", some GUIs can not load he net file.
+  o["EvalFile"]              << Option("./eval/nn.bin", on_eval_file);
   // When the evaluation function is loaded at the ucinewgame timing, it is necessary to convert the new evaluation function.
   // I want to hit the test eval convert command, but there is no new evaluation function
   // It ends abnormally before executing this command.
   // Therefore, with this hidden option, you can suppress the loading of the evaluation function when ucinewgame,
   // Hit the test eval convert command.
   o["SkipLoadingEval"]       << Option(false);
+  o["EvalNNUE"]              << Option(false);
   // how many moves to use a fixed move
   o["BookMoves"] << Option(16, 0, 10000);
 

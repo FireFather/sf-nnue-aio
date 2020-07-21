@@ -14,6 +14,8 @@ namespace Eval {
 
 namespace NNUE {
 
+Value evaluate(const Position& pos);
+
 // hash value of evaluation function structure
 constexpr std::uint32_t kHashValue =
     FeatureTransformer::GetHashValue() ^ Network::GetHashValue();
@@ -37,6 +39,9 @@ extern AlignedPtr<Network> network;
 
 // Evaluation function file name
 extern std::string fileName;
+
+// Saved evaluation function file name
+extern std::string savedfileName;
 
 // Get a string that represents the structure of the evaluation function
 std::string GetArchitectureString();

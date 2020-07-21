@@ -211,9 +211,8 @@ namespace {
         else if (token == "position")   position(pos, is, states);
         else if (token == "ucinewgame")
         {
-#if defined(EVAL_NNUE)
-            init_nnue();
-#endif
+            if (Options["EvalNNUE"])
+                init_nnue();
             Search::clear();
             elapsed = now(); // Search::clear() may take some while
         }
@@ -378,9 +377,8 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "position")   position(pos, is, states);
       else if (token == "ucinewgame")
       {
-#if defined(EVAL_NNUE)
-          init_nnue();
-#endif
+          if (Options["EvalNNUE"])
+            init_nnue();
           Search::clear();
       }
       else if (token == "isready")    sync_cout << "readyok" << sync_endl;

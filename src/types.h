@@ -80,12 +80,6 @@
 #  define pext(b, m) 0
 #endif
 
-#ifdef USE_AVX2
-constexpr bool HasAvx2 = true;
-#else
-constexpr bool HasAvx2 = false;
-#endif
-
 #ifdef USE_POPCNT
 constexpr bool HasPopCnt = true;
 #else
@@ -469,7 +463,7 @@ constexpr bool is_ok(Move m) {
   return from_sq(m) != to_sq(m); // Catch MOVE_NULL and MOVE_NONE
 }
 
-// Return squares when turning the board 180¬Å‚Äπ
+// Return squares when turning the board 180Åã
 constexpr Square Inv(Square sq) { return (Square)((SQUARE_NB - 1) - sq); }
 
 // Return squares when mirroring the board
@@ -506,6 +500,11 @@ inline PieceNumber& operator--(PieceNumber& d) { return d = PieceNumber(int8_t(d
 // Piece Number integrity check. for assert.
 constexpr bool is_ok(PieceNumber pn) { return pn < PIECE_NUMBER_NB; }
 #endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)
+
+/// Based on a congruential pseudo random number generator
+constexpr Key make_key(uint64_t seed) {
+  return seed * 6364136223846793005ULL + 1442695040888963407ULL;
+}
 
 #endif // #ifndef TYPES_H_INCLUDED
 

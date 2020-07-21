@@ -23,7 +23,10 @@ AlignedPtr<FeatureTransformer> feature_transformer;
 AlignedPtr<Network> network;
 
 // Evaluation function file name
-std::string fileName = "eval\\nn.bin";
+std::string fileName = "nn.bin";
+
+// Saved evaluation function file name
+std::string savedfileName = "nn.bin";
 
 // Get a string that represents the structure of the evaluation function
 std::string GetArchitectureString() {
@@ -270,7 +273,7 @@ Value compute_eval(const Position& pos) {
 }
 
 // Evaluation function
-Value evaluate(const Position& pos) {
+Value NNUE::evaluate(const Position& pos) {
   const auto& accumulator = pos.state()->accumulator;
   if (accumulator.computed_score) {
     return accumulator.score;
