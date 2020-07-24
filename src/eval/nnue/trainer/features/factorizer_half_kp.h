@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if defined(EVAL_NNUE)
-
 #include "../../features/half_kp.h"
 #include "../../features/p.h"
 #include "../../features/half_relative_kp.h"
@@ -98,5 +96,4 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_NNUE)
 

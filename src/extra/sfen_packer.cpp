@@ -1,5 +1,4 @@
-﻿#if defined (EVAL_LEARN)
-
+﻿
 #include "../misc.h"
 #include "../position.h"
 
@@ -443,5 +442,3 @@ void Position::sfen_pack(PackedSfen& sfen)
 // return sp.unpack();
 //}
 
-
-#endif // USE_SFEN_PACKER

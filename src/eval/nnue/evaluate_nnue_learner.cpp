@@ -1,7 +1,5 @@
 ﻿// Code for learning NNUE evaluation function
 
-#if defined(EVAL_LEARN) && defined(EVAL_NNUE)
-
 #include <random>
 #include <fstream>
 
@@ -231,4 +229,3 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_LEARN) && defined(EVAL_NNUE)

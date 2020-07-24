@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if defined(EVAL_NNUE)
-
 #include "nnue_common.h"
 #include "nnue_architecture.h"
 #include "features/index_list.h"
@@ -354,5 +352,4 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_NNUE)
 

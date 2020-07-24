@@ -1,7 +1,5 @@
 ﻿#include "learning_tools.h"
 
-#if defined (EVAL_LEARN)
-
 #if defined(_OPENMP)
 #include <omp.h>
 #endif
@@ -253,4 +251,3 @@ namespace EvalLearningTools
 	}
 }
 
-#endif

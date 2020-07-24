@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#if defined(EVAL_LEARN)
-
 #include <vector>
 
 // =====================
@@ -231,5 +229,4 @@ namespace Learner
 
 }
 
-#endif
 

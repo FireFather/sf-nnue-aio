@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if defined(EVAL_NNUE)
-
 #include "../../../position.h"
 #include "../nnue_architecture.h"
 
@@ -49,5 +47,4 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_NNUE)
 

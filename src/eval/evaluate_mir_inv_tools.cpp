@@ -1,6 +1,4 @@
-﻿#if defined(EVAL_NNUE) || defined(EVAL_LEARN)
-
-#include "evaluate_mir_inv_tools.h"
+﻿#include "evaluate_mir_inv_tools.h"
 
 namespace Eval
 {
@@ -187,4 +185,3 @@ namespace Eval
 
 }
 
-#endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)

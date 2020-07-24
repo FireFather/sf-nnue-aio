@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if defined(EVAL_NNUE)
-
 #include "nnue_feature_transformer.h"
 #include "nnue_architecture.h"
 
@@ -62,6 +60,4 @@ namespace Eval {
 	}  // namespace NNUE
 
 }  // namespace Eval
-
-#endif  // defined(EVAL_NNUE)
 

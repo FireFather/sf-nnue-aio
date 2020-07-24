@@ -1,7 +1,5 @@
 ﻿// Code for calculating NNUE evaluation function
 
-#if defined(EVAL_NNUE)
-
 #include <fstream>
 #include <iostream>
 
@@ -320,4 +318,3 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_NNUE)

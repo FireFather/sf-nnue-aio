@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#if defined(EVAL_LEARN)
-
 #include <functional>
 
 #include "../misc.h"
@@ -145,5 +143,4 @@ protected:
 	std::mutex task_mutex;
 };
 
-#endif // defined(EVAL_LEARN) && defined(YANEURAOU_2018_OTAFUKU_ENGINE)
 

@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#if defined(EVAL_NNUE) || defined(EVAL_LEARN)
-
 // BonaPiece's mirror (horizontal flip) and inverse (180° on the board) tools to get pieces.
 
 #include "../types.h"
@@ -41,5 +39,4 @@ namespace Eval
 	extern void init_mir_inv_tables();
 }
 
-#endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)
 

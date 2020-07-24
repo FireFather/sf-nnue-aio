@@ -1,7 +1,5 @@
 ﻿#include "../types.h"
 
-#if defined(EVAL_LEARN)
-
 #include "multi_think.h"
 #include "../tt.h"
 #include "../uci.h"
@@ -119,5 +117,3 @@ void MultiThink::go_think()
 
 }
 
-
-#endif // defined(EVAL_LEARN)

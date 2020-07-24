@@ -1,7 +1,5 @@
 ﻿//Definition of input feature quantity K of NNUE evaluation function
 
-#if defined(EVAL_NNUE)
-
 #include "k.h"
 #include "index_list.h"
 
@@ -46,4 +44,3 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_NNUE)

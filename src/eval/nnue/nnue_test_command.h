@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if defined(ENABLE_TEST_CMD) && defined(EVAL_NNUE)
-
 namespace Eval {
 
 	namespace NNUE {
@@ -15,5 +13,4 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(ENABLE_TEST_CMD) && defined(EVAL_NNUE)
 

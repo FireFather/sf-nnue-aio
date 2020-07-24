@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if defined(EVAL_NNUE)
-
 #include "../../features/feature_set.h"
 #include "factorizer.h"
 
@@ -100,5 +98,4 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_NNUE)
 

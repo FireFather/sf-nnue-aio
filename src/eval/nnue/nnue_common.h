@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if defined(EVAL_NNUE)
-
 #if defined(USE_AVX2)
 #include <immintrin.h>
 #elif defined(USE_SSE41)
@@ -58,5 +56,4 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_NNUE)
 

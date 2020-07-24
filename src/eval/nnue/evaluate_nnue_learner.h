@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if defined(EVAL_LEARN) && defined(EVAL_NNUE)
-
 #include "../../learn/learn.h"
 
 namespace Eval {
@@ -40,5 +38,4 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_LEARN) && defined(EVAL_NNUE)
 

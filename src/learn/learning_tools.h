@@ -3,7 +3,7 @@
 // A set of machine learning tools related to the weight array used for machine learning of evaluation functions
 
 #include "learn.h"
-#if defined (EVAL_LEARN)
+
 #include <array>
 
 #include "../eval/evaluate_mir_inv_tools.h"
@@ -1031,5 +1031,4 @@ namespace EvalLearningTools
 
 }
 
-#endif // defined (EVAL_LEARN)
 

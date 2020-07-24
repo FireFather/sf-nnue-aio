@@ -1,7 +1,5 @@
 ﻿//Definition of input features HalfKP of NNUE evaluation function
 
-#if defined(EVAL_NNUE)
-
 #include "half_kp.h"
 #include "index_list.h"
 
@@ -81,4 +79,3 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_NNUE)

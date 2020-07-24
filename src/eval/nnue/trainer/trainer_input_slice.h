@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if defined(EVAL_LEARN) && defined(EVAL_NNUE)
-
 #include "../../../learn/learn.h"
 #include "../layers/input_slice.h"
 #include "trainer.h"
@@ -246,5 +244,4 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_LEARN) && defined(EVAL_NNUE)
 

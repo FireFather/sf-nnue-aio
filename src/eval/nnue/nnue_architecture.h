@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if defined(EVAL_NNUE)
-
 // include a header that defines the input features and network structure
 //#include "architectures/k-p_256x2-32-32.h"
 //#include "architectures/k-p-cr_256x2-32-32.h"
@@ -27,5 +25,4 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_NNUE)
 

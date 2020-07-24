@@ -2,8 +2,6 @@
 
 #pragma once
 
-#if defined(EVAL_LEARN) && defined(EVAL_NNUE)
-
 #include "../nnue_common.h"
 #include "../features/index_list.h"
 
@@ -119,5 +117,4 @@ namespace Eval {
 
 }  // namespace Eval
 
-#endif  // defined(EVAL_LEARN) && defined(EVAL_NNUE)
 

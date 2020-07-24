@@ -13,8 +13,6 @@
 // → I will not be involved in the engine because it is a problem that the GUI should assist.
 // etc..
 
-#if defined(EVAL_LEARN)
-
 #include <filesystem>
 #include <random>
 #include <regex>
@@ -3272,5 +3270,3 @@ namespace Learner
 #include "gensfen2019.cpp"
 #endif
 
-
-#endif // EVAL_LEARN
