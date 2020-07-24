@@ -1,5 +1,4 @@
-﻿#ifndef _EVALUATE_COMMON_H_
-#define _EVALUATE_COMMON_H_
+﻿#pragma once
 
 // A common header-like function for modern evaluation functions (EVAL_KPPT and EVAL_KPP_KKPT).
 
@@ -17,11 +16,8 @@
 
 namespace Eval
 {
-
-#if defined(USE_EVAL_HASH)
 	// prefetch function
 	void prefetch_evalhash(const Key key);
-#endif
 
 	// An operator that applies the function f to each parameter of the evaluation function.
 	// Used for parameter analysis etc.
@@ -79,4 +75,3 @@ namespace Eval
 
 #endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)
 
-#endif // _EVALUATE_KPPT_COMMON_H_

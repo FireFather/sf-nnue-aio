@@ -1,5 +1,4 @@
-﻿#ifndef _LEARN_H_
-#define _LEARN_H_
+﻿#pragma once
 
 #if defined(EVAL_LEARN)
 
@@ -225,7 +224,7 @@ namespace Learner
 
 	// So far, only Yaneura King 2018 Otafuku has this stub
 	// This stub is required if EVAL_LEARN is defined.
-	extern Learner::ValueAndPV  search(Position& pos, int depth , size_t multiPV = 1 , uint64_t NodesLimit = 0);
+	extern Learner::ValueAndPV  search(Position& pos, int depth, size_t multiPV = 1, uint64_t NodesLimit = 0);
 	extern Learner::ValueAndPV qsearch(Position& pos);
 
 	double calc_grad(Value shallow, const PackedSfenValue& psv);
@@ -234,4 +233,3 @@ namespace Learner
 
 #endif
 
-#endif // ifndef _LEARN_H_

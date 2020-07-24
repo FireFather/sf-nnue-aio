@@ -1,7 +1,6 @@
 ﻿// Input features and network structure used in NNUE evaluation function
 
-#ifndef _NNUE_ARCHITECTURE_H_
-#define _NNUE_ARCHITECTURE_H_
+#pragma once
 
 #if defined(EVAL_NNUE)
 
@@ -15,19 +14,18 @@
 
 namespace Eval {
 
-namespace NNUE {
+	namespace NNUE {
 
-static_assert(kTransformedFeatureDimensions % kMaxSimdWidth == 0, "");
-static_assert(Network::kOutputDimensions == 1, "");
-static_assert(std::is_same<Network::OutputType, std::int32_t>::value, "");
+		static_assert(kTransformedFeatureDimensions% kMaxSimdWidth == 0, "");
+		static_assert(Network::kOutputDimensions == 1, "");
+		static_assert(std::is_same<Network::OutputType, std::int32_t>::value, "");
 
-// List of timings to perform all calculations instead of difference calculation
-constexpr auto kRefreshTriggers = RawFeatures::kRefreshTriggers;
+		// List of timings to perform all calculations instead of difference calculation
+		constexpr auto kRefreshTriggers = RawFeatures::kRefreshTriggers;
 
-}  // namespace NNUE
+	}  // namespace NNUE
 
 }  // namespace Eval
 
 #endif  // defined(EVAL_NNUE)
 
-#endif

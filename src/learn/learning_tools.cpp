@@ -132,11 +132,11 @@ namespace EvalLearningTools
 		std::vector<bool> f;
 		f.resize(g_kpp.max_index() - g_kpp.min_index());
 
-		for(auto k = SQUARE_ZERO ; k < SQUARE_NB ; ++k)
-			for(auto p0 = BonaPiece::BONA_PIECE_ZERO; p0 < fe_end ; ++p0)
+		for (auto k = SQUARE_ZERO; k < SQUARE_NB; ++k)
+			for (auto p0 = BonaPiece::BONA_PIECE_ZERO; p0 < fe_end; ++p0)
 				for (auto p1 = BonaPiece::BONA_PIECE_ZERO; p1 < fe_end; ++p1)
 				{
-					KPP kpp_org = g_kpp.fromKPP(k,p0,p1);
+					KPP kpp_org = g_kpp.fromKPP(k, p0, p1);
 					KPP kpp0;
 					KPP kpp1 = g_kpp.fromKPP(Mir(k), mir_piece(p0), mir_piece(p1));
 					KPP kpp_array[2];
@@ -156,11 +156,11 @@ namespace EvalLearningTools
 					assert(kpp_array[1] == kpp1);
 
 					auto index2 = kpp1.toIndex();
-					f[index - g_kpp.min_index()] = f[index2-g_kpp.min_index()] = true;
+					f[index - g_kpp.min_index()] = f[index2 - g_kpp.min_index()] = true;
 				}
 
 		// Check if there is no missing index.
-		for(size_t index = 0 ; index < f.size(); index++)
+		for (size_t index = 0; index < f.size(); index++)
 			if (!f[index])
 			{
 				std::cout << index << g_kpp.fromIndex(index + g_kpp.min_index()) << std::endl;
@@ -172,7 +172,7 @@ namespace EvalLearningTools
 		// Test for missing KPPP calculations
 
 		KPPP g_kppp;
-		g_kppp.set(15, Eval::fe_end,0);
+		g_kppp.set(15, Eval::fe_end, 0);
 		uint64_t min_index = g_kppp.min_index();
 		uint64_t max_index = g_kppp.max_index();
 
@@ -200,7 +200,7 @@ namespace EvalLearningTools
 
 			assert(x.toIndex() == index);
 
-//			ASSERT((&kppp_ksq_pcpcpc(x.king(), x.piece0(), x.piece1(), x.piece2()) - &kppp[0][0]) == (index - min_index));
+			//			ASSERT((&kppp_ksq_pcpcpc(x.king(), x.piece0(), x.piece1(), x.piece2()) - &kppp[0][0]) == (index - min_index));
 		}
 
 	}
@@ -210,8 +210,8 @@ namespace EvalLearningTools
 		KKPP g_kkpp;
 		g_kkpp.set(SQUARE_NB, 10000, 0);
 		uint64_t n = 0;
-		for (int k = 0; k<SQUARE_NB; ++k)
-			for (int i = 0; i<10000; ++i) // As a test, assuming a large fe_end, try turning at 10000.
+		for (int k = 0; k < SQUARE_NB; ++k)
+			for (int i = 0; i < 10000; ++i) // As a test, assuming a large fe_end, try turning at 10000.
 				for (int j = 0; j < i; ++j)
 				{
 					auto kkpp = g_kkpp.fromKKPP(k, (BonaPiece)i, (BonaPiece)j);

@@ -17,63 +17,63 @@ using namespace std;
 // useful when doing aspect encoding
 struct BitStream
 {
-  // Set the memory to store the data in advance.
-  // Assume that memory is cleared to 0.
-  void  set_data(uint8_t* data_) { data = data_; reset(); }
+	// Set the memory to store the data in advance.
+	// Assume that memory is cleared to 0.
+	void  set_data(uint8_t* data_) { data = data_; reset(); }
 
-  // Get the pointer passed in set_data().
-  uint8_t* get_data() const { return data; }
+	// Get the pointer passed in set_data().
+	uint8_t* get_data() const { return data; }
 
-  // Get the cursor.
-  int get_cursor() const { return bit_cursor; }
+	// Get the cursor.
+	int get_cursor() const { return bit_cursor; }
 
-  // reset the cursor
-  void reset() { bit_cursor = 0; }
+	// reset the cursor
+	void reset() { bit_cursor = 0; }
 
-  // Write 1bit to the stream.
-  // If b is non-zero, write out 1. If 0, write 0.
-  void write_one_bit(int b)
-  {
-    if (b)
-      data[bit_cursor / 8] |= 1 << (bit_cursor & 7);
+	// Write 1bit to the stream.
+	// If b is non-zero, write out 1. If 0, write 0.
+	void write_one_bit(int b)
+	{
+		if (b)
+			data[bit_cursor / 8] |= 1 << (bit_cursor & 7);
 
-    ++bit_cursor;
-  }
+		++bit_cursor;
+	}
 
-  // Get 1 bit from the stream.
-  int read_one_bit()
-  {
-    int b = (data[bit_cursor / 8] >> (bit_cursor & 7)) & 1;
-    ++bit_cursor;
+	// Get 1 bit from the stream.
+	int read_one_bit()
+	{
+		int b = (data[bit_cursor / 8] >> (bit_cursor & 7)) & 1;
+		++bit_cursor;
 
-    return b;
-  }
+		return b;
+	}
 
-  // write n bits of data
-  // Data shall be written out from the lower order of d.
-  void write_n_bit(int d, int n)
-  {
-    for (int i = 0; i <n; ++i)
-      write_one_bit(d & (1 << i));
-  }
+	// write n bits of data
+	// Data shall be written out from the lower order of d.
+	void write_n_bit(int d, int n)
+	{
+		for (int i = 0; i < n; ++i)
+			write_one_bit(d & (1 << i));
+	}
 
-  // read n bits of data
-  // Reverse conversion of write_n_bit().
-  int read_n_bit(int n)
-  {
-    int result = 0;
-    for (int i = 0; i < n; ++i)
-      result |= read_one_bit() ? (1 << i) : 0;
+	// read n bits of data
+	// Reverse conversion of write_n_bit().
+	int read_n_bit(int n)
+	{
+		int result = 0;
+		for (int i = 0; i < n; ++i)
+			result |= read_one_bit() ? (1 << i) : 0;
 
-    return result;
-  }
+		return result;
+	}
 
 private:
-  // Next bit position to read/write.
-  int bit_cursor;
+	// Next bit position to read/write.
+	int bit_cursor;
 
-  // data entity
-  uint8_t* data;
+	// data entity
+	uint8_t* data;
 };
 
 
@@ -120,8 +120,8 @@ private:
 
 struct HuffmanedPiece
 {
-  int code; // how it will be coded
-  int bits; // How many bits do you have
+	int code; // how it will be coded
+	int bits; // How many bits do you have
 };
 
 HuffmanedPiece huffman_table[] =
@@ -152,106 +152,106 @@ HuffmanedPiece huffman_table[] =
 //
 struct SfenPacker
 {
-  // Pack sfen and store in data[32].
-  void pack(const Position& pos)
-  {
-// cout << pos;
+	// Pack sfen and store in data[32].
+	void pack(const Position& pos)
+	{
+		// cout << pos;
 
-    memset(data, 0, 32 /* 256bit */);
-    stream.set_data(data);
+		memset(data, 0, 32 /* 256bit */);
+		stream.set_data(data);
 
-    // turn
-    // Side to move.
-    stream.write_one_bit((int)(pos.side_to_move()));
+		// turn
+		// Side to move.
+		stream.write_one_bit((int)(pos.side_to_move()));
 
-    // 7-bit positions for leading and trailing balls
-    // White king and black king, 6 bits for each.
-    for(auto c: Colors)
-      stream.write_n_bit(pos.king_square(c), 6);
+		// 7-bit positions for leading and trailing balls
+		// White king and black king, 6 bits for each.
+		for (auto c : Colors)
+			stream.write_n_bit(pos.king_square(c), 6);
 
-    // Write the pieces on the board other than the kings.
-    for (Rank r = RANK_8; r >= RANK_1; --r)
-    {
-      for (File f = FILE_A; f <= FILE_H; ++f)
-      {
-        Piece pc = pos.piece_on(make_square(f, r));
-        if (type_of(pc) == KING)
-          continue;
-        write_board_piece_to_stream(pc);
-      }
-    }
+		// Write the pieces on the board other than the kings.
+		for (Rank r = RANK_8; r >= RANK_1; --r)
+		{
+			for (File f = FILE_A; f <= FILE_H; ++f)
+			{
+				Piece pc = pos.piece_on(make_square(f, r));
+				if (type_of(pc) == KING)
+					continue;
+				write_board_piece_to_stream(pc);
+			}
+		}
 
-    // TODO(someone): Support chess960.
-    stream.write_one_bit(pos.can_castle(WHITE_OO));
-    stream.write_one_bit(pos.can_castle(WHITE_OOO));
-    stream.write_one_bit(pos.can_castle(BLACK_OO));
-    stream.write_one_bit(pos.can_castle(BLACK_OOO));
+		// TODO(someone): Support chess960.
+		stream.write_one_bit(pos.can_castle(WHITE_OO));
+		stream.write_one_bit(pos.can_castle(WHITE_OOO));
+		stream.write_one_bit(pos.can_castle(BLACK_OO));
+		stream.write_one_bit(pos.can_castle(BLACK_OOO));
 
-    if (pos.ep_square() == SQ_NONE) {
-      stream.write_one_bit(0);
-    }
-    else {
-      stream.write_one_bit(1);
-      stream.write_n_bit(static_cast<int>(pos.ep_square()), 6);
-    }
+		if (pos.ep_square() == SQ_NONE) {
+			stream.write_one_bit(0);
+		}
+		else {
+			stream.write_one_bit(1);
+			stream.write_n_bit(static_cast<int>(pos.ep_square()), 6);
+		}
 
-    stream.write_n_bit(pos.state()->rule50, 6);
+		stream.write_n_bit(pos.state()->rule50, 6);
 
-    stream.write_n_bit(1 + (pos.game_ply()-(pos.side_to_move() == BLACK)) / 2, 8);
+		stream.write_n_bit(1 + (pos.game_ply() - (pos.side_to_move() == BLACK)) / 2, 8);
 
-    assert(stream.get_cursor() <= 256);
-  }
+		assert(stream.get_cursor() <= 256);
+	}
 
-  // sfen packed by pack() (256bit = 32bytes)
-  // Or sfen to decode with unpack()
-  uint8_t *data; // uint8_t[32];
+	// sfen packed by pack() (256bit = 32bytes)
+	// Or sfen to decode with unpack()
+	uint8_t* data; // uint8_t[32];
 
-//private:
-  // Position::set_from_packed_sfen(uint8_t data[32]) I want to use these functions, so the line is bad, but I want to keep it public.
+  //private:
+	// Position::set_from_packed_sfen(uint8_t data[32]) I want to use these functions, so the line is bad, but I want to keep it public.
 
-  BitStream stream;
+	BitStream stream;
 
-  // Output the board pieces to stream.
-  void write_board_piece_to_stream(Piece pc)
-  {
-    // piece type
-    PieceType pr = type_of(pc);
-    auto c = huffman_table[pr];
-    stream.write_n_bit(c.code, c.bits);
- 
-    if (pc == NO_PIECE)
-      return;
+	// Output the board pieces to stream.
+	void write_board_piece_to_stream(Piece pc)
+	{
+		// piece type
+		PieceType pr = type_of(pc);
+		auto c = huffman_table[pr];
+		stream.write_n_bit(c.code, c.bits);
 
-    // first and second flag
-    stream.write_one_bit(color_of(pc));
-  }
+		if (pc == NO_PIECE)
+			return;
 
-  // Read one board piece from stream
-  Piece read_board_piece_from_stream()
-  {
-    PieceType pr = NO_PIECE_TYPE;
-    int code = 0, bits = 0;
-    while (true)
-    {
-      code |= stream.read_one_bit() << bits;
-      ++bits;
+		// first and second flag
+		stream.write_one_bit(color_of(pc));
+	}
 
-      assert(bits <= 6);
+	// Read one board piece from stream
+	Piece read_board_piece_from_stream()
+	{
+		PieceType pr = NO_PIECE_TYPE;
+		int code = 0, bits = 0;
+		while (true)
+		{
+			code |= stream.read_one_bit() << bits;
+			++bits;
 
-      for (pr = NO_PIECE_TYPE; pr <KING; ++pr)
-        if (huffman_table[pr].code == code
-          && huffman_table[pr].bits == bits)
-          goto Found;
-    }
-  Found:;
-    if (pr == NO_PIECE_TYPE)
-      return NO_PIECE;
+			assert(bits <= 6);
 
-    // first and second flag
-    Color c = (Color)stream.read_one_bit();
-    
-    return make_piece(c, pr);
-  }
+			for (pr = NO_PIECE_TYPE; pr < KING; ++pr)
+				if (huffman_table[pr].code == code
+					&& huffman_table[pr].bits == bits)
+					goto Found;
+		}
+	Found:;
+		if (pr == NO_PIECE_TYPE)
+			return NO_PIECE;
+
+		// first and second flag
+		Color c = (Color)stream.read_one_bit();
+
+		return make_piece(c, pr);
+	}
 };
 
 
@@ -262,7 +262,7 @@ struct SfenPacker
 // Add a function that directly unpacks for speed. It's pretty tough.
 // Write it by combining packer::unpack() and Position::set().
 // If there is a problem with the passed phase and there is an error, non-zero is returned.
-int Position::set_from_packed_sfen(const PackedSfen& sfen , StateInfo * si, Thread* th, bool mirror)
+int Position::set_from_packed_sfen(const PackedSfen& sfen, StateInfo* si, Thread* th, bool mirror)
 {
 	SfenPacker packer;
 	auto& stream = packer.stream;
@@ -270,8 +270,8 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen , StateInfo * si, Thre
 
 	std::memset(this, 0, sizeof(Position));
 	std::memset(si, 0, sizeof(StateInfo));
-  std::fill_n(&pieceList[0][0], sizeof(pieceList) / sizeof(Square), SQ_NONE);
-  st = si;
+	std::fill_n(&pieceList[0][0], sizeof(pieceList) / sizeof(Square), SQ_NONE);
+	st = si;
 
 	// Active color
 	sideToMove = (Color)stream.read_one_bit();
@@ -281,10 +281,10 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen , StateInfo * si, Thre
 
 	// In updating the PieceList, we have to set which piece is where,
 	// A counter of how much each piece has been used
-  PieceNumber next_piece_number = PIECE_NUMBER_ZERO;
+	PieceNumber next_piece_number = PIECE_NUMBER_ZERO;
 
-  pieceList[W_KING][0] = SQUARE_NB;
-  pieceList[B_KING][0] = SQUARE_NB;
+	pieceList[W_KING][0] = SQUARE_NB;
+	pieceList[B_KING][0] = SQUARE_NB;
 
 	// First the position of the ball
 	if (mirror)
@@ -298,112 +298,112 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen , StateInfo * si, Thre
 			board[stream.read_n_bit(6)] = make_piece(c, KING);
 	}
 
-  // Piece placement
-  for (Rank r = RANK_8; r >= RANK_1; --r)
-  {
-    for (File f = FILE_A; f <= FILE_H; ++f)
-    {
-      auto sq = make_square(f, r);
-      if (mirror) {
-        sq = Mir(sq);
-      }
+	// Piece placement
+	for (Rank r = RANK_8; r >= RANK_1; --r)
+	{
+		for (File f = FILE_A; f <= FILE_H; ++f)
+		{
+			auto sq = make_square(f, r);
+			if (mirror) {
+				sq = Mir(sq);
+			}
 
-      // it seems there are already balls
-      Piece pc;
-      if (type_of(board[sq]) != KING)
-      {
-        assert(board[sq] == NO_PIECE);
-        pc = packer.read_board_piece_from_stream();
-      }
-      else
-      {
-        pc = board[sq];
-        board[sq] = NO_PIECE; // put_piece() will catch ASSERT unless you remove it all.
-      }
+			// it seems there are already balls
+			Piece pc;
+			if (type_of(board[sq]) != KING)
+			{
+				assert(board[sq] == NO_PIECE);
+				pc = packer.read_board_piece_from_stream();
+			}
+			else
+			{
+				pc = board[sq];
+				board[sq] = NO_PIECE; // put_piece() will catch ASSERT unless you remove it all.
+			}
 
-      // There may be no pieces, so skip in that case.
-      if (pc == NO_PIECE)
-        continue;
+			// There may be no pieces, so skip in that case.
+			if (pc == NO_PIECE)
+				continue;
 
-      put_piece(Piece(pc), sq);
+			put_piece(Piece(pc), sq);
 
-      // update evalList
-      PieceNumber piece_no =
-        (pc == B_KING) ?PIECE_NUMBER_BKING :// Move ball
-        (pc == W_KING) ?PIECE_NUMBER_WKING :// Backing ball
-        next_piece_number++; // otherwise
+			// update evalList
+			PieceNumber piece_no =
+				(pc == B_KING) ? PIECE_NUMBER_BKING :// Move ball
+				(pc == W_KING) ? PIECE_NUMBER_WKING :// Backing ball
+				next_piece_number++; // otherwise
 
-      evalList.put_piece(piece_no, sq, pc); // Place the pc piece in the sq box
+			evalList.put_piece(piece_no, sq, pc); // Place the pc piece in the sq box
 
-      //cout << sq << ' ' << board[sq] << ' ' << stream.get_cursor() << endl;
+			//cout << sq << ' ' << board[sq] << ' ' << stream.get_cursor() << endl;
 
-      if (stream.get_cursor()> 256)
-        return 1;
-      //assert(stream.get_cursor() <= 256);
+			if (stream.get_cursor() > 256)
+				return 1;
+			//assert(stream.get_cursor() <= 256);
 
-    }
-  }
+		}
+	}
 
-  // Castling availability.
-  // TODO(someone): Support chess960.
-  st->castlingRights = 0;
-  if (stream.read_one_bit()) {
-    Square rsq;
-    for (rsq = relative_square(WHITE, SQ_H1); piece_on(rsq) != W_ROOK; --rsq) {}
-    set_castling_right(WHITE, rsq);
-  }
-  if (stream.read_one_bit()) {
-    Square rsq;
-    for (rsq = relative_square(WHITE, SQ_A1); piece_on(rsq) != W_ROOK; ++rsq) {}
-    set_castling_right(WHITE, rsq);
-  }
-  if (stream.read_one_bit()) {
-    Square rsq;
-    for (rsq = relative_square(BLACK, SQ_H1); piece_on(rsq) != B_ROOK; --rsq) {}
-    set_castling_right(BLACK, rsq);
-  }
-  if (stream.read_one_bit()) {
-    Square rsq;
-    for (rsq = relative_square(BLACK, SQ_A1); piece_on(rsq) != B_ROOK; ++rsq) {}
-    set_castling_right(BLACK, rsq);
-  }
+	// Castling availability.
+	// TODO(someone): Support chess960.
+	st->castlingRights = 0;
+	if (stream.read_one_bit()) {
+		Square rsq;
+		for (rsq = relative_square(WHITE, SQ_H1); piece_on(rsq) != W_ROOK; --rsq) {}
+		set_castling_right(WHITE, rsq);
+	}
+	if (stream.read_one_bit()) {
+		Square rsq;
+		for (rsq = relative_square(WHITE, SQ_A1); piece_on(rsq) != W_ROOK; ++rsq) {}
+		set_castling_right(WHITE, rsq);
+	}
+	if (stream.read_one_bit()) {
+		Square rsq;
+		for (rsq = relative_square(BLACK, SQ_H1); piece_on(rsq) != B_ROOK; --rsq) {}
+		set_castling_right(BLACK, rsq);
+	}
+	if (stream.read_one_bit()) {
+		Square rsq;
+		for (rsq = relative_square(BLACK, SQ_A1); piece_on(rsq) != B_ROOK; ++rsq) {}
+		set_castling_right(BLACK, rsq);
+	}
 
-  // En passant square. Ignore if no pawn capture is possible
-  if (stream.read_one_bit()) {
-    Square ep_square = static_cast<Square>(stream.read_n_bit(6));
-    if (mirror) {
-      ep_square = Mir(ep_square);
-    }
-    st->epSquare = ep_square;
+	// En passant square. Ignore if no pawn capture is possible
+	if (stream.read_one_bit()) {
+		Square ep_square = static_cast<Square>(stream.read_n_bit(6));
+		if (mirror) {
+			ep_square = Mir(ep_square);
+		}
+		st->epSquare = ep_square;
 
-    if (!(attackers_to(st->epSquare) & pieces(sideToMove, PAWN))
-      || !(pieces(~sideToMove, PAWN) & (st->epSquare + pawn_push(~sideToMove))))
-      st->epSquare = SQ_NONE;
-  }
-  else {
-    st->epSquare = SQ_NONE;
-  }
+		if (!(attackers_to(st->epSquare) & pieces(sideToMove, PAWN))
+			|| !(pieces(~sideToMove, PAWN) & (st->epSquare + pawn_push(~sideToMove))))
+			st->epSquare = SQ_NONE;
+	}
+	else {
+		st->epSquare = SQ_NONE;
+	}
 
-  // Halfmove clock
-  st->rule50 = static_cast<Square>(stream.read_n_bit(6));
+	// Halfmove clock
+	st->rule50 = static_cast<Square>(stream.read_n_bit(6));
 
-  // Fullmove number
-  gamePly = static_cast<Square>(stream.read_n_bit(8));
-  // Convert from fullmove starting from 1 to gamePly starting from 0,
-  // handle also common incorrect FEN with fullmove = 0.
-  gamePly = std::max(2 * (gamePly - 1), 0) + (sideToMove == BLACK);
+	// Fullmove number
+	gamePly = static_cast<Square>(stream.read_n_bit(8));
+	// Convert from fullmove starting from 1 to gamePly starting from 0,
+	// handle also common incorrect FEN with fullmove = 0.
+	gamePly = std::max(2 * (gamePly - 1), 0) + (sideToMove == BLACK);
 
-  assert(stream.get_cursor() <= 256);
+	assert(stream.get_cursor() <= 256);
 
-  chess960 = false;
-  thisThread = th;
-set_state(st);
+	chess960 = false;
+	thisThread = th;
+	set_state(st);
 
-  //std::cout << *this << std::endl;
+	//std::cout << *this << std::endl;
 
-  assert(pos_is_ok());
+	assert(pos_is_ok());
 #if defined(EVAL_NNUE)
-  assert(evalList.is_valid(*this));
+	assert(evalList.is_valid(*this));
 #endif  // defined(EVAL_NNUE)
 
 	return 0;
@@ -430,9 +430,9 @@ set_state(st);
 // Get the packed sfen. Returns to the buffer specified in the argument.
 void Position::sfen_pack(PackedSfen& sfen)
 {
-  SfenPacker sp;
-  sp.data = (uint8_t*)&sfen;
-  sp.pack(*this);
+	SfenPacker sp;
+	sp.data = (uint8_t*)&sfen;
+	sp.pack(*this);
 }
 
 //// Unpack the packed sfen. Returns an sfen string.
