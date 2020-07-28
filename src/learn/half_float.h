@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifndef __HALF_FLOAT_H__
+#define __HALF_FLOAT_H__
 
 // Half Float Library by yaneurao
 // (16-bit float)
@@ -28,7 +29,7 @@ namespace HalfFloat
 		// --- constructors
 
 		float16() {}
-		float16(int16_t n) { from_float((float)n); }
+		float16(int16_t n) { from_float((float)n);  }
 		float16(int32_t n) { from_float((float)n); }
 		float16(float n) { from_float(n); }
 		float16(double n) { from_float((float)n); }
@@ -79,7 +80,7 @@ namespace HalfFloat
 			uint16_t exponent = (((n >> 23) - 127 + 15) & 0x1f) << 10;
 
 			// The fraction is limited to 10-bit.
-			uint16_t fraction = (n >> (23 - 10)) & 0x3ff;
+			uint16_t fraction = (n >> (23-10)) & 0x3ff;
 
 			float16 f_;
 			f_.v_ = sign_bit | exponent | fraction;
@@ -129,3 +130,4 @@ namespace HalfFloat
 
 }
 
+#endif // __HALF_FLOAT_H__

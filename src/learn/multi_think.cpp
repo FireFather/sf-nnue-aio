@@ -1,5 +1,7 @@
 ﻿#include "../types.h"
 
+#if defined(EVAL_LEARN)
+
 #include "multi_think.h"
 #include "../tt.h"
 #include "../uci.h"
@@ -33,22 +35,22 @@ void MultiThink::go_think()
 
 	// Secure end flag of worker thread
 	thread_finished.resize(thread_num);
-
+	
 	// start worker thread
 	for (size_t i = 0; i < thread_num; ++i)
 	{
 		thread_finished[i] = 0;
 		threads.push_back(std::thread([i, this]
-			{
-				// exhaust all processor threads.
-				WinProcGroup::bindThisThread(i);
+		{ 
+			// exhaust all processor threads.
+			WinProcGroup::bindThisThread(i);
 
-				// execute the overridden process
-				this->thread_worker(i);
+			// execute the overridden process
+			this->thread_worker(i);
 
-				// Set the end flag because the thread has ended
-				this->thread_finished[i] = 1;
-			}));
+			// Set the end flag because the thread has ended
+			this->thread_finished[i] = 1;
+		}));
 	}
 
 	// wait for all threads to finish
@@ -76,7 +78,7 @@ void MultiThink::go_think()
 	};
 
 
-	for (uint64_t i = 0; ; )
+	for (uint64_t i = 0 ; ; )
 	{
 		// If all threads have finished, exit the loop.
 		if (threads_done())
@@ -117,3 +119,5 @@ void MultiThink::go_think()
 
 }
 
+
+#endif // defined(EVAL_LEARN)

@@ -18,7 +18,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#ifndef MISC_H_INCLUDED
+#define MISC_H_INCLUDED
 
 #include <algorithm>
 #include <cassert>
@@ -52,16 +53,16 @@ typedef std::chrono::milliseconds::rep TimePoint; // A value in milliseconds
 static_assert(sizeof(TimePoint) == sizeof(int64_t), "TimePoint should be 64 bits");
 
 inline TimePoint now() {
-	return std::chrono::duration_cast<std::chrono::milliseconds>
-		(std::chrono::steady_clock::now().time_since_epoch()).count();
+  return std::chrono::duration_cast<std::chrono::milliseconds>
+        (std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
 template<class Entry, int Size>
 struct HashTable {
-	Entry* operator[](Key key) { return &table[(uint32_t)key & (Size - 1)]; }
+  Entry* operator[](Key key) { return &table[(uint32_t)key & (Size - 1)]; }
 
 private:
-	std::vector<Entry> table = std::vector<Entry>(Size); // Allocate on the heap
+  std::vector<Entry> table = std::vector<Entry>(Size); // Allocate on the heap
 };
 
 
@@ -73,10 +74,10 @@ std::ostream& operator<<(std::ostream&, SyncCout);
 
 namespace Utility {
 
-	/// Clamp a value between lo and hi. Available in c++17.
-	template<class T> constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
-		return v < lo ? lo : v > hi ? hi : v;
-	}
+/// Clamp a value between lo and hi. Available in c++17.
+template<class T> constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
+  return v < lo ? lo : v > hi ? hi : v;
+}
 
 }
 
@@ -97,50 +98,48 @@ namespace Utility {
 
 class PRNG {
 
-	uint64_t s;
+  uint64_t s;
 
-	uint64_t rand64() {
+  uint64_t rand64() {
 
-		s ^= s >> 12, s ^= s << 25, s ^= s >> 27;
-		return s * 2685821657736338717LL;
-	}
+    s ^= s >> 12, s ^= s << 25, s ^= s >> 27;
+    return s * 2685821657736338717LL;
+  }
 
 public:
-	PRNG(uint64_t seed) : s(seed) { assert(seed); }
+  PRNG(uint64_t seed) : s(seed) { assert(seed); }
 
-	template<typename T> T rand() { return T(rand64()); }
+  template<typename T> T rand() { return T(rand64()); }
 
-	/// Special generator used to fast init magic numbers.
-	/// Output values only have 1/8th of their bits set on average.
-	template<typename T> T sparse_rand()
-	{
-		return T(rand64() & rand64() & rand64());
-	}
-	// Returns a random number from 0 to n-1. (Not uniform distribution, but this is enough in reality)
-	uint64_t rand(uint64_t n) { return rand<uint64_t>() % n; }
+  /// Special generator used to fast init magic numbers.
+  /// Output values only have 1/8th of their bits set on average.
+  template<typename T> T sparse_rand()
+  { return T(rand64() & rand64() & rand64()); }
+  // Returns a random number from 0 to n-1. (Not uniform distribution, but this is enough in reality)
+  uint64_t rand(uint64_t n) { return rand<uint64_t>() % n; }
 
-	// Return the random seed used internally.
-	uint64_t get_seed() const { return s; }
+  // Return the random seed used internally.
+  uint64_t get_seed() const { return s; }
 };
 
 // Display a random seed. (For debugging)
 inline std::ostream& operator<<(std::ostream& os, PRNG& prng)
 {
-	os << "PRNG::seed = " << std::hex << prng.get_seed() << std::dec;
-	return os;
+  os << "PRNG::seed = " << std::hex << prng.get_seed() << std::dec;
+  return os;
 }
 
 inline uint64_t mul_hi64(uint64_t a, uint64_t b) {
 #if defined(__GNUC__) && defined(IS_64BIT)
-	__extension__ typedef unsigned __int128 uint128;
-	return ((uint128)a * (uint128)b) >> 64;
+    __extension__ typedef unsigned __int128 uint128;
+    return ((uint128)a * (uint128)b) >> 64;
 #else
-	uint64_t aL = (uint32_t)a, aH = a >> 32;
-	uint64_t bL = (uint32_t)b, bH = b >> 32;
-	uint64_t c1 = (aL * bL) >> 32;
-	uint64_t c2 = aH * bL + c1;
-	uint64_t c3 = aL * bH + (uint32_t)c2;
-	return aH * bH + (c2 >> 32) + (c3 >> 32);
+    uint64_t aL = (uint32_t)a, aH = a >> 32;
+    uint64_t bL = (uint32_t)b, bH = b >> 32;
+    uint64_t c1 = (aL * bL) >> 32;
+    uint64_t c2 = aH * bL + c1;
+    uint64_t c3 = aL * bH + (uint32_t)c2;
+    return aH * bH + (c2 >> 32) + (c3 >> 32);
 #endif
 }
 
@@ -151,7 +150,7 @@ inline uint64_t mul_hi64(uint64_t a, uint64_t b) {
 /// Peter Österlund.
 
 namespace WinProcGroup {
-	void bindThisThread(size_t idx);
+  void bindThisThread(size_t idx);
 }
 // sleep for the specified number of milliseconds.
 extern void sleep(int ms);
@@ -186,32 +185,32 @@ int write_memory_to_file(std::string filename, void* ptr, uint64_t size);
 // async version of PRNG
 struct AsyncPRNG
 {
-	AsyncPRNG(uint64_t seed) : prng(seed) { assert(seed); }
-	// [ASYNC] Extract one random number.
-	template<typename T> T rand() {
-		std::unique_lock<std::mutex> lk(mutex);
-		return prng.rand<T>();
-	}
+  AsyncPRNG(uint64_t seed) : prng(seed) { assert(seed); }
+  // [ASYNC] Extract one random number.
+  template<typename T> T rand() {
+    std::unique_lock<std::mutex> lk(mutex);
+    return prng.rand<T>();
+  }
 
-	// [ASYNC] Returns a random number from 0 to n-1. (Not uniform distribution, but this is enough in reality)
-	uint64_t rand(uint64_t n) {
-		std::unique_lock<std::mutex> lk(mutex);
-		return prng.rand(n);
-	}
+  // [ASYNC] Returns a random number from 0 to n-1. (Not uniform distribution, but this is enough in reality)
+  uint64_t rand(uint64_t n) {
+    std::unique_lock<std::mutex> lk(mutex);
+    return prng.rand(n);
+  }
 
-	// Return the random seed used internally.
-	uint64_t get_seed() const { return prng.get_seed(); }
+  // Return the random seed used internally.
+  uint64_t get_seed() const { return prng.get_seed(); }
 
 protected:
-	std::mutex mutex;
-	PRNG prng;
+  std::mutex mutex;
+  PRNG prng;
 };
 
 // Display a random seed. (For debugging)
 inline std::ostream& operator<<(std::ostream& os, AsyncPRNG& prng)
 {
-	os << "AsyncPRNG::seed = " << std::hex << prng.get_seed() << std::dec;
-	return os;
+  os << "AsyncPRNG::seed = " << std::hex << prng.get_seed() << std::dec;
+  return os;
 }
 
 // --------------------
@@ -274,16 +273,16 @@ static void aligned_free(void* ptr) { _mm_free(ptr); }
 template <typename T>
 class AlignedAllocator {
 public:
-	using value_type = T;
+  using value_type = T;
 
-	AlignedAllocator() {}
-	AlignedAllocator(const AlignedAllocator&) {}
-	AlignedAllocator(AlignedAllocator&&) {}
+  AlignedAllocator() {}
+  AlignedAllocator(const AlignedAllocator&) {}
+  AlignedAllocator(AlignedAllocator&&) {}
 
-	template <typename U> AlignedAllocator(const AlignedAllocator<U>&) {}
+  template <typename U> AlignedAllocator(const AlignedAllocator<U>&) {}
 
-	T* allocate(std::size_t n) { return (T*)aligned_malloc(n * sizeof(T), alignof(T)); }
-	void deallocate(T* p, std::size_t n) { aligned_free(p); }
+  T* allocate(std::size_t n) { return (T*)aligned_malloc(n * sizeof(T), alignof(T)); }
+  void deallocate(T* p, std::size_t n) { aligned_free(p); }
 };
 
 // --------------------
@@ -292,15 +291,16 @@ public:
 
 namespace Dependency
 {
-	// In the Linux environment, if you getline() the text file is'\r\n'
-	// Since'\r' remains at the end, write a wrapper to remove this'\r'.
-	// So when calling getline() on fstream,
-	// just write getline() instead of std::getline() and use this function.
-	extern bool getline(std::ifstream& fs, std::string& s);
+  // In the Linux environment, if you getline() the text file is'\r\n'
+  // Since'\r' remains at the end, write a wrapper to remove this'\r'.
+  // So when calling getline() on fstream,
+  // just write getline() instead of std::getline() and use this function.
+  extern bool getline(std::ifstream& fs, std::string& s);
 
-	// Create a folder.
-	// Specify relative to the current folder. Japanese is not used for dir_name.
-	// Returns 0 on success, non-zero on failure.
-	extern int mkdir(std::string dir_name);
+  // Create a folder.
+  // Specify relative to the current folder. Japanese is not used for dir_name.
+  // Returns 0 on success, non-zero on failure.
+  extern int mkdir(std::string dir_name);
 }
 
+#endif // #ifndef MISC_H_INCLUDED

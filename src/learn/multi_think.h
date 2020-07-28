@@ -1,6 +1,10 @@
-﻿#pragma once
+﻿#ifndef _MULTI_THINK_
+#define _MULTI_THINK_
+
+#if defined(EVAL_LEARN)
 
 #include <functional>
+#include <random>
 
 #include "../misc.h"
 #include "../learn/learn.h"
@@ -13,7 +17,8 @@
 // Derive and use this class.
 struct MultiThink
 {
-	MultiThink() : prng(21120903)
+    std::random_device seed_it;
+    MultiThink() : prng(seed_it()) //21120903
 	{
 		loop_count = 0;
 	}
@@ -143,4 +148,6 @@ protected:
 	std::mutex task_mutex;
 };
 
+#endif // defined(EVAL_LEARN) && defined(YANEURAOU_2018_OTAFUKU_ENGINE)
 
+#endif

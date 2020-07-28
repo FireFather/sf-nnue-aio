@@ -1,9 +1,10 @@
-﻿#pragma once
+﻿#ifndef __LEARN_WEIGHT_H__
+#define __LEARN_WEIGHT_H__
 
 // A set of machine learning tools related to the weight array used for machine learning of evaluation functions
 
 #include "learn.h"
-
+#if defined (EVAL_LEARN)
 #include <array>
 
 #include "../eval/evaluate_mir_inv_tools.h"
@@ -116,7 +117,7 @@ namespace EvalLearningTools
 		// Guaranteed by the caller. It does not have to be an atomic operation.
 		// k is a coefficient for eta. 1.0 is usually sufficient. If you want to lower eta for your turn item, set this to 1/8.0 etc.
 		template <typename T>
-		void updateFV(T& v, double k)
+		void updateFV(T& v,double k)
 		{
 			// AdaGrad update formula
 			// Gradient vector is g, vector to be updated is v, η(eta) is a constant,
@@ -139,8 +140,8 @@ namespace EvalLearningTools
 			// Limit the value of V to be within the range of types.
 			// By the way, windows.h defines the min and max macros, so to avoid it,
 			// Here, it is enclosed in parentheses so that it is not treated as a function-like macro.
-			V = (std::min)((double)(std::numeric_limits<T>::max)(), V);
-			V = (std::max)((double)(std::numeric_limits<T>::min)(), V);
+			V = (std::min)((double)(std::numeric_limits<T>::max)() , V);
+			V = (std::max)((double)(std::numeric_limits<T>::min)() , V);
 
 			v0 = (LearnFloatType)V;
 			v = (T)round(V);
@@ -156,7 +157,7 @@ namespace EvalLearningTools
 		// When executing this function, the value of g and the member do not change
 		// Guaranteed by the caller. It does not have to be an atomic operation.
 		template <typename T>
-		void updateFV(T& v, double k)
+		void updateFV(T & v , double k)
 		{
 			if (g == 0)
 				return;
@@ -176,9 +177,9 @@ namespace EvalLearningTools
 
 			double V = v;
 			if (g > 0.0)
-				V -= diff;
+				V-= diff;
 			else
-				V += diff;
+				V+= diff;
 
 			V = (std::min)((double)(std::numeric_limits<T>::max)(), V);
 			V = (std::max)((double)(std::numeric_limits<T>::min)(), V);
@@ -209,10 +210,10 @@ namespace EvalLearningTools
 		Weight w[2];
 
 		//Evaluate your turn, eta 1/8.
-		template <typename T> void updateFV(std::array<T, 2>& v) { w[0].updateFV(v[0], 1.0); w[1].updateFV(v[1], 1.0 / 8.0); }
+		template <typename T> void updateFV(std::array<T, 2>& v) { w[0].updateFV(v[0] , 1.0); w[1].updateFV(v[1],1.0/8.0); }
 
-		template <typename T> void set_grad(const std::array<T, 2>& g) { for (int i = 0; i < 2; ++i) w[i].set_grad(g[i]); }
-		template <typename T> void add_grad(const std::array<T, 2>& g) { for (int i = 0; i < 2; ++i) w[i].add_grad(g[i]); }
+		template <typename T> void set_grad(const std::array<T, 2>& g) { for (int i = 0; i<2; ++i) w[i].set_grad(g[i]); }
+		template <typename T> void add_grad(const std::array<T, 2>& g) { for (int i = 0; i<2; ++i) w[i].add_grad(g[i]); }
 
 		std::array<LearnFloatType, 2> get_grad() const { return std::array<LearnFloatType, 2>{w[0].get_grad(), w[1].get_grad()}; }
 	};
@@ -288,7 +289,7 @@ namespace EvalLearningTools
 	struct KK : public SerializerBase
 	{
 	protected:
-		KK(Square king0, Square king1, bool inverse) : king0_(king0), king1_(king1), inverse_sign(inverse) {}
+		KK(Square king0, Square king1,bool inverse) : king0_(king0), king1_(king1) , inverse_sign(inverse) {}
 	public:
 		KK() {}
 
@@ -304,9 +305,9 @@ namespace EvalLearningTools
 			raw_index /= SQUARE_NB;
 			int king0 = (int)(raw_index  /* % SQUARE_NB */);
 			assert(king0 < SQUARE_NB);
-			return fromKK((Square)king0, (Square)king1, false);
+			return fromKK((Square)king0, (Square)king1 , false);
 		}
-		KK fromKK(Square king0, Square king1, bool inverse) const
+		KK fromKK(Square king0, Square king1 , bool inverse) const
 		{
 			// The variable name kk is used in the Eval::kk array etc., so it needs to be different. (The same applies to KKP, KPP classes, etc.)
 			KK my_kk(king0, king1, inverse);
@@ -319,13 +320,13 @@ namespace EvalLearningTools
 		Square king0() const { return king0_; }
 		Square king1() const { return king1_; }
 
-		// number of dimension reductions
+// number of dimension reductions
 #if defined(USE_KK_INVERSE_WRITE)
-#define KK_LOWER_COUNT 4
+	#define KK_LOWER_COUNT 4
 #elif defined(USE_KK_MIRROR_WRITE)
-#define KK_LOWER_COUNT 2
+	#define KK_LOWER_COUNT 2
 #else 
-#define KK_LOWER_COUNT 1
+	#define KK_LOWER_COUNT 1
 #endif
 
 #if defined(USE_KK_INVERSE_WRITE) && !defined(USE_KK_MIRROR_WRITE) 
@@ -338,12 +339,12 @@ namespace EvalLearningTools
 		// Note that the sign of grad must be reversed for this dimension reduction.
 		// You can use is_inverse() because it can be determined.
 		void toLowerDimensions(/*out*/KK kk_[KK_LOWER_COUNT]) const {
-			kk_[0] = fromKK(king0_, king1_, false);
+			kk_[0] = fromKK(king0_, king1_,false);
 #if defined(USE_KK_MIRROR_WRITE)
-			kk_[1] = fromKK(Mir(king0_), Mir(king1_), false);
+			kk_[1] = fromKK(Mir(king0_),Mir(king1_),false);
 #if defined(USE_KK_INVERSE_WRITE)
-			kk_[2] = fromKK(Inv(king1_), Inv(king0_), true);
-			kk_[3] = fromKK(Inv(Mir(king1_)), Inv(Mir(king0_)), true);
+			kk_[2] = fromKK(Inv(king1_), Inv(king0_),true);
+			kk_[3] = fromKK(Inv(Mir(king1_)) , Inv(Mir(king0_)),true);
 #endif
 #endif
 		}
@@ -370,7 +371,7 @@ namespace EvalLearningTools
 		bool operator!=(const KK& rhs) { return !(*this == rhs); }
 
 	private:
-		Square king0_, king1_;
+		Square king0_, king1_ ;
 		bool inverse_sign;
 	};
 
@@ -381,16 +382,16 @@ namespace EvalLearningTools
 		return os;
 	}
 
-	// Same as KK. For KKP.
+		// Same as KK. For KKP.
 	struct KKP : public SerializerBase
 	{
 	protected:
 		KKP(Square king0, Square king1, Eval::BonaPiece p) : king0_(king0), king1_(king1), piece_(p), inverse_sign(false) {}
-		KKP(Square king0, Square king1, Eval::BonaPiece p, bool inverse) : king0_(king0), king1_(king1), piece_(p), inverse_sign(inverse) {}
+		KKP(Square king0, Square king1, Eval::BonaPiece p, bool inverse) : king0_(king0), king1_(king1), piece_(p),inverse_sign(inverse) {}
 	public:
 		KKP() {}
 
-		virtual uint64_t size() const { return (uint64_t)max_king_sq_ * (uint64_t)max_king_sq_ * (uint64_t)fe_end_; }
+		virtual uint64_t size() const { return (uint64_t)max_king_sq_*(uint64_t)max_king_sq_*(uint64_t)fe_end_; }
 
 		// builder that creates KKP object from index (serial number)
 		KKP fromIndex(uint64_t index) const { assert(index >= min_index()); return fromRawIndex(index - min_index()); }
@@ -404,13 +405,13 @@ namespace EvalLearningTools
 			raw_index /= SQUARE_NB;
 			int king0 = (int)(raw_index  /* % SQUARE_NB */);
 			assert(king0 < SQUARE_NB);
-			return fromKKP((Square)king0, (Square)king1, (Eval::BonaPiece)piece, false);
+			return fromKKP((Square)king0, (Square)king1, (Eval::BonaPiece)piece,false);
 		}
 
 		KKP fromKKP(Square king0, Square king1, Eval::BonaPiece p, bool inverse) const
 		{
 			KKP my_kkp(king0, king1, p, inverse);
-			my_kkp.set(max_king_sq_, fe_end_, min_index());
+			my_kkp.set(max_king_sq_,fe_end_,min_index());
 			return my_kkp;
 		}
 		KKP fromKKP(Square king0, Square king1, Eval::BonaPiece p) const { return fromKKP(king0, king1, p, false); }
@@ -422,11 +423,11 @@ namespace EvalLearningTools
 
 		// Number of KKP dimension reductions
 #if defined(USE_KKP_INVERSE_WRITE)
-#define KKP_LOWER_COUNT 4
+		#define KKP_LOWER_COUNT 4
 #elif defined(USE_KKP_MIRROR_WRITE)
-#define KKP_LOWER_COUNT 2
+		#define KKP_LOWER_COUNT 2
 #else
-#define KKP_LOWER_COUNT 1
+		#define KKP_LOWER_COUNT 1
 #endif
 
 #if defined(USE_KKP_INVERSE_WRITE) && !defined(USE_KKP_MIRROR_WRITE) 
@@ -439,12 +440,12 @@ namespace EvalLearningTools
 		// Note that the sign of grad must be reversed for this dimension reduction.
 		// You can use is_inverse() because it can be determined.
 		void toLowerDimensions(/*out*/ KKP kkp_[KKP_LOWER_COUNT]) const {
-			kkp_[0] = fromKKP(king0_, king1_, piece_, false);
+			kkp_[0] = fromKKP(king0_, king1_, piece_,false);
 #if defined(USE_KKP_MIRROR_WRITE)
-			kkp_[1] = fromKKP(Mir(king0_), Mir(king1_), mir_piece(piece_), false);
+			kkp_[1] = fromKKP(Mir(king0_), Mir(king1_), mir_piece(piece_),false);
 #if defined(USE_KKP_INVERSE_WRITE)
-			kkp_[2] = fromKKP(Inv(king1_), Inv(king0_), inv_piece(piece_), true);
-			kkp_[3] = fromKKP(Inv(Mir(king1_)), Inv(Mir(king0_)), inv_piece(mir_piece(piece_)), true);
+			kkp_[2] = fromKKP( Inv(king1_), Inv(king0_), inv_piece(piece_),true);
+			kkp_[3] = fromKKP( Inv(Mir(king1_)), Inv(Mir(king0_)) , inv_piece(mir_piece(piece_)),true);
 #endif
 #endif
 		}
@@ -495,18 +496,18 @@ namespace EvalLearningTools
 
 		// The minimum and maximum KPP values ​​of serial numbers when serializing KK, KKP, KPP arrays.
 #if !defined(USE_TRIANGLE_WEIGHT_ARRAY)
-		virtual uint64_t size() const { return (uint64_t)max_king_sq_ * (uint64_t)fe_end_ * (uint64_t)fe_end_; }
+		virtual uint64_t size() const { return (uint64_t)max_king_sq_*(uint64_t)fe_end_*(uint64_t)fe_end_; }
 #else
 		// Triangularize the square array part of [fe_end][fe_end] of kpp[SQUARE_NB][fe_end][fe_end].
 		// If kpp[SQUARE_NB][triangle_fe_end], the first row of this triangular array has one element, the second row has two elements, and so on.
 		// hence triangle_fe_end = 1 + 2 + .. + fe_end = fe_end * (fe_end + 1) / 2
-		virtual uint64_t size() const { return (uint64_t)max_king_sq_ * (uint64_t)triangle_fe_end; }
+		virtual uint64_t size() const { return (uint64_t)max_king_sq_*(uint64_t)triangle_fe_end; }
 #endif
 
 		virtual void set(int max_king_sq, uint64_t fe_end, uint64_t min_index)
 		{
-			// This value is used in size(), and size() is used in SerializerBase::set(), so calculate first.
-			triangle_fe_end = (uint64_t)fe_end * ((uint64_t)fe_end + 1) / 2;
+		// This value is used in size(), and size() is used in SerializerBase::set(), so calculate first.
+			triangle_fe_end = (uint64_t)fe_end*((uint64_t)fe_end + 1) / 2;
 
 			SerializerBase::set(max_king_sq, fe_end, min_index);
 		}
@@ -517,7 +518,7 @@ namespace EvalLearningTools
 		// A builder that creates KPP objects from raw_index (a number that starts from 0, not a serial number)
 		KPP fromRawIndex(uint64_t raw_index) const
 		{
-			const uint64_t triangle_fe_end = (uint64_t)fe_end_ * ((uint64_t)fe_end_ + 1) / 2;
+			const uint64_t triangle_fe_end = (uint64_t)fe_end_*((uint64_t)fe_end_ + 1) / 2;
 
 #if !defined(USE_TRIANGLE_WEIGHT_ARRAY)
 			int piece1 = (int)(raw_index % fe_end_);
@@ -535,7 +536,7 @@ namespace EvalLearningTools
 
 			// BonaPiece assumes 32bit (may not fit in 16bit), so this multiplication must be 64bit.
 			int piece1 = int(sqrt(8 * index2 + 1) - 1) / 2;
-			int piece0 = int(index2 - (uint64_t)piece1 * ((uint64_t)piece1 + 1) / 2);
+			int piece0 = int(index2 - (uint64_t)piece1*((uint64_t)piece1 + 1) / 2);
 
 			assert(piece1 < (int)fe_end_);
 			assert(piece0 < (int)fe_end_);
@@ -551,7 +552,7 @@ namespace EvalLearningTools
 		KPP fromKPP(Square king, Eval::BonaPiece p0, Eval::BonaPiece p1) const
 		{
 			KPP my_kpp(king, p0, p1);
-			my_kpp.set(max_king_sq_, fe_end_, min_index());
+			my_kpp.set(max_king_sq_,fe_end_,min_index());
 			return my_kpp;
 		}
 
@@ -561,19 +562,19 @@ namespace EvalLearningTools
 		Eval::BonaPiece piece1() const { return piece1_; }
 
 
-		// number of dimension reductions
+// number of dimension reductions
 #if defined(USE_KPP_MIRROR_WRITE)
-#if !defined(USE_TRIANGLE_WEIGHT_ARRAY)
-#define KPP_LOWER_COUNT 4
+	#if !defined(USE_TRIANGLE_WEIGHT_ARRAY)
+		#define KPP_LOWER_COUNT 4
+	#else
+		#define KPP_LOWER_COUNT 2
+	#endif
 #else
-#define KPP_LOWER_COUNT 2
-#endif
-#else
-#if !defined(USE_TRIANGLE_WEIGHT_ARRAY)
-#define KPP_LOWER_COUNT 2
-#else
-#define KPP_LOWER_COUNT 1
-#endif
+	#if !defined(USE_TRIANGLE_WEIGHT_ARRAY)
+		#define KPP_LOWER_COUNT 2
+	#else
+		#define KPP_LOWER_COUNT 1
+	#endif
 #endif
 
 		// Get the index of the low-dimensional array. The ones with p1 and p2 swapped, the ones mirrored, etc. are returned.
@@ -614,7 +615,7 @@ namespace EvalLearningTools
 				// The i-th row and the j-th column is j plus this. i*(i+1)/2+j
 
 				// BonaPiece type is assumed to be 32 bits, so if you do not pay attention to multiplication, it will overflow.
-				return (uint64_t)k * triangle_fe_end + (uint64_t)(uint64_t(i) * (uint64_t(i) + 1) / 2 + uint64_t(j));
+				return (uint64_t)k * triangle_fe_end + (uint64_t)(uint64_t(i)*(uint64_t(i)+1) / 2 + uint64_t(j));
 			};
 
 			auto k = king_;
@@ -637,10 +638,9 @@ namespace EvalLearningTools
 				((piece0() == rhs.piece0() && piece1() == rhs.piece1())
 #if defined(USE_TRIANGLE_WEIGHT_ARRAY)
 					// When using a triangular array, allow swapping of piece0 and piece1.
-					|| (piece0() == rhs.piece1() && piece1() == rhs.piece0())
+				|| (piece0() == rhs.piece1() && piece1() == rhs.piece0())
 #endif
-					);
-		}
+					); }
 		bool operator!=(const KPP& rhs) { return !(*this == rhs); }
 
 
@@ -682,7 +682,7 @@ namespace EvalLearningTools
 	public:
 		KPPP() {}
 
-		virtual uint64_t size() const { return (uint64_t)max_king_sq_ * triangle_fe_end; }
+		virtual uint64_t size() const { return (uint64_t)max_king_sq_*triangle_fe_end; }
 
 		// Set fe_end and king_sq.
 		// fe_end: fe_end assumed by this KPPP class
@@ -690,7 +690,7 @@ namespace EvalLearningTools
 		// 3 layers x 3 mirrors = 3 layers x 5 lines = 15
 		// 2 steps x 2 mirrors without mirror = 18
 		// Set this first using set() on the side that uses this KPPP class.
-		virtual void set(int max_king_sq, uint64_t fe_end, uint64_t min_index) {
+		virtual void set(int max_king_sq, uint64_t fe_end,uint64_t min_index) {
 			// This value is used in size(), and size() is used in SerializerBase::set(), so calculate first.
 			triangle_fe_end = fe_end * (fe_end - 1) * (fe_end - 2) / 6;
 
@@ -708,17 +708,17 @@ namespace EvalLearningTools
 */
 #define KPPP_LOWER_COUNT 1
 
-// Get the index of the low-dimensional array.
-// Note that the one with p0,p1,p2 swapped will not be returned.
-// Also, the mirrored one is returned only when USE_KPPP_MIRROR_WRITE is enabled.
+		// Get the index of the low-dimensional array.
+		// Note that the one with p0,p1,p2 swapped will not be returned.
+		// Also, the mirrored one is returned only when USE_KPPP_MIRROR_WRITE is enabled.
 		void toLowerDimensions(/*out*/ KPPP kppp_[KPPP_LOWER_COUNT]) const
 		{
-			kppp_[0] = fromKPPP(king_, piece0_, piece1_, piece2_);
+			kppp_[0] = fromKPPP(king_, piece0_, piece1_,piece2_);
 #if KPPP_LOWER_COUNT > 1
 			// If mir_piece is done, it will be in a state not sorted. Need code to sort.
 			Eval::BonaPiece p_list[3] = { mir_piece(piece2_), mir_piece(piece1_), mir_piece(piece0_) };
 			my_insertion_sort(p_list, 0, 3);
-			kppp_[1] = fromKPPP((int)Mir((Square)king_), p_list[2], p_list[1], p_list[0]);
+			kppp_[1] = fromKPPP((int)Mir((Square)king_), p_list[2] , p_list[1], p_list[0]);
 #endif
 		}
 
@@ -744,8 +744,7 @@ namespace EvalLearningTools
 				// There are multiple real solutions only when index2 == 0,1.
 				piece0 = (int)index2 + 2;
 
-			}
-			else {
+			} else {
 
 				//double t = pow(sqrt((243 *index2 * index2-1) * 3) + 27 * index2, 1.0 / 3);
 				// → In this case, the content of sqrt() will overflow if index2 becomes large.
@@ -754,12 +753,12 @@ namespace EvalLearningTools
 				// Since the contents of sqrt() will overflow, use an approximate expression when index2 is large.
 
 				double t;
-
+				
 				if (index2 < 100000000)
-					t = pow(sqrt((243.0 * index2 * index2 - 1)) * sqrt(3.0) + 27 * index2, 1.0 / 3);
+					t = pow(sqrt((243.0 *index2 * index2 - 1)) * sqrt(3.0) + 27 * index2, 1.0 / 3);
 				else
 					// If index2 is very large, we can think of the contents of sqrt as approximately √243 * index2.
-					t = pow(index2 * sqrt(243 * 3.0) + 27 * index2, 1.0 / 3);
+					t = pow( index2 * sqrt(243 * 3.0) + 27 * index2, 1.0 / 3);
 
 				// Add deltas to avoid a slight calculation error when rounding.
 				// If it is too large, it may increase by 1 so adjustment is necessary.
@@ -774,8 +773,8 @@ namespace EvalLearningTools
 			// j(j+1)/2 = index2-a
 			// This is from the solution formula of the quadratic equation..
 
-			uint64_t a = (uint64_t)piece0 * ((uint64_t)piece0 - 1) * ((uint64_t)piece0 - 2) / 6;
-			int piece1 = int((1 + sqrt(8.0 * (index2 - a) + 1)) / 2);
+			uint64_t a = (uint64_t)piece0*((uint64_t)piece0 - 1)*((uint64_t)piece0 - 2) / 6;
+			int piece1 = int((1 + sqrt(8.0 * (index2 - a ) + 1)) / 2);
 			uint64_t b = (uint64_t)piece1 * (piece1 - 1) / 2;
 			int piece2 = int(index2 - a - b);
 
@@ -798,7 +797,7 @@ namespace EvalLearningTools
 			assert(king < max_king_sq_);
 
 			// Propagate king_sq and fe_end.
-			return fromKPPP((Square)king, (Eval::BonaPiece)piece0, (Eval::BonaPiece)piece1, (Eval::BonaPiece)piece2);
+			return fromKPPP((Square)king, (Eval::BonaPiece)piece0, (Eval::BonaPiece)piece1 , (Eval::BonaPiece)piece2);
 		}
 
 		// Specify k,p0,p1,p2 to build KPPP instance.
@@ -806,7 +805,7 @@ namespace EvalLearningTools
 		KPPP fromKPPP(int king, Eval::BonaPiece p0, Eval::BonaPiece p1, Eval::BonaPiece p2) const
 		{
 			KPPP kppp(king, p0, p1, p2);
-			kppp.set(max_king_sq_, fe_end_, min_index());
+			kppp.set(max_king_sq_, fe_end_,min_index());
 			return kppp;
 		}
 
@@ -816,7 +815,7 @@ namespace EvalLearningTools
 			// Macro similar to the one used in Bonanza 6.0
 			// Precondition) i> j> k.
 			// NG in case of i==j,j==k.
-			auto PcPcPcOnSq = [this](int king, Eval::BonaPiece i, Eval::BonaPiece j, Eval::BonaPiece k)
+			auto PcPcPcOnSq = [this](int king, Eval::BonaPiece i, Eval::BonaPiece j , Eval::BonaPiece k)
 			{
 				// (i,j,k) in this triangular array is the element in the i-th row and the j-th column.
 				// 0th row 0th column 0th is the sum of the elements up to that point, so 0 + 0 + 1 + 3 + 6 + ... + (i)*(i-1)/2 = i*( i-1)*(i-2)/6
@@ -826,9 +825,9 @@ namespace EvalLearningTools
 
 				// BonaPiece type is assumed to be 32 bits, so if you do not pay attention to multiplication, it will overflow.
 				return (uint64_t)king * triangle_fe_end + (uint64_t)(
-					uint64_t(i) * (uint64_t(i) - 1) * (uint64_t(i) - 2) / 6
-					+ uint64_t(j) * (uint64_t(j) - 1) / 2
-					+ uint64_t(k)
+						  uint64_t(i)*(uint64_t(i) - 1) * (uint64_t(i) - 2) / 6
+						+ uint64_t(j)*(uint64_t(j) - 1) / 2
+						+ uint64_t(k)
 					);
 			};
 
@@ -860,7 +859,7 @@ namespace EvalLearningTools
 	private:
 
 		int king_;
-		Eval::BonaPiece piece0_, piece1_, piece2_;
+		Eval::BonaPiece piece0_, piece1_,piece2_;
 
 		// The part of the square array of [fe_end][fe_end][fe_end] of kppp[king_sq][fe_end][fe_end][fe_end] is made into a triangular array.
 		// If kppp[king_sq][triangle_fe_end], the number of elements from the 0th row of this triangular array is 0,0,1,3,..., The nth row is n(n-1)/2.
@@ -888,7 +887,7 @@ namespace EvalLearningTools
 	//
 	// Due to this constraint, BonaPieceZero cannot be assigned to piece0 and piece1 at the same time and passed.
 	// If you want to support learning of dropped frames, you need to devise with evaluate().
-	struct KKPP : SerializerBase
+	struct KKPP: SerializerBase
 	{
 	protected:
 		KKPP(int king, Eval::BonaPiece p0, Eval::BonaPiece p1) :
@@ -901,14 +900,14 @@ namespace EvalLearningTools
 	public:
 		KKPP() {}
 
-		virtual uint64_t size() const { return (uint64_t)max_king_sq_ * triangle_fe_end; }
+		virtual uint64_t size() const { return (uint64_t)max_king_sq_*triangle_fe_end; }
 
 		// Set fe_end and king_sq.
 		// fe_end: fe_end assumed by this KPPP class
 		// king_sq: Number of balls to handle in KPPP.
 		// 9 steps x mirrors 9 steps x 5 squared squares (balls before and after) = 45*45 = 2025.
 		// Set this first using set() on the side that uses this KKPP class.
-		void set(int max_king_sq, uint64_t fe_end, uint64_t min_index) {
+		void set(int max_king_sq, uint64_t fe_end , uint64_t min_index) {
 			// This value is used in size(), and size() is used in SerializerBase::set(), so calculate first.
 			triangle_fe_end = fe_end * (fe_end - 1) / 2;
 
@@ -943,8 +942,8 @@ namespace EvalLearningTools
 			// Use the formula of the solution of the quadratic equation with j=0.
 			// When index2=0, it is a double root, but the smaller one does not satisfy i>j and is ignored.
 
-			int piece0 = (int(sqrt(8 * index2 + 1)) + 1) / 2;
-			int piece1 = int(index2 - piece0 * (piece0 - 1) / 2);
+			int piece0 = (int(sqrt(8 * index2 + 1)) + 1)/2;
+			int piece1 = int(index2 - piece0 * (piece0 - 1) /2 );
 
 			assert(piece0 > piece1);
 
@@ -965,7 +964,7 @@ namespace EvalLearningTools
 		KKPP fromKKPP(int king, Eval::BonaPiece p0, Eval::BonaPiece p1) const
 		{
 			KKPP kkpp(king, p0, p1);
-			kkpp.set(max_king_sq_, fe_end_, min_index());
+			kkpp.set(max_king_sq_, fe_end_,min_index());
 			return kkpp;
 		}
 
@@ -981,7 +980,7 @@ namespace EvalLearningTools
 
 				// BonaPiece type is assumed to be 32 bits, so if you do not pay attention to multiplication, it will overflow.
 				return (uint64_t)king * triangle_fe_end + (uint64_t)(
-					+uint64_t(i) * (uint64_t(i) - 1) / 2
+					+ uint64_t(i)*(uint64_t(i) - 1) / 2
 					+ uint64_t(j)
 					);
 			};
@@ -1018,7 +1017,7 @@ namespace EvalLearningTools
 
 		// Triangularize the square array part of [fe_end][fe_end] of kppp[king_sq][fe_end][fe_end].
 		uint64_t triangle_fe_end = 0;
-
+		
 	};
 
 	// Output for debugging.
@@ -1031,4 +1030,5 @@ namespace EvalLearningTools
 
 }
 
-
+#endif // defined (EVAL_LEARN)
+#endif
