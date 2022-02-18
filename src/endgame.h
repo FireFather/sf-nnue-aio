@@ -23,13 +23,10 @@
 
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
 #include "position.h"
-#include "types.h"
-
 
 /// EndgameCode lists all supported endgame functions by corresponding codes
 
@@ -65,15 +62,14 @@ enum EndgameCode {
 /// Value or a ScaleFactor.
 
 template<EndgameCode E> using
-eg_type = typename std::conditional<(E < SCALING_FUNCTIONS), Value, ScaleFactor>::type;
-
+eg_type = std::conditional_t<E < SCALING_FUNCTIONS, Value, ScaleFactor>;
 
 /// Base and derived functors for endgame evaluation and scaling functions
 
 template<typename T>
 struct EndgameBase {
 
-  explicit EndgameBase(Color c) : strongSide(c), weakSide(~c) {}
+  explicit EndgameBase(const Color c) : strongSide(c), weakSide(~c) {}
   virtual ~EndgameBase() = default;
   virtual T operator()(const Position&) const = 0;
 
@@ -82,7 +78,7 @@ struct EndgameBase {
 
 
 template<EndgameCode E, typename T = eg_type<E>>
-struct Endgame : public EndgameBase<T> {
+struct Endgame final : EndgameBase<T> {
 
   explicit Endgame(Color c) : EndgameBase<T>(c) {}
   T operator()(const Position&) const override;
@@ -104,7 +100,7 @@ namespace Endgames {
 
   template<typename T>
   Map<T>& map() {
-    return std::get<std::is_same<T, ScaleFactor>::value>(maps);
+    return std::get<std::is_same_v<T, ScaleFactor>>(maps);
   }
 
   template<EndgameCode E, typename T = eg_type<E>>

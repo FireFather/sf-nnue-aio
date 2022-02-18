@@ -20,7 +20,7 @@ class AffineTransform {
   // Input/output type
   using InputType = typename PreviousLayer::OutputType;
   using OutputType = std::int32_t;
-  static_assert(std::is_same<InputType, std::uint8_t>::value, "");
+  static_assert(std::is_same_v<InputType, std::uint8_t>, "");
 
   // number of input/output dimensions
   static constexpr IndexType kInputDimensions =
@@ -144,7 +144,7 @@ class AffineTransform {
 #elif defined(USE_AVX2)
       __m256i sum = _mm256_setzero_si256();
       const auto row = reinterpret_cast<const __m256i*>(&weights_[offset]);
-      for (int j = 0; j < (int)kNumChunks - 1; j += 2) {
+      for (int j = 0; j < static_cast<int>(kNumChunks) - 1; j += 2) {
           __m256i product0 = _mm256_maddubs_epi16(_mm256_loadAU_si256(&input_vector[j]), _mm256_load_si256(&row[j]));
           product0 = _mm256_madd_epi16(product0, kOnes);
           sum = _mm256_add_epi32(sum, product0);

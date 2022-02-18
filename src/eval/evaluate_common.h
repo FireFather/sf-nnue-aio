@@ -18,7 +18,7 @@
 namespace Eval
 {
 	// prefetch function
-	void prefetch_evalhash(const Key key);
+	void prefetch_evalhash(Key key);
 
 	// An operator that applies the function f to each parameter of the evaluation function.
 	// Used for parameter analysis etc.
@@ -57,7 +57,7 @@ namespace Eval
 
 	// Save the evaluation function parameters to a file.
 	// You can specify the extension added to the end of the file.
-	void save_eval(std::string suffix);
+	void save_eval(const std::string& dir_name);
 
 	// Get the current eta.
 	double get_eta();

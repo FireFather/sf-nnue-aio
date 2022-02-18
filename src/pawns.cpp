@@ -50,22 +50,22 @@ namespace {
 
   // Strength of pawn shelter for our king by [distance from edge][rank].
   // RANK_1 = 0 is used for files where we have no pawn, or pawn is behind our king.
-  constexpr Value ShelterStrength[int(FILE_NB) / 2][RANK_NB] = {
-    { V( -6), V( 81), V( 93), V( 58), V( 39), V( 18), V(  25) },
-    { V(-43), V( 61), V( 35), V(-49), V(-29), V(-11), V( -63) },
-    { V(-10), V( 75), V( 23), V( -2), V( 32), V(  3), V( -45) },
-    { V(-39), V(-13), V(-29), V(-52), V(-48), V(-67), V(-166) }
+  constexpr Value ShelterStrength[static_cast<int>(FILE_NB) / 2][RANK_NB] = {
+    {static_cast<Value>(-6), static_cast<Value>(81), static_cast<Value>(93), static_cast<Value>(58), static_cast<Value>(39), static_cast<Value>(18), static_cast<Value>(25) },
+    {static_cast<Value>(-43), static_cast<Value>(61), static_cast<Value>(35), static_cast<Value>(-49), static_cast<Value>(-29), static_cast<Value>(-11), static_cast<Value>(-63) },
+    {static_cast<Value>(-10), static_cast<Value>(75), static_cast<Value>(23), static_cast<Value>(-2), static_cast<Value>(32), static_cast<Value>(3), static_cast<Value>(-45) },
+    {static_cast<Value>(-39), static_cast<Value>(-13), static_cast<Value>(-29), static_cast<Value>(-52), static_cast<Value>(-48), static_cast<Value>(-67), static_cast<Value>(-166) }
   };
 
   // Danger of enemy pawns moving toward our king by [distance from edge][rank].
   // RANK_1 = 0 is used for files where the enemy has no pawn, or their pawn
   // is behind our king. Note that UnblockedStorm[0][1-2] accommodate opponent pawn
   // on edge, likely blocked by our king.
-  constexpr Value UnblockedStorm[int(FILE_NB) / 2][RANK_NB] = {
-    { V( 85), V(-289), V(-166), V(97), V(50), V( 45), V( 50) },
-    { V( 46), V( -25), V( 122), V(45), V(37), V(-10), V( 20) },
-    { V( -6), V(  51), V( 168), V(34), V(-2), V(-22), V(-14) },
-    { V(-15), V( -11), V( 101), V( 4), V(11), V(-15), V(-29) }
+  constexpr Value UnblockedStorm[static_cast<int>(FILE_NB) / 2][RANK_NB] = {
+    {static_cast<Value>(85), static_cast<Value>(-289), static_cast<Value>(-166), static_cast<Value>(97), static_cast<Value>(50), static_cast<Value>(45), static_cast<Value>(50) },
+    {static_cast<Value>(46), static_cast<Value>(-25), static_cast<Value>(122), static_cast<Value>(45), static_cast<Value>(37), static_cast<Value>(-10), static_cast<Value>(20) },
+    {static_cast<Value>(-6), static_cast<Value>(51), static_cast<Value>(168), static_cast<Value>(34), static_cast<Value>(-2), static_cast<Value>(-22), static_cast<Value>(-14) },
+    {static_cast<Value>(-15), static_cast<Value>(-11), static_cast<Value>(101), static_cast<Value>(4), static_cast<Value>(11), static_cast<Value>(-15), static_cast<Value>(-29) }
   };
 
   #undef S
@@ -83,17 +83,14 @@ namespace {
     constexpr Color     Them = ~Us;
     constexpr Direction Up   = pawn_push(Us);
 
-    Bitboard neighbours, stoppers, support, phalanx, opposed;
-    Bitboard lever, leverPush, blocked;
     Square s;
-    bool backward, passed, doubled;
     Score score = SCORE_ZERO;
     const Square* pl = pos.squares<PAWN>(Us);
 
     Bitboard ourPawns   = pos.pieces(  Us, PAWN);
     Bitboard theirPawns = pos.pieces(Them, PAWN);
 
-    Bitboard doubleAttackThem = pawn_double_attacks_bb<Them>(theirPawns);
+    const Bitboard doubleAttackThem = pawn_double_attacks_bb<Them>(theirPawns);
 
     e->passedPawns[Us] = 0;
     e->kingSquares[Us] = SQ_NONE;
@@ -105,23 +102,23 @@ namespace {
     {
         assert(pos.piece_on(s) == make_piece(Us, PAWN));
 
-        Rank r = relative_rank(Us, s);
+        const Rank r = relative_rank(Us, s);
 
         // Flag the pawn
-        opposed    = theirPawns & forward_file_bb(Us, s);
-        blocked    = theirPawns & (s + Up);
-        stoppers   = theirPawns & passed_pawn_span(Us, s);
-        lever      = theirPawns & pawn_attacks_bb(Us, s);
-        leverPush  = theirPawns & pawn_attacks_bb(Us, s + Up);
-        doubled    = ourPawns   & (s - Up);
-        neighbours = ourPawns   & adjacent_files_bb(s);
-        phalanx    = neighbours & rank_bb(s);
-        support    = neighbours & rank_bb(s - Up);
+        const Bitboard opposed = theirPawns & forward_file_bb(Us, s);
+        const Bitboard blocked = theirPawns & s + Up;
+        const Bitboard stoppers = theirPawns & passed_pawn_span(Us, s);
+        const Bitboard lever = theirPawns & pawn_attacks_bb(Us, s);
+        const Bitboard leverPush = theirPawns & pawn_attacks_bb(Us, s + Up);
+        const bool doubled = ourPawns & s - Up;
+        Bitboard neighbours = ourPawns & adjacent_files_bb(s);
+        const Bitboard phalanx = neighbours & rank_bb(s);
+        Bitboard support = neighbours & rank_bb(s - Up);
 
         // A pawn is backward when it is behind all pawns of the same color on
         // the adjacent files and cannot safely advance.
-        backward =  !(neighbours & forward_ranks_bb(Them, s + Up))
-                  && (leverPush | blocked);
+        const bool backward = !(neighbours & forward_ranks_bb(Them, s + Up))
+	        && leverPush | blocked;
 
         // Compute additional span if pawn is not backward nor blocked
         if (!backward && !blocked)
@@ -132,11 +129,11 @@ namespace {
         // (b) the only stoppers are the leverPush, but we outnumber them
         // (c) there is only one front stopper which can be levered.
         //     (Refined in Evaluation::passed)
-        passed =   !(stoppers ^ lever)
-                || (   !(stoppers ^ leverPush)
-                    && popcount(phalanx) >= popcount(leverPush))
-                || (   stoppers == blocked && r >= RANK_5
-                    && (shift<Up>(support) & ~(theirPawns | doubleAttackThem)));
+        bool passed = !(stoppers ^ lever)
+	        || !(stoppers ^ leverPush)
+	        && popcount(phalanx) >= popcount(leverPush)
+	        || stoppers == blocked && r >= RANK_5
+	        && shift<Up>(support) & ~(theirPawns | doubleAttackThem);
 
         passed &= !(forward_file_bb(Us, s) & ourPawns);
 
@@ -148,7 +145,7 @@ namespace {
         // Score this pawn
         if (support | phalanx)
         {
-            int v =  Connected[r] * (2 + bool(phalanx) - bool(opposed))
+	        const int v =  Connected[r] * (2 + static_cast<bool>(phalanx) - static_cast<bool>(opposed))
                    + 21 * popcount(support);
 
             score += make_score(v, v * (r - 2) / 4);
@@ -157,7 +154,7 @@ namespace {
         else if (!neighbours)
         {
             if (     opposed
-                &&  (ourPawns & forward_file_bb(Them, s))
+                &&  ourPawns & forward_file_bb(Them, s)
                 && !(theirPawns & adjacent_files_bb(s)))
                 score -= Doubled;
             else
@@ -191,8 +188,7 @@ namespace Pawns {
 /// have to recompute all when the same pawns configuration occurs again.
 
 Entry* probe(const Position& pos) {
-
-  Key key = pos.pawn_key();
+	const Key key = pos.pawn_key();
   Entry* e = pos.this_thread()->pawnsTable[key];
 
   if (e->key == key)
@@ -211,7 +207,7 @@ Entry* probe(const Position& pos) {
 /// penalty for a king, looking at the king file and the two closest files.
 
 template<Color Us>
-Score Entry::evaluate_shelter(const Position& pos, Square ksq) const {
+Score Entry::evaluate_shelter(const Position& pos, const Square ksq) const {
 
   constexpr Color Them = ~Us;
 
@@ -221,19 +217,19 @@ Score Entry::evaluate_shelter(const Position& pos, Square ksq) const {
 
   Score bonus = make_score(5, 5);
 
-  File center = Utility::clamp(file_of(ksq), FILE_B, FILE_G);
-  for (File f = File(center - 1); f <= File(center + 1); ++f)
+  const File center = Utility::clamp(file_of(ksq), FILE_B, FILE_G);
+  for (auto f = static_cast<File>(center - 1); f <= static_cast<File>(center + 1); ++f)
   {
       b = ourPawns & file_bb(f);
-      int ourRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : 0;
+      const int ourRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : 0;
 
       b = theirPawns & file_bb(f);
-      int theirRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : 0;
+      const int theirRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : 0;
 
-      int d = edge_distance(f);
+      const int d = edge_distance(f);
       bonus += make_score(ShelterStrength[d][ourRank], 0);
 
-      if (ourRank && (ourRank == theirRank - 1))
+      if (ourRank && ourRank == theirRank - 1)
           bonus -= BlockedStorm[theirRank];
       else
           bonus -= make_score(UnblockedStorm[d][theirRank], 0);
@@ -248,11 +244,10 @@ Score Entry::evaluate_shelter(const Position& pos, Square ksq) const {
 
 template<Color Us>
 Score Entry::do_king_safety(const Position& pos) {
-
-  Square ksq = pos.square<KING>(Us);
+	const Square ksq = pos.square<KING>(Us);
   kingSquares[Us] = ksq;
   castlingRights[Us] = pos.castling_rights(Us);
-  auto compare = [](Score a, Score b) { return mg_value(a) < mg_value(b); };
+  auto compare = [](const Score a, const Score b) { return mg_value(a) < mg_value(b); };
 
   Score shelter = evaluate_shelter<Us>(pos, ksq);
 

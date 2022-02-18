@@ -17,10 +17,10 @@
 // Derive and use this class.
 struct MultiThink
 {
-    std::random_device seed_it;
-    MultiThink() : prng(seed_it()) //21120903
+	virtual ~MultiThink() = default;
+	std::random_device seed_it;
+    MultiThink() : prng(seed_it()), loop_count(0) //21120903
 	{
-		loop_count = 0;
 	}
 
 	// Call this function from the master thread, each thread will think,
@@ -51,7 +51,7 @@ struct MultiThink
 	uint64_t callback_seconds = 600;
 
 	// Set the number of times worker processes (calls Search::think()).
-	void set_loop_max(uint64_t loop_max_) { loop_max = loop_max_; }
+	void set_loop_max(const uint64_t loop_max_) { loop_max = loop_max_; }
 
 	// Get the value set by set_loop_max().
 	uint64_t get_loop_max() const { return loop_max; }
@@ -61,7 +61,7 @@ struct MultiThink
 	// If you want to generate a phase, you must call this function at the time of generating the phase,
 	// Please note that the number of generated phases and the value of the counter will not match.
 	uint64_t get_next_loop_count() {
-		std::unique_lock<std::mutex> lk(loop_mutex);
+		std::unique_lock lk(loop_mutex);
 		if (loop_count >= loop_max)
 			return UINT64_MAX;
 		return loop_count++;
@@ -69,7 +69,7 @@ struct MultiThink
 
 	// [ASYNC] For returning the processed number. Each time it is called, it returns a counter that is incremented.
 	uint64_t get_done_count() {
-		std::unique_lock<std::mutex> lk(loop_mutex);
+		std::unique_lock lk(loop_mutex);
 		return ++done_count;
 	}
 
@@ -107,7 +107,7 @@ struct TaskDispatcher
 	typedef std::function<void(size_t /* thread_id */)> Task;
 
 	// slave calls this function during idle.
-	void on_idle(size_t thread_id)
+	void on_idle(const size_t thread_id)
 	{
 		Task task;
 		while ((task = get_task_async()) != nullptr)
@@ -117,14 +117,14 @@ struct TaskDispatcher
 	}
 
 	// Stack [ASYNC] task.
-	void push_task_async(Task task)
+	void push_task_async(const Task& task)
 	{
-		std::unique_lock<std::mutex> lk(task_mutex);
+		std::unique_lock lk(task_mutex);
 		tasks.push_back(task);
 	}
 
 	// Allocate size array elements for task in advance.
-	void task_reserve(size_t size)
+	void task_reserve(const size_t size)
 	{
 		tasks.reserve(size);
 	}
@@ -136,8 +136,8 @@ protected:
 	// Take out one [ASYNC] task. Called from on_idle().
 	Task get_task_async()
 	{
-		std::unique_lock<std::mutex> lk(task_mutex);
-		if (tasks.size() == 0)
+		std::unique_lock lk(task_mutex);
+		if (tasks.empty())
 			return nullptr;
 		Task task = *tasks.rbegin();
 		tasks.pop_back();

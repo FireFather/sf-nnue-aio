@@ -30,14 +30,14 @@ typedef std::pair<int, int> Range; // Option's min-max values
 typedef Range (RangeFun) (int);
 
 // Default Range function, to calculate Option's min-max values
-inline Range default_range(int v) {
+inline Range default_range(const int v) {
   return v > 0 ? Range(0, 2 * v) : Range(2 * v, 0);
 }
 
 struct SetRange {
   explicit SetRange(RangeFun f) : fun(f) {}
   SetRange(int min, int max) : fun(nullptr), range(min, max) {}
-  Range operator()(int v) const { return fun ? fun(v) : range; }
+  Range operator()(const int v) const { return fun ? fun(v) : range; }
 
   RangeFun* fun;
   Range range;
@@ -54,7 +54,7 @@ struct SetRange {
 /// probability that depnends on the parameter under tuning.
 
 struct BoolConditions {
-  void init(size_t size) { values.resize(size, defaultValue), binary.resize(size, 0); }
+  void init(const size_t size) { values.resize(size, defaultValue), binary.resize(size, 0); }
   void set();
 
   std::vector<int> binary, values;
@@ -101,7 +101,7 @@ class Tune {
   Tune() { read_results(); }
   Tune(const Tune&) = delete;
   void operator=(const Tune&) = delete;
-  void read_results();
+  static void read_results();
 
   static Tune& instance() { static Tune t; return t; } // Singleton
 
@@ -113,14 +113,14 @@ class Tune {
   };
 
   template<typename T>
-  struct Entry : public EntryBase {
+  struct Entry : EntryBase {
 
-    static_assert(!std::is_const<T>::value, "Parameter cannot be const!");
+    static_assert(!std::is_const_v<T>, "Parameter cannot be const!");
 
-    static_assert(   std::is_same<T,   int>::value
-                  || std::is_same<T, Value>::value
-                  || std::is_same<T, Score>::value
-                  || std::is_same<T, PostUpdate>::value, "Parameter type not supported!");
+    static_assert(   std::is_same_v<T,   int>
+                  || std::is_same_v<T, Value>
+                  || std::is_same_v<T, Score>
+                  || std::is_same_v<T, PostUpdate>, "Parameter type not supported!");
 
     Entry(const std::string& n, T& v, const SetRange& r) : name(n), value(v), range(r) {}
     void operator=(const Entry&) = delete; // Because 'value' is a reference
@@ -137,7 +137,7 @@ class Tune {
   // of a possible different type.
   static std::string next(std::string& names, bool pop = true);
 
-  int add(const SetRange&, std::string&&) { return 0; }
+  static int add(const SetRange&, std::string&&) { return 0; }
 
   template<typename T, typename... Args>
   int add(const SetRange& range, std::string&& names, T& value, Args&&... args) {
@@ -174,8 +174,8 @@ public:
   static int add(const std::string& names, Args&&... args) {
     return instance().add(SetDefaultRange, names.substr(1, names.size() - 2), args...); // Remove trailing parenthesis
   }
-  static void init() { for (auto& e : instance().list) e->init_option(); read_options(); } // Deferred, due to UCI::Options access
-  static void read_options() { for (auto& e : instance().list) e->read_option(); }
+  static void init() { for (const auto& e : instance().list) e->init_option(); read_options(); } // Deferred, due to UCI::Options access
+  static void read_options() { for (const auto& e : instance().list) e->read_option(); }
   static bool update_on_last;
 };
 

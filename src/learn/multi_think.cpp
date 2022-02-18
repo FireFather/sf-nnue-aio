@@ -1,6 +1,4 @@
-﻿#include "../types.h"
-
-#if defined(EVAL_LEARN)
+﻿#if defined(EVAL_LEARN)
 
 #include "multi_think.h"
 #include "../tt.h"
@@ -11,7 +9,7 @@
 void MultiThink::go_think()
 {
 	// Keep a copy to restore the Options settings later.
-	auto oldOptions = Options;
+	const auto oldOptions = Options;
 
 	// When using the constant track, it takes a lot of time to perform on the fly & the part to access the file is
 	// Since it is not thread safe, it is guaranteed here that it is being completely read in memory.
@@ -31,7 +29,7 @@ void MultiThink::go_think()
 
 	// Create threads as many as Options["Threads"] and start thinking.
 	std::vector<std::thread> threads;
-	auto thread_num = (size_t)Options["Threads"];
+	const auto thread_num = static_cast<size_t>(Options["Threads"]);
 
 	// Secure end flag of worker thread
 	thread_finished.resize(thread_num);
@@ -40,7 +38,7 @@ void MultiThink::go_think()
 	for (size_t i = 0; i < thread_num; ++i)
 	{
 		thread_finished[i] = 0;
-		threads.push_back(std::thread([i, this]
+		threads.emplace_back([i, this]
 		{ 
 			// exhaust all processor threads.
 			WinProcGroup::bindThisThread(i);
@@ -50,7 +48,7 @@ void MultiThink::go_think()
 
 			// Set the end flag because the thread has ended
 			this->thread_finished[i] = 1;
-		}));
+		});
 	}
 
 	// wait for all threads to finish
@@ -61,17 +59,19 @@ void MultiThink::go_think()
 	// Therefore, you need to check the end flag yourself.
 
 	// function to determine if all threads have finished
-	auto threads_done = [&]()
+	auto threads_done = [&]
 	{
 		// returns false if no one is finished
-		for (auto& f : thread_finished)
+		for (const auto& f : thread_finished)
+		{
 			if (!f)
 				return false;
+		}
 		return true;
 	};
 
 	// Call back if the callback function is set.
-	auto do_a_callback = [&]()
+	auto do_a_callback = [&]
 	{
 		if (callback_func)
 			callback_func();
@@ -114,8 +114,8 @@ void MultiThink::go_think()
 
 	// Restored because Options were rewritten.
 	// Restore the handler because the handler will not start unless you assign a value.
-	for (auto& s : oldOptions)
-		Options[s.first] = std::string(s.second);
+	for (const auto& [fst, snd] : oldOptions)
+		Options[fst] = std::string(snd);
 
 }
 

@@ -16,15 +16,14 @@ namespace Layers {
 // Layer that sums the output of multiple layers
 template <typename FirstPreviousLayer, typename... RemainingPreviousLayers>
 class Sum : public Sum<RemainingPreviousLayers...> {
- private:
-  using Head = FirstPreviousLayer;
+	using Head = FirstPreviousLayer;
   using Tail = Sum<RemainingPreviousLayers...>;
 
  public:
   // Input/output type
   using InputType = typename Head::OutputType;
   using OutputType = InputType;
-  static_assert(std::is_same<InputType, typename Tail::InputType>::value, "");
+  static_assert(std::is_same_v<InputType, typename Tail::InputType>, "");
 
   // number of input/output dimensions
   static constexpr IndexType kInputDimensions = Head::kOutputDimensions;

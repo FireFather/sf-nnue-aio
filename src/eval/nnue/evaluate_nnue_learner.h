@@ -28,7 +28,7 @@ void SetOptions(const std::string& options);
 void RestoreParameters(const std::string& dir_name);
 
 // Add 1 sample of learning data
-void AddExample(Position& pos, Color rootColor,
+void AddExample(const Position& pos, Color rootColor,
                 const Learner::PackedSfenValue& psv, double weight);
 
 // update the evaluation function parameters

@@ -13,9 +13,9 @@ namespace Eval {
 
       // Get a list of indices with a value of 1 among the features
       void EnPassant::AppendActiveIndices(
-        const Position& pos, Color perspective, IndexList* active) {
+        const Position& pos, const Color perspective, IndexList* active) {
         // do nothing if array size is small to avoid compiler warning
-        if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
+        if constexpr (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 
         auto epSquare = pos.state()->epSquare;
         if (epSquare == SQ_NONE) {
@@ -26,7 +26,7 @@ namespace Eval {
           epSquare = Inv(epSquare);
         }
 
-        auto file = file_of(epSquare);
+        const auto file = file_of(epSquare);
         active->push_back(file);
       }
 

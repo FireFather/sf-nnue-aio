@@ -42,8 +42,8 @@ namespace {
   // bit    12: side to move (WHITE or BLACK)
   // bit 13-14: white pawn file (from FILE_A to FILE_D)
   // bit 15-17: white pawn RANK_7 - rank (from RANK_7 - RANK_7 to RANK_7 - RANK_2)
-  unsigned index(Color stm, Square bksq, Square wksq, Square psq) {
-    return int(wksq) | (bksq << 6) | (stm << 12) | (file_of(psq) << 13) | ((RANK_7 - rank_of(psq)) << 15);
+  unsigned index(const Color stm, const Square bksq, const Square wksq, const Square psq) {
+    return static_cast<int>(wksq) | bksq << 6 | stm << 12 | file_of(psq) << 13 | RANK_7 - rank_of(psq) << 15;
   }
 
   enum Result {
@@ -53,7 +53,7 @@ namespace {
     WIN     = 4
   };
 
-  Result& operator|=(Result& r, Result v) { return r = Result(r | v); }
+  Result& operator|=(Result& r, const Result v) { return r = static_cast<Result>(r | v); }
 
   struct KPKPosition {
     KPKPosition() = default;
@@ -69,7 +69,7 @@ namespace {
 } // namespace
 
 
-bool Bitbases::probe(Square wksq, Square wpsq, Square bksq, Color stm) {
+bool Bitbases::probe(const Square wksq, const Square wpsq, const Square bksq, const Color stm) {
 
   assert(file_of(wpsq) <= FILE_D);
 
@@ -90,7 +90,7 @@ void Bitbases::init() {
   // changed to either wins or draws (15 cycles needed).
   while (repeat)
       for (repeat = idx = 0; idx < MAX_INDEX; ++idx)
-          repeat |= (db[idx] == UNKNOWN && db[idx].classify(db) != UNKNOWN);
+          repeat |= db[idx] == UNKNOWN && db[idx].classify(db) != UNKNOWN;
 
   // Fill the bitbase with the decisive results
   for (idx = 0; idx < MAX_INDEX; ++idx)
@@ -101,18 +101,16 @@ void Bitbases::init() {
 
 namespace {
 
-  KPKPosition::KPKPosition(unsigned idx) {
-
-    ksq[WHITE] = Square((idx >>  0) & 0x3F);
-    ksq[BLACK] = Square((idx >>  6) & 0x3F);
-    stm        = Color ((idx >> 12) & 0x01);
-    psq        = make_square(File((idx >> 13) & 0x3), Rank(RANK_7 - ((idx >> 15) & 0x7)));
+  KPKPosition::KPKPosition(const unsigned idx) : stm(static_cast<Color>(idx >> 12 & 0x01)), psq(make_square(static_cast<File>(idx >> 13 & 0x3), static_cast<Rank>(RANK_7 - (idx >> 15 & 0x7))))
+  {
+    ksq[WHITE] = static_cast<Square>(idx >> 0 & 0x3F);
+    ksq[BLACK] = static_cast<Square>(idx >> 6 & 0x3F);
 
     // Invalid if two pieces are on the same square or if a king can be captured
     if (   distance(ksq[WHITE], ksq[BLACK]) <= 1
         || ksq[WHITE] == psq
         || ksq[BLACK] == psq
-        || (stm == WHITE && (pawn_attacks_bb(WHITE, psq) & ksq[BLACK])))
+        || stm == WHITE && pawn_attacks_bb(WHITE, psq) & ksq[BLACK])
         result = INVALID;
 
     // Win if the pawn can be promoted without getting captured
@@ -120,13 +118,13 @@ namespace {
              && rank_of(psq) == RANK_7
              && ksq[WHITE] != psq + NORTH
              && (    distance(ksq[BLACK], psq + NORTH) > 1
-                 || (distance(ksq[WHITE], psq + NORTH) == 1)))
+                 || distance(ksq[WHITE], psq + NORTH) == 1))
         result = WIN;
 
     // Draw if it is stalemate or the black king can capture the pawn
     else if (   stm == BLACK
              && (  !(attacks_bb<KING>(ksq[BLACK]) & ~(attacks_bb<KING>(ksq[WHITE]) | pawn_attacks_bb(WHITE, psq)))
-                 || (attacks_bb<KING>(ksq[BLACK]) & ~attacks_bb<KING>(ksq[WHITE]) & psq)))
+                 || attacks_bb<KING>(ksq[BLACK]) & ~attacks_bb<KING>(ksq[WHITE]) & psq))
         result = DRAW;
 
     // Position will be classified later
@@ -145,8 +143,8 @@ namespace {
     // of the current position is DRAW. If all moves lead to positions classified
     // as WIN, the position is classified as WIN, otherwise the current position is
     // classified as UNKNOWN.
-    const Result Good = (stm == WHITE ? WIN   : DRAW);
-    const Result Bad  = (stm == WHITE ? DRAW  : WIN);
+    const Result Good = stm == WHITE ? WIN   : DRAW;
+    const Result Bad  = stm == WHITE ? DRAW  : WIN;
 
     Result r = INVALID;
     Bitboard b = attacks_bb<KING>(ksq[stm]);

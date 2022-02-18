@@ -41,7 +41,7 @@ namespace Detail {
 // Initialize the evaluation function parameters
 template <typename T>
 void Initialize(AlignedPtr<T>& pointer) {
-  pointer.reset(reinterpret_cast<T*>(aligned_malloc(sizeof(T), alignof(T))));
+  pointer.reset(static_cast<T*>(aligned_malloc(sizeof(T), alignof(T))));
   std::memset(pointer.get(), 0, sizeof(T));
 }
 
@@ -49,7 +49,7 @@ void Initialize(AlignedPtr<T>& pointer) {
 template <typename T>
 bool ReadParameters(std::istream& stream, const AlignedPtr<T>& pointer) {
   std::uint32_t header;
-  stream.read(reinterpret_cast<char*>(&header), sizeof(header));
+  stream.read(reinterpret_cast<char*>(&header), sizeof header);
   if (!stream || header != T::GetHashValue()) return false;
   return pointer->ReadParameters(stream);
 }
@@ -58,7 +58,7 @@ bool ReadParameters(std::istream& stream, const AlignedPtr<T>& pointer) {
 template <typename T>
 bool WriteParameters(std::ostream& stream, const AlignedPtr<T>& pointer) {
   constexpr std::uint32_t header = T::GetHashValue();
-  stream.write(reinterpret_cast<const char*>(&header), sizeof(header));
+  stream.write(reinterpret_cast<const char*>(&header), sizeof header);
   return pointer->WriteParameters(stream);
 }
 
@@ -76,9 +76,9 @@ void Initialize() {
 bool ReadHeader(std::istream& stream,
   std::uint32_t* hash_value, std::string* architecture) {
   std::uint32_t version, size;
-  stream.read(reinterpret_cast<char*>(&version), sizeof(version));
-  stream.read(reinterpret_cast<char*>(hash_value), sizeof(*hash_value));
-  stream.read(reinterpret_cast<char*>(&size), sizeof(size));
+  stream.read(reinterpret_cast<char*>(&version), sizeof version);
+  stream.read(reinterpret_cast<char*>(hash_value), sizeof*hash_value);
+  stream.read(reinterpret_cast<char*>(&size), sizeof size);
   if (!stream || version != kVersion) return false;
   architecture->resize(size);
   stream.read(&(*architecture)[0], size);
@@ -87,11 +87,11 @@ bool ReadHeader(std::istream& stream,
 
 // write the header
 bool WriteHeader(std::ostream& stream,
-  std::uint32_t hash_value, const std::string& architecture) {
-  stream.write(reinterpret_cast<const char*>(&kVersion), sizeof(kVersion));
-  stream.write(reinterpret_cast<const char*>(&hash_value), sizeof(hash_value));
-  const std::uint32_t size = static_cast<std::uint32_t>(architecture.size());
-  stream.write(reinterpret_cast<const char*>(&size), sizeof(size));
+                 const std::uint32_t hash_value, const std::string& architecture) {
+  stream.write(reinterpret_cast<const char*>(&kVersion), sizeof kVersion);
+  stream.write(reinterpret_cast<const char*>(&hash_value), sizeof hash_value);
+  const auto size = static_cast<std::uint32_t>(architecture.size());
+  stream.write(reinterpret_cast<const char*>(&size), sizeof size);
   stream.write(architecture.data(), size);
   return !stream.fail();
 }
@@ -121,7 +121,7 @@ static void UpdateAccumulatorIfPossible(const Position& pos) {
 }
 
 // Calculate the evaluation value
-static Value ComputeScore(const Position& pos, bool refresh = false) {
+static Value ComputeScore(const Position& pos, const bool refresh = false) {
   auto& accumulator = pos.state()->accumulator;
   if (!refresh && accumulator.computed_score) {
     return accumulator.score;
@@ -173,7 +173,7 @@ struct alignas(16) ScoreKeyValue {
   }
 
   // It is necessary to be able to operate atomically with evaluate hash, so the manipulator for that
-  void encode() {
+  static void encode() {
 #if defined(USE_SSE2)
     // ScoreKeyValue is copied to atomic, so if the key matches, the data matches.
 #else
@@ -181,7 +181,7 @@ struct alignas(16) ScoreKeyValue {
 #endif
   }
   // decode() is the reverse conversion of encode(), but since it is xor, the reverse conversion is the same.
-  void decode() { encode(); }
+  static void decode() { encode(); }
 
   union {
     struct {
@@ -199,11 +199,11 @@ struct alignas(16) ScoreKeyValue {
 template <typename T, size_t Size>
 struct HashTable {
   HashTable() { clear(); }
-  T* operator [] (const Key k) { return entries_ + (static_cast<size_t>(k) & (Size - 1)); }
+  T* operator [] (const Key k) { return entries_ + (static_cast<size_t>(k) & Size - 1); }
   void clear() { memset(entries_, 0, sizeof(T)*Size); }
 
   // Check that Size is a power of 2
-  static_assert((Size & (Size - 1)) == 0, "");
+  static_assert((Size & Size - 1) == 0, "");
 
  private:
   T entries_[Size];
@@ -225,8 +225,8 @@ EvaluateHashTable g_evalTable;
 
 // Prepare a function to prefetch.
 void prefetch_evalhash(const Key key) {
-  constexpr auto mask = ~((uint64_t)0x1f);
-  prefetch((void*)((uint64_t)g_evalTable[key] & mask));
+  constexpr auto mask = ~static_cast<uint64_t>(0x1f);
+  prefetch((void*)(reinterpret_cast<uint64_t>(g_evalTable[key]) & mask));
 }
 #endif
 
@@ -238,7 +238,7 @@ void load_eval() {
   // Must be done!
   NNUE::Initialize();
 
-  if (Options["SkipLoadingEval"])
+  if (static_cast<size_t>(Options["SkipLoadingEval"]))
   {
       std::cout << "info string SkipLoadingEval set to true, Net not loaded!" << std::endl;
       return;
@@ -248,9 +248,8 @@ void load_eval() {
   NNUE::fileName = file_name;
 
   std::ifstream stream(file_name, std::ios::binary);
-  const bool result = NNUE::ReadParameters(stream);
 
-  if (!result)
+  if (const bool result = NNUE::ReadParameters(stream); !result)
       // It's a problem if it doesn't finish when there is a read error.
       std::cout << "info string Error! " << NNUE::fileName << " not found or wrong format" << std::endl;
 
@@ -286,25 +285,25 @@ Value NNUE::evaluate(const Position& pos) {
   }
 #endif
 
-  if (Options["UseEvalHash"]) {
+  if (static_cast<size_t>(Options["UseEvalHash"])) {
       // May be in the evaluate hash table.
       const Key key = pos.key();
       ScoreKeyValue entry = *g_evalTable[key];
-      entry.decode();
+      ScoreKeyValue::decode();
       if (entry.key == key) {
         // there were!
-        return Value(entry.score);
+        return static_cast<Value>(entry.score);
       }
 
-      Value score = NNUE::ComputeScore(pos);
+      const Value score = ComputeScore(pos);
 
       // Since it was calculated carefully, save it in the evaluate hash table.
       entry.key = key;
       entry.score = score;
-      entry.encode();
+      ScoreKeyValue::encode();
       *g_evalTable[key] = entry;
   }
-  Value score = NNUE::ComputeScore(pos);
+  const Value score = ComputeScore(pos);
   return score;
 }
 

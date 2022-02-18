@@ -25,7 +25,6 @@
 #include "position.h"
 #include "search.h"
 #include "thread.h"
-#include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
@@ -33,18 +32,18 @@ namespace PSQT {
   void init();
 }
 
-int main(int argc, char* argv[]) {
+int main(const int argc, char* argv[]) {
 
   std::cout << engine_info() << std::endl;
 
-  UCI::init(Options);
+  init(Options);
   Tune::init();
   PSQT::init();
   Bitboards::init();
   Position::init();
   Bitbases::init();
   Endgames::init();
-  Threads.set(size_t(Options["Threads"]));
+  Threads.set(static_cast<size_t>(Options["Threads"]));
   Search::clear(); // After threads are up
 
   UCI::loop(argc, argv);

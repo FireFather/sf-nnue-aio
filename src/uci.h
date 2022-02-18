@@ -24,8 +24,6 @@
 #include <map>
 #include <string>
 
-#include "types.h"
-
 class Position;
 
 namespace UCI {
@@ -46,9 +44,9 @@ class Option {
   typedef void (*OnChange)(const Option&);
 
 public:
-  Option(OnChange = nullptr);
-  Option(bool v, OnChange = nullptr);
-  Option(const char* v, OnChange = nullptr);
+  explicit Option(OnChange = nullptr);
+  explicit Option(bool v, OnChange = nullptr);
+  explicit Option(const char* v, OnChange = nullptr);
   Option(double v, int minv, int maxv, OnChange = nullptr);
   Option(const char* v, const char* cur, OnChange = nullptr);
 
@@ -63,7 +61,7 @@ private:
 
   std::string defaultValue, currentValue, type;
   int min, max;
-  size_t idx;
+  size_t idx{};
   OnChange on_change;
 };
 

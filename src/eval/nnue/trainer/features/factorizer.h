@@ -41,7 +41,7 @@ struct FeatureProperties {
 // Add the original input features to the learning features
 template <typename FeatureType>
 IndexType AppendBaseFeature(
-    FeatureProperties properties, IndexType base_index,
+	const FeatureProperties properties, IndexType base_index,
     std::vector<TrainingFeature>* training_features) {
   assert(properties.dimensions == FeatureType::kDimensions);
   assert(base_index < FeatureType::kDimensions);
@@ -52,7 +52,7 @@ IndexType AppendBaseFeature(
 // If the learning rate scale is not 0, inherit other types of learning features
 template <typename FeatureType>
 IndexType InheritFeaturesIfRequired(
-    IndexType index_offset, FeatureProperties properties, IndexType base_index,
+	const IndexType index_offset, const FeatureProperties properties, IndexType base_index,
     std::vector<TrainingFeature>* training_features) {
   if (!properties.active) {
     return 0;
@@ -72,7 +72,7 @@ IndexType InheritFeaturesIfRequired(
 
 // Return the index difference as needed, without adding learning features
 // Call instead of InheritFeaturesIfRequired() if there are no corresponding features
-IndexType SkipFeatures(FeatureProperties properties) {
+IndexType SkipFeatures(const FeatureProperties properties) {
   if (!properties.active) {
     return 0;
   }

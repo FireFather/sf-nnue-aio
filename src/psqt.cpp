@@ -18,8 +18,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <algorithm>
-
 #include "types.h"
 #include "bitboard.h"
 
@@ -31,7 +29,7 @@ namespace PSQT {
 // type on a given square a (middlegame, endgame) score pair is assigned. Table
 // is defined for files A..D and white side: it is symmetric for black side and
 // second half of the files.
-constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
+constexpr Score Bonus[][RANK_NB][static_cast<int>(FILE_NB) / 2] = {
   { },
   { },
   { // Knight
@@ -107,13 +105,13 @@ Score psq[PIECE_NB][SQUARE_NB];
 // the tables are initialized by flipping and changing the sign of the white scores.
 void init() {
 
-  for (Piece pc : {W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING})
+  for (const Piece pc : {W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING})
   {
-      Score score = make_score(PieceValue[MG][pc], PieceValue[EG][pc]);
+	  const Score score = make_score(PieceValue[MG][pc], PieceValue[EG][pc]);
 
       for (Square s = SQ_A1; s <= SQ_H8; ++s)
       {
-          File f = File(edge_distance(file_of(s)));
+	      const auto f = static_cast<File>(edge_distance(file_of(s)));
           psq[ pc][s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
                                                      : Bonus[pc][rank_of(s)][f]);
           psq[~pc][flip_rank(s)] = -psq[pc][s];

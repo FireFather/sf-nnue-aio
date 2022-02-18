@@ -19,16 +19,12 @@
 */
 
 #ifdef _WIN32
-#if _WIN32_WINNT < 0x0601
-#undef  _WIN32_WINNT
-#define _WIN32_WINNT 0x0601 // Force to include needed API prototypes
-#endif
 
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
 
-#include <windows.h>
+#include <Windows.h>
 // The needed Windows API for processor groups could be missed from old Windows
 // versions, so instead of calling them directly (forcing the linker to resolve
 // the calls at compile time), try to load them at runtime. To do this we need
@@ -62,7 +58,7 @@ namespace {
 
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
-const string Version = "";
+const string Version;
 
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 /// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
@@ -70,25 +66,26 @@ const string Version = "";
 /// usual I/O functionality, all without changing a single line of code!
 /// Idea from http://groups.google.com/group/comp.lang.c++/msg/1d941c0f26ea0d81
 
-struct Tie: public streambuf { // MSVC requires split streambuf for cin and cout
+struct Tie final : streambuf { // MSVC requires split streambuf for cin and cout
 
   Tie(streambuf* b, streambuf* l) : buf(b), logBuf(l) {}
 
   int sync() override { return logBuf->pubsync(), buf->pubsync(); }
-  int overflow(int c) override { return log(buf->sputc((char)c), "<< "); }
+  int overflow(const int c) override { return log(buf->sputc(static_cast<char>(c)), "<< "); }
   int underflow() override { return buf->sgetc(); }
   int uflow() override { return log(buf->sbumpc(), ">> "); }
 
   streambuf *buf, *logBuf;
 
-  int log(int c, const char* prefix) {
+  int log(const int c, const char* prefix) const
+  {
 
     static int last = '\n'; // Single log file
 
     if (last == '\n')
         logBuf->sputn(prefix, 3);
 
-    return last = logBuf->sputc((char)c);
+    return last = logBuf->sputc(static_cast<char>(c));
   }
 };
 
@@ -134,7 +131,8 @@ public:
 /// the program was compiled) or "Stockfish <Version>", depending on whether
 /// Version is empty.
 
-const string engine_info(bool to_uci) {
+string engine_info(bool to_uci)
+{
 
   const string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
   string month, day, year;
@@ -143,7 +141,7 @@ const string engine_info(bool to_uci) {
   ss << "SF+NNUE " << Version << "AIO " << setfill('0');
 
   date >> month >> day >> year;
-  ss << setw(2) << day << setw(2) << (1 + months.find(month) / 4) << year.substr(2);
+  ss << setw(2) << day << setw(2) << 1 + months.find(month) / 4 << year.substr(2);
 
   ss << (Is64Bit ? " x64" : "")
      << (HasPext ? " bmi2" : HasAvx2 ? " avx2" : HasPopCnt ? " popc" : "")
@@ -156,7 +154,8 @@ const string engine_info(bool to_uci) {
 
 /// compiler_info() returns a string trying to describe the compiler we use
 
-const std::string compiler_info() {
+std::string compiler_info()
+{
 
   #define stringify2(x) #x
   #define stringify(x) stringify2(x)
@@ -228,9 +227,9 @@ const std::string compiler_info() {
 /// Debug functions used mainly to collect run-time statistics
 static std::atomic<int64_t> hits[2], means[2];
 
-void dbg_hit_on(bool b) { ++hits[0]; if (b) ++hits[1]; }
-void dbg_hit_on(bool c, bool b) { if (c) dbg_hit_on(b); }
-void dbg_mean_of(int v) { ++means[0]; means[1] += v; }
+void dbg_hit_on(const bool b) { ++hits[0]; if (b) ++hits[1]; }
+void dbg_hit_on(const bool c, const bool b) { if (c) dbg_hit_on(b); }
+void dbg_mean_of(const int v) { ++means[0]; means[1] += v; }
 
 void dbg_print() {
 
@@ -240,14 +239,14 @@ void dbg_print() {
 
   if (means[0])
       cerr << "Total " << means[0] << " Mean "
-           << (double)means[1] / means[0] << endl;
+           << static_cast<double>(means[1]) / static_cast<double>(means[0]) << endl;
 }
 
 
 /// Used to serialize access to std::cout to avoid multiple threads writing at
 /// the same time.
 
-std::ostream& operator<<(std::ostream& os, SyncCout sc) {
+std::ostream& operator<<(std::ostream& os, const SyncCout sc) {
 
   static std::mutex m;
 
@@ -283,7 +282,7 @@ void prefetch(void* addr) {
 #  endif
 
 #  if defined(__INTEL_COMPILER) || defined(_MSC_VER)
-  _mm_prefetch((char*)addr, _MM_HINT_T0);
+  _mm_prefetch(static_cast<char*>(addr), _MM_HINT_T0);
 #  else
   __builtin_prefetch(addr);
 #  endif
@@ -324,7 +323,7 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
   if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hProcessToken))
       return nullptr;
 
-  if (LookupPrivilegeValue(NULL, SE_LOCK_MEMORY_NAME, &luid))
+  if (LookupPrivilegeValue(nullptr, SE_LOCK_MEMORY_NAME, &luid))
   {
       TOKEN_PRIVILEGES tp { };
       TOKEN_PRIVILEGES prevTp { };
@@ -341,12 +340,12 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
           GetLastError() == ERROR_SUCCESS)
       {
           // Round up size to full pages and allocate
-          allocSize = (allocSize + largePageSize - 1) & ~size_t(largePageSize - 1);
+          allocSize = allocSize + largePageSize - 1 & ~(largePageSize - 1);
           mem = VirtualAlloc(
-              NULL, allocSize, MEM_RESERVE | MEM_COMMIT | MEM_LARGE_PAGES, PAGE_READWRITE);
+	          nullptr, allocSize, MEM_RESERVE | MEM_COMMIT | MEM_LARGE_PAGES, PAGE_READWRITE);
 
           // Privilege no longer needed, restore previous state
-          AdjustTokenPrivileges(hProcessToken, FALSE, &prevTp, 0, NULL, NULL);
+          AdjustTokenPrivileges(hProcessToken, FALSE, &prevTp, 0, nullptr, nullptr);
       }
   }
 
@@ -355,12 +354,12 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
   return mem;
 }
 
-void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
+void* aligned_ttmem_alloc(const size_t size, void*& mem) {
 
   static bool firstCall = true;
 
   // Try to allocate large pages
-  mem = aligned_ttmem_alloc_large_pages(allocSize);
+  mem = aligned_ttmem_alloc_large_pages(size);
 
   // Suppress info strings on the first call. The first call occurs before 'uci'
   // is received and in that case this output confuses some GUIs.
@@ -375,7 +374,7 @@ void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
 
   // Fall back to regular, page aligned, allocation if necessary
   if (!mem)
-      mem = VirtualAlloc(NULL, allocSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+      mem = VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
   return mem;
 }
@@ -402,7 +401,7 @@ void aligned_ttmem_free(void* mem) {
 
   if (mem && !VirtualFree(mem, 0, MEM_RELEASE))
   {
-      DWORD err = GetLastError();
+	  const DWORD err = GetLastError();
       std::cerr << "Failed to free transposition table. Error code: 0x" <<
           std::hex << err << std::dec << std::endl;
       exit(EXIT_FAILURE);
@@ -430,7 +429,7 @@ void bindThisThread(size_t) {}
 /// API and returns the best group id for the thread with index idx. Original
 /// code from Texel by Peter Österlund.
 
-int best_group(size_t idx) {
+int best_group(const size_t idx) {
 
   int threads = 0;
   int nodes = 0;
@@ -439,8 +438,8 @@ int best_group(size_t idx) {
   DWORD byteOffset = 0;
 
   // Early exit if the needed API is not available at runtime
-  HMODULE k32 = GetModuleHandle("Kernel32.dll");
-  auto fun1 = (fun1_t)(void(*)())GetProcAddress(k32, "GetLogicalProcessorInformationEx");
+  const HMODULE k32 = GetModuleHandle("Kernel32.dll");
+  const auto fun1 = reinterpret_cast<fun1_t>(reinterpret_cast<void(*)()>(GetProcAddress(k32, "GetLogicalProcessorInformationEx")));
   if (!fun1)
       return -1;
 
@@ -449,8 +448,8 @@ int best_group(size_t idx) {
       return -1;
 
   // Once we know returnLength, allocate the buffer
-  SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *buffer, *ptr;
-  ptr = buffer = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)malloc(returnLength);
+  SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX *buffer;
+  SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX* ptr = buffer = static_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*>(malloc(returnLength));
 
   // Second call, now we expect to succeed
   if (!fun1(RelationAll, buffer, &returnLength))
@@ -467,12 +466,12 @@ int best_group(size_t idx) {
       else if (ptr->Relationship == RelationProcessorCore)
       {
           cores++;
-          threads += (ptr->Processor.Flags == LTP_PC_SMT) ? 2 : 1;
+          threads += ptr->Processor.Flags == LTP_PC_SMT ? 2 : 1;
       }
 
       assert(ptr->Size);
       byteOffset += ptr->Size;
-      ptr = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*)(((char*)ptr) + ptr->Size);
+      ptr = reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*>(reinterpret_cast<char*>(ptr) + ptr->Size);
   }
 
   free(buffer);
@@ -499,18 +498,18 @@ int best_group(size_t idx) {
 
 /// bindThisThread() set the group affinity of the current thread
 
-void bindThisThread(size_t idx) {
+void bindThisThread(const size_t idx) {
 
   // Use only local variables to be thread-safe
-  int group = best_group(idx);
+  const int group = best_group(idx);
 
   if (group == -1)
       return;
 
   // Early exit if the needed API are not available at runtime
-  HMODULE k32 = GetModuleHandle("Kernel32.dll");
-  auto fun2 = (fun2_t)(void(*)())GetProcAddress(k32, "GetNumaNodeProcessorMaskEx");
-  auto fun3 = (fun3_t)(void(*)())GetProcAddress(k32, "SetThreadGroupAffinity");
+  const HMODULE k32 = GetModuleHandle("Kernel32.dll");
+  const auto fun2 = reinterpret_cast<fun2_t>(reinterpret_cast<void(*)()>(GetProcAddress(k32, "GetNumaNodeProcessorMaskEx")));
+  const auto fun3 = reinterpret_cast<fun3_t>(reinterpret_cast<void(*)()>(GetProcAddress(k32, "SetThreadGroupAffinity")));
 
   if (!fun2 || !fun3)
       return;
@@ -535,22 +534,22 @@ std::string now_string()
 #pragma warning(disable : 4996)
 #endif
 
-  auto now = std::chrono::system_clock::now();
-  auto tp = std::chrono::system_clock::to_time_t(now);
+  const auto now = std::chrono::system_clock::now();
+  const auto tp = std::chrono::system_clock::to_time_t(now);
   auto result = string(std::ctime(&tp));
 
   // remove line endings if they are included at the end
-  while (*result.rbegin() == '\n' || (*result.rbegin() == '\r'))
+  while (*result.rbegin() == '\n' || *result.rbegin() == '\r')
     result.pop_back();
   return result;
 }
 
-void sleep(int ms)
+void sleep(const int ms)
 {
 	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-void* aligned_malloc(size_t size, size_t align)
+void* aligned_malloc(const size_t size, const size_t align)
 {
 	void* p = _mm_malloc(size, align);
 	if (p == nullptr)
@@ -561,18 +560,18 @@ void* aligned_malloc(size_t size, size_t align)
 	return p;
 }
 
-int read_file_to_memory(std::string filename, std::function<void* (uint64_t)> callback_func)
+int read_file_to_memory(const std::string& filename, const std::function<void* (uint64_t)>& callback_func)
 {
   fstream fs(filename, ios::in | ios::binary);
   if (fs.fail())
     return 1;
 
   fs.seekg(0, fstream::end);
-  uint64_t eofPos = (uint64_t)fs.tellg();
+  const uint64_t eofPos = fs.tellg();
   fs.clear(); // Otherwise the next seek may fail.
   fs.seekg(0, fstream::beg);
-  uint64_t begPos = (uint64_t)fs.tellg();
-  uint64_t file_size = eofPos - begPos;
+  const uint64_t begPos = fs.tellg();
+  const uint64_t file_size = eofPos - begPos;
   //std::cout << "filename = " << filename << " , file_size = " << file_size << endl;
 
   // I know the file size, so call callback_func to get a buffer for this,
@@ -586,12 +585,12 @@ int read_file_to_memory(std::string filename, std::function<void* (uint64_t)> ca
 
   // read in pieces
 
-  const uint64_t block_size = 1024 * 1024 * 1024; // number of elements to read in one read (1GB)
+  constexpr uint64_t block_size = 1024 * 1024 * 1024; // number of elements to read in one read (1GB)
   for (uint64_t pos = 0; pos < file_size; pos += block_size)
   {
     // size to read this time
-    uint64_t read_size = (pos + block_size < file_size) ? block_size : (file_size - pos);
-    fs.read((char*)ptr + pos, read_size);
+    const uint64_t read_size = pos + block_size < file_size ? block_size : file_size - pos;
+    fs.read(static_cast<char*>(ptr) + pos, read_size);
 
     // Read error occurred in the middle of the file.
     if (fs.fail())
@@ -604,18 +603,18 @@ int read_file_to_memory(std::string filename, std::function<void* (uint64_t)> ca
   return 0;
 }
 
-int write_memory_to_file(std::string filename, void* ptr, uint64_t size)
+int write_memory_to_file(const std::string& filename, void* ptr, const uint64_t size)
 {
   fstream fs(filename, ios::out | ios::binary);
   if (fs.fail())
     return 1;
 
-  const uint64_t block_size = 1024 * 1024 * 1024; // number of elements to write in one write (1GB)
+  constexpr uint64_t block_size = 1024 * 1024 * 1024; // number of elements to write in one write (1GB)
   for (uint64_t pos = 0; pos < size; pos += block_size)
   {
     // Memory size to write this time
-    uint64_t write_size = (pos + block_size < size) ? block_size : (size - pos);
-    fs.write((char*)ptr + pos, write_size);
+    const uint64_t write_size = pos + block_size < size ? block_size : size - pos;
+    fs.write(static_cast<char*>(ptr) + pos, write_size);
     //cout << ".";
   }
   fs.close();

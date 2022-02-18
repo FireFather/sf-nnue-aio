@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{D817DD94-7594-46A0-9D59-889E5E5C5657}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)$(Platform)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>EVAL_NNUE;EVAL_LEARN;USE_PEXT;USE_AVX2;USE_POPCNT;USE_SS42;USE_SSE2;ENABLE_TEST_CMD;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="benchmark.cpp" />
+    <ClCompile Include="bitbase.cpp" />
+    <ClCompile Include="bitboard.cpp" />
+    <ClCompile Include="endgame.cpp" />
+    <ClCompile Include="evaluate.cpp" />
+    <ClCompile Include="eval\evaluate_mir_inv_tools.cpp" />
+    <ClCompile Include="eval\nnue\evaluate_nnue.cpp" />
+    <ClCompile Include="eval\nnue\evaluate_nnue_learner.cpp" />
+    <ClCompile Include="eval\nnue\features\castling_right.cpp" />
+    <ClCompile Include="eval\nnue\features\enpassant.cpp" />
+    <ClCompile Include="eval\nnue\features\half_kp.cpp" />
+    <ClCompile Include="eval\nnue\features\half_relative_kp.cpp" />
+    <ClCompile Include="eval\nnue\features\k.cpp" />
+    <ClCompile Include="eval\nnue\features\p.cpp" />
+    <ClCompile Include="eval\nnue\nnue_test_command.cpp" />
+    <ClCompile Include="extra\sfen_packer.cpp" />
+    <ClCompile Include="learn\gensfen2019.cpp" />
+    <ClCompile Include="learn\learner.cpp" />
+    <ClCompile Include="learn\learning_tools.cpp" />
+    <ClCompile Include="learn\multi_think.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="material.cpp" />
+    <ClCompile Include="misc.cpp" />
+    <ClCompile Include="movegen.cpp" />
+    <ClCompile Include="movepick.cpp" />
+    <ClCompile Include="pawns.cpp" />
+    <ClCompile Include="position.cpp" />
+    <ClCompile Include="psqt.cpp" />
+    <ClCompile Include="search.cpp" />
+    <ClCompile Include="syzygy\tbprobe.cpp" />
+    <ClCompile Include="thread.cpp" />
+    <ClCompile Include="timeman.cpp" />
+    <ClCompile Include="tt.cpp" />
+    <ClCompile Include="tune.cpp" />
+    <ClCompile Include="uci.cpp" />
+    <ClCompile Include="ucioption.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bitboard.h" />
+    <ClInclude Include="endgame.h" />
+    <ClInclude Include="evaluate.h" />
+    <ClInclude Include="eval\evaluate_common.h" />
+    <ClInclude Include="eval\evaluate_mir_inv_tools.h" />
+    <ClInclude Include="eval\nnue\architectures\halfkp-cr-ep_256x2-32-32.h" />
+    <ClInclude Include="eval\nnue\architectures\halfkp_256x2-32-32.h" />
+    <ClInclude Include="eval\nnue\architectures\halfkp_384x2-32-32.h" />
+    <ClInclude Include="eval\nnue\architectures\k-p-cr-ep_256x2-32-32.h" />
+    <ClInclude Include="eval\nnue\architectures\k-p-cr_256x2-32-32.h" />
+    <ClInclude Include="eval\nnue\architectures\k-p_256x2-32-32.h" />
+    <ClInclude Include="eval\nnue\evaluate_nnue.h" />
+    <ClInclude Include="eval\nnue\evaluate_nnue_learner.h" />
+    <ClInclude Include="eval\nnue\features\castling_right.h" />
+    <ClInclude Include="eval\nnue\features\enpassant.h" />
+    <ClInclude Include="eval\nnue\features\features_common.h" />
+    <ClInclude Include="eval\nnue\features\feature_set.h" />
+    <ClInclude Include="eval\nnue\features\half_kp.h" />
+    <ClInclude Include="eval\nnue\features\half_relative_kp.h" />
+    <ClInclude Include="eval\nnue\features\index_list.h" />
+    <ClInclude Include="eval\nnue\features\k.h" />
+    <ClInclude Include="eval\nnue\features\p.h" />
+    <ClInclude Include="eval\nnue\layers\affine_transform.h" />
+    <ClInclude Include="eval\nnue\layers\clipped_relu.h" />
+    <ClInclude Include="eval\nnue\layers\input_slice.h" />
+    <ClInclude Include="eval\nnue\layers\sum.h" />
+    <ClInclude Include="eval\nnue\nnue_accumulator.h" />
+    <ClInclude Include="eval\nnue\nnue_architecture.h" />
+    <ClInclude Include="eval\nnue\nnue_common.h" />
+    <ClInclude Include="eval\nnue\nnue_feature_transformer.h" />
+    <ClInclude Include="eval\nnue\nnue_test_command.h" />
+    <ClInclude Include="eval\nnue\trainer\features\factorizer.h" />
+    <ClInclude Include="eval\nnue\trainer\features\factorizer_feature_set.h" />
+    <ClInclude Include="eval\nnue\trainer\features\factorizer_half_kp.h" />
+    <ClInclude Include="eval\nnue\trainer\trainer.h" />
+    <ClInclude Include="eval\nnue\trainer\trainer_affine_transform.h" />
+    <ClInclude Include="eval\nnue\trainer\trainer_clipped_relu.h" />
+    <ClInclude Include="eval\nnue\trainer\trainer_feature_transformer.h" />
+    <ClInclude Include="eval\nnue\trainer\trainer_input_slice.h" />
+    <ClInclude Include="eval\nnue\trainer\trainer_sum.h" />
+    <ClInclude Include="learn\half_float.h" />
+    <ClInclude Include="learn\learn.h" />
+    <ClInclude Include="learn\learning_tools.h" />
+    <ClInclude Include="learn\multi_think.h" />
+    <ClInclude Include="material.h" />
+    <ClInclude Include="misc.h" />
+    <ClInclude Include="movegen.h" />
+    <ClInclude Include="movepick.h" />
+    <ClInclude Include="pawns.h" />
+    <ClInclude Include="position.h" />
+    <ClInclude Include="search.h" />
+    <ClInclude Include="syzygy\tbprobe.h" />
+    <ClInclude Include="thread.h" />
+    <ClInclude Include="thread_win32_osx.h" />
+    <ClInclude Include="timeman.h" />
+    <ClInclude Include="tt.h" />
+    <ClInclude Include="tune.h" />
+    <ClInclude Include="types.h" />
+    <ClInclude Include="uci.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

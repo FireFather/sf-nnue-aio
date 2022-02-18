@@ -3,8 +3,6 @@
 #include "../misc.h"
 #include "../position.h"
 
-#include <sstream>
-#include <fstream>
 #include <cstring> // std::memset()
 
 using namespace std;
@@ -22,17 +20,17 @@ struct BitStream
   void  set_data(uint8_t* data_) { data = data_; reset(); }
 
   // Get the pointer passed in set_data().
-  uint8_t* get_data() const { return data; }
+  [[nodiscard]] uint8_t* get_data() const { return data; }
 
   // Get the cursor.
-  int get_cursor() const { return bit_cursor; }
+  [[nodiscard]] int get_cursor() const { return bit_cursor; }
 
   // reset the cursor
   void reset() { bit_cursor = 0; }
 
   // Write 1bit to the stream.
   // If b is non-zero, write out 1. If 0, write 0.
-  void write_one_bit(int b)
+  void write_one_bit(const int b)
   {
     if (b)
       data[bit_cursor / 8] |= 1 << (bit_cursor & 7);
@@ -43,7 +41,7 @@ struct BitStream
   // Get 1 bit from the stream.
   int read_one_bit()
   {
-    int b = (data[bit_cursor / 8] >> (bit_cursor & 7)) & 1;
+	  const int b = data[bit_cursor / 8] >> (bit_cursor & 7) & 1;
     ++bit_cursor;
 
     return b;
@@ -51,29 +49,29 @@ struct BitStream
 
   // write n bits of data
   // Data shall be written out from the lower order of d.
-  void write_n_bit(int d, int n)
+  void write_n_bit(int d, const int n)
   {
     for (int i = 0; i <n; ++i)
-      write_one_bit(d & (1 << i));
+      write_one_bit(d & 1 << i);
   }
 
   // read n bits of data
   // Reverse conversion of write_n_bit().
-  int read_n_bit(int n)
+  int read_n_bit(const int n)
   {
     int result = 0;
     for (int i = 0; i < n; ++i)
-      result |= read_one_bit() ? (1 << i) : 0;
+      result |= read_one_bit() ? 1 << i : 0;
 
     return result;
   }
 
 private:
   // Next bit position to read/write.
-  int bit_cursor;
+  int bit_cursor = 0;
 
   // data entity
-  uint8_t* data;
+  uint8_t* data = nullptr;
 };
 
 
@@ -162,11 +160,11 @@ struct SfenPacker
 
     // turn
     // Side to move.
-    stream.write_one_bit((int)(pos.side_to_move()));
+    stream.write_one_bit(pos.side_to_move());
 
     // 7-bit positions for leading and trailing balls
     // White king and black king, 6 bits for each.
-    for(auto c: Colors)
+    for(const auto c: Colors)
       stream.write_n_bit(pos.king_square(c), 6);
 
     // Write the pieces on the board other than the kings.
@@ -174,7 +172,7 @@ struct SfenPacker
     {
       for (File f = FILE_A; f <= FILE_H; ++f)
       {
-        Piece pc = pos.piece_on(make_square(f, r));
+	      const Piece pc = pos.piece_on(make_square(f, r));
         if (type_of(pc) == KING)
           continue;
         write_board_piece_to_stream(pc);
@@ -192,7 +190,7 @@ struct SfenPacker
     }
     else {
       stream.write_one_bit(1);
-      stream.write_n_bit(static_cast<int>(pos.ep_square()), 6);
+      stream.write_n_bit(pos.ep_square(), 6);
     }
 
     stream.write_n_bit(pos.state()->rule50, 6);
@@ -212,12 +210,12 @@ struct SfenPacker
   BitStream stream;
 
   // Output the board pieces to stream.
-  void write_board_piece_to_stream(Piece pc)
+  void write_board_piece_to_stream(const Piece pc)
   {
     // piece type
-    PieceType pr = type_of(pc);
-    auto c = huffman_table[pr];
-    stream.write_n_bit(c.code, c.bits);
+    const PieceType pr = type_of(pc);
+    const auto [code, bits] = huffman_table[pr];
+    stream.write_n_bit(code, bits);
  
     if (pc == NO_PIECE)
       return;
@@ -248,7 +246,7 @@ struct SfenPacker
       return NO_PIECE;
 
     // first and second flag
-    Color c = (Color)stream.read_one_bit();
+    const auto c = static_cast<Color>(stream.read_one_bit());
     
     return make_piece(c, pr);
   }
@@ -262,7 +260,7 @@ struct SfenPacker
 // Add a function that directly unpacks for speed. It's pretty tough.
 // Write it by combining packer::unpack() and Position::set().
 // If there is a problem with the passed phase and there is an error, non-zero is returned.
-int Position::set_from_packed_sfen(const PackedSfen& sfen , StateInfo * si, Thread* th, bool mirror)
+int Position::set_from_packed_sfen(const PackedSfen& sfen , StateInfo * si, Thread* th, const bool mirror)
 {
 	SfenPacker packer;
 	auto& stream = packer.stream;
@@ -270,11 +268,11 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen , StateInfo * si, Thre
 
 	std::memset(this, 0, sizeof(Position));
 	std::memset(si, 0, sizeof(StateInfo));
-  std::fill_n(&pieceList[0][0], sizeof(pieceList) / sizeof(Square), SQ_NONE);
+  std::fill_n(&pieceList[0][0], sizeof pieceList / sizeof(Square), SQ_NONE);
   st = si;
 
 	// Active color
-	sideToMove = (Color)stream.read_one_bit();
+	sideToMove = static_cast<Color>(stream.read_one_bit());
 
 	// clear evalList. It is cleared when memset is cleared to zero above...
 	evalList.clear();
@@ -289,12 +287,12 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen , StateInfo * si, Thre
 	// First the position of the ball
 	if (mirror)
 	{
-		for (auto c : Colors)
-			board[Mir((Square)stream.read_n_bit(6))] = make_piece(c, KING);
+		for (const auto c : Colors)
+			board[Mir(static_cast<Square>(stream.read_n_bit(6)))] = make_piece(c, KING);
 	}
 	else
 	{
-		for (auto c : Colors)
+		for (const auto c : Colors)
 			board[stream.read_n_bit(6)] = make_piece(c, KING);
 	}
 
@@ -325,12 +323,12 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen , StateInfo * si, Thre
       if (pc == NO_PIECE)
         continue;
 
-      put_piece(Piece(pc), sq);
+      put_piece(pc, sq);
 
       // update evalList
-      PieceNumber piece_no =
-        (pc == B_KING) ?PIECE_NUMBER_BKING :// Move ball
-        (pc == W_KING) ?PIECE_NUMBER_WKING :// Backing ball
+      const PieceNumber piece_no =
+        pc == B_KING ?PIECE_NUMBER_BKING :// Move ball
+        pc == W_KING ?PIECE_NUMBER_WKING :// Backing ball
         next_piece_number++; // otherwise
 
       evalList.put_piece(piece_no, sq, pc); // Place the pc piece in the sq box
@@ -370,14 +368,14 @@ int Position::set_from_packed_sfen(const PackedSfen& sfen , StateInfo * si, Thre
 
   // En passant square. Ignore if no pawn capture is possible
   if (stream.read_one_bit()) {
-    Square ep_square = static_cast<Square>(stream.read_n_bit(6));
+	  auto ep_square = static_cast<Square>(stream.read_n_bit(6));
     if (mirror) {
       ep_square = Mir(ep_square);
     }
     st->epSquare = ep_square;
 
     if (!(attackers_to(st->epSquare) & pieces(sideToMove, PAWN))
-      || !(pieces(~sideToMove, PAWN) & (st->epSquare + pawn_push(~sideToMove))))
+      || !(pieces(~sideToMove, PAWN) & st->epSquare + pawn_push(~sideToMove)))
       st->epSquare = SQ_NONE;
   }
   else {
@@ -428,10 +426,10 @@ set_state(st);
 //}
 
 // Get the packed sfen. Returns to the buffer specified in the argument.
-void Position::sfen_pack(PackedSfen& sfen)
+void Position::sfen_pack(PackedSfen& sfen) const
 {
   SfenPacker sp;
-  sp.data = (uint8_t*)&sfen;
+  sp.data = reinterpret_cast<uint8_t*>(&sfen);
   sp.pack(*this);
 }
 

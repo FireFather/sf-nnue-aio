@@ -11,7 +11,6 @@
 #include "../../position.h"
 #include "../../uci.h"
 #include "../../misc.h"
-#include "../../thread_win32_osx.h"
 
 #include "../evaluate_common.h"
 
@@ -65,8 +64,8 @@ void SendMessages(std::vector<Message> messages) {
 }  // namespace
 
 // Initialize learning
-void InitializeTraining(double eta1, uint64_t eta1_epoch,
-                        double eta2, uint64_t eta2_epoch, double eta3) {
+void InitializeTraining(const double eta1, const uint64_t eta1_epoch,
+                        const double eta2, const uint64_t eta2_epoch, const double eta3) {
   std::cout << "Initializing NN training for "
             << GetArchitectureString() << std::endl;
 
@@ -74,7 +73,7 @@ void InitializeTraining(double eta1, uint64_t eta1_epoch,
   assert(network);
   trainer = Trainer<Network>::Create(network.get(), feature_transformer.get());
 
-  if (Options["SkipLoadingEval"]) {
+  if (static_cast<size_t>(Options["SkipLoadingEval"])) {
     trainer->Initialize(rng);
   }
 
@@ -83,13 +82,13 @@ void InitializeTraining(double eta1, uint64_t eta1_epoch,
 }
 
 // set the number of samples in the mini-batch
-void SetBatchSize(uint64_t size) {
+void SetBatchSize(const uint64_t size) {
   assert(size > 0);
   batch_size = size;
 }
 
 // set the learning rate scale
-void SetGlobalLearningRateScale(double scale) {
+void SetGlobalLearningRateScale(const double scale) {
   global_learning_rate_scale = scale;
 }
 
@@ -110,7 +109,7 @@ void SetOptions(const std::string& options) {
 
 // Reread the evaluation function parameters for learning from the file
 void RestoreParameters(const std::string& dir_name) {
-  const std::string file_name = Path::Combine(dir_name, NNUE::savedfileName);
+  const std::string file_name = Path::Combine(dir_name, savedfileName);
   std::ifstream stream(file_name, std::ios::binary);
   bool result = ReadParameters(stream);
   assert(result);
@@ -119,8 +118,8 @@ void RestoreParameters(const std::string& dir_name) {
 }
 
 // Add 1 sample of learning data
-void AddExample(Position& pos, Color rootColor,
-                const Learner::PackedSfenValue& psv, double weight) {
+void AddExample(const Position& pos, const Color rootColor,
+                const Learner::PackedSfenValue& psv, const double weight) {
   Example example;
   if (rootColor == pos.side_to_move()) {
     example.sign = 1;
@@ -141,7 +140,7 @@ void AddExample(Position& pos, Color rootColor,
     std::vector<TrainingFeature> training_features;
     for (const auto base_index : active_indices[color]) {
       static_assert(Features::Factorizer<RawFeatures>::GetDimensions() <
-                    (1 << TrainingFeature::kIndexBits), "");
+                    1 << TrainingFeature::kIndexBits, "");
       Features::Factorizer<RawFeatures>::AppendTrainingFeatures(
           base_index, &training_features);
     }
@@ -158,22 +157,22 @@ void AddExample(Position& pos, Color rootColor,
     }
   }
 
-  std::lock_guard<std::mutex> lock(examples_mutex);
+  std::lock_guard lock(examples_mutex);
   examples.push_back(std::move(example));
 }
 
 // update the evaluation function parameters
-void UpdateParameters(uint64_t epoch) {
+void UpdateParameters(const uint64_t epoch) {
   assert(batch_size > 0);
 
   EvalLearningTools::Weight::calc_eta(epoch);
   const auto learning_rate = static_cast<LearnFloatType>(
-      get_eta() / batch_size);
+      get_eta() / static_cast<double>(batch_size));
 
-  std::lock_guard<std::mutex> lock(examples_mutex);
+  std::lock_guard lock(examples_mutex);
   std::shuffle(examples.begin(), examples.end(), rng);
   while (examples.size() >= batch_size) {
-    std::vector<Example> batch(examples.end() - batch_size, examples.end());
+    std::vector batch(examples.end() - batch_size, examples.end());
     examples.resize(examples.size() - batch_size);
 
     const auto network_output = trainer->Propagate(batch);
@@ -183,7 +182,7 @@ void UpdateParameters(uint64_t epoch) {
       const auto shallow = static_cast<Value>(Round<std::int32_t>(
           batch[b].sign * network_output[b] * kPonanzaConstant));
       const auto& psv = batch[b].psv;
-      const double gradient = batch[b].sign * Learner::calc_grad(shallow, psv);
+      const double gradient = batch[b].sign * calc_grad(shallow, psv);
       gradients[b] = static_cast<LearnFloatType>(gradient * batch[b].weight);
     }
 
@@ -200,8 +199,8 @@ void CheckHealth() {
 }  // namespace NNUE
 
 // save merit function parameters to a file
-void save_eval(std::string dir_name) {
-  auto eval_dir = Path::Combine(Options["EvalSaveDir"], dir_name);
+void save_eval(const std::string& dir_name) {
+	const auto eval_dir = Path::Combine(Options["EvalSaveDir"], dir_name);
   std::cout << "save_eval() start. folder = " << eval_dir << std::endl;
 
   // mkdir() will fail if this folder already exists, but
@@ -209,7 +208,7 @@ void save_eval(std::string dir_name) {
   // Also, assume that the folders up to EvalSaveDir have been dug.
   Dependency::mkdir(eval_dir);
 
-  if (Options["SkipLoadingEval"] && NNUE::trainer) {
+  if (static_cast<size_t>(Options["SkipLoadingEval"]) && NNUE::trainer) {
     NNUE::SendMessages({{"clear_unobserved_feature_weights"}});
   }
 

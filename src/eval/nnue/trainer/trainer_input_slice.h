@@ -74,7 +74,7 @@ class SharedInputTrainer {
 
   // backpropagation
   void Backpropagate(const LearnFloatType* gradients,
-                     LearnFloatType learning_rate) {
+                     const LearnFloatType learning_rate) {
     if (num_referrers_ == 1) {
       feature_transformer_trainer_->Backpropagate(gradients, learning_rate);
       return;
@@ -105,7 +105,7 @@ class SharedInputTrainer {
 
  private:
   // constructor
-  SharedInputTrainer(FeatureTransformer* feature_transformer) :
+  explicit SharedInputTrainer(FeatureTransformer* feature_transformer) :
       batch_size_(0),
       num_referrers_(0),
       num_calls_(0),
@@ -154,8 +154,7 @@ class SharedInputTrainer {
 // Learning: Input layer
 template <IndexType OutputDimensions, IndexType Offset>
 class Trainer<Layers::InputSlice<OutputDimensions, Offset>> {
- private:
-  // Type of layer to learn
+	// Type of layer to learn
   using LayerType = Layers::InputSlice<OutputDimensions, Offset>;
 
  public:
@@ -166,7 +165,8 @@ class Trainer<Layers::InputSlice<OutputDimensions, Offset>> {
   }
 
   // Set options such as hyperparameters
-  void SendMessage(Message* message) {
+  void SendMessage(Message* message) const
+  {
     shared_input_trainer_->SendMessage(message);
   }
 
@@ -201,7 +201,7 @@ class Trainer<Layers::InputSlice<OutputDimensions, Offset>> {
 
   // backpropagation
   void Backpropagate(const LearnFloatType* gradients,
-                     LearnFloatType learning_rate) {
+                     const LearnFloatType learning_rate) {
     for (IndexType b = 0; b < batch_size_; ++b) {
       const IndexType input_offset = kInputDimensions * b;
       const IndexType output_offset = kOutputDimensions * b;
@@ -218,7 +218,7 @@ class Trainer<Layers::InputSlice<OutputDimensions, Offset>> {
 
  private:
   // constructor
-  Trainer(FeatureTransformer* feature_transformer):
+	explicit Trainer(FeatureTransformer* feature_transformer):
       batch_size_(0),
       shared_input_trainer_(SharedInputTrainer::Create(feature_transformer)) {
   }

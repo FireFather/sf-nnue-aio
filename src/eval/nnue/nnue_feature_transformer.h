@@ -17,8 +17,7 @@ namespace NNUE {
 
 // Input feature converter
 class FeatureTransformer {
- private:
-  // number of output dimensions for one side
+	// number of output dimensions for one side
   static constexpr IndexType kHalfDimensions = kTransformedFeatureDimensions;
 
  public:
@@ -64,13 +63,12 @@ class FeatureTransformer {
   }
 
   // proceed with the difference calculation if possible
-  bool UpdateAccumulatorIfPossible(const Position& pos) const {
+	bool UpdateAccumulatorIfPossible(const Position& pos) const {
     const auto now = pos.state();
     if (now->accumulator.computed_accumulation) {
       return true;
     }
-    const auto prev = now->previous;
-    if (prev && prev->accumulator.computed_accumulation) {
+    if (const auto prev = now->previous; prev && prev->accumulator.computed_accumulation) {
       UpdateAccumulator(pos);
       return true;
     }
@@ -78,14 +76,13 @@ class FeatureTransformer {
   }
 
   // convert input features
-  void Transform(const Position& pos, OutputType* output, bool refresh) const {
+  void Transform(const Position& pos, OutputType* output, const bool refresh) const {
     if (refresh || !UpdateAccumulatorIfPossible(pos)) {
       RefreshAccumulator(pos);
     }
     const auto& accumulation = pos.state()->accumulator.accumulation;
 #if defined(USE_AVX2)
     constexpr IndexType kNumChunks = kHalfDimensions / kSimdWidth;
-    constexpr int kControl = 0b11011000;
     const __m256i kZero = _mm256_setzero_si256();
 #elif defined(USE_SSSE3)
     constexpr IndexType kNumChunks = kHalfDimensions / kSimdWidth;
@@ -101,9 +98,10 @@ class FeatureTransformer {
     for (IndexType p = 0; p < 2; ++p) {
       const IndexType offset = kHalfDimensions * p;
 #if defined(USE_AVX2)
-      auto out = reinterpret_cast<__m256i*>(&output[offset]);
+      const auto out = reinterpret_cast<__m256i*>(&output[offset]);
       for (IndexType j = 0; j < kNumChunks; ++j) {
-        __m256i sum0 =
+	      constexpr int kControl = 0b11011000;
+	      __m256i sum0 =
 #if defined(__MINGW32__) || defined(__MINGW64__)
           // HACK: Use _mm256_loadu_si256() instead of _mm256_load_si256. Because the binary
           //       compiled with g++ in MSYS2 crashes here because the output memory is not aligned
@@ -202,9 +200,9 @@ class FeatureTransformer {
         for (const auto index : active_indices[perspective]) {
           const IndexType offset = kHalfDimensions * index;
 #if defined(USE_AVX2)
-          auto accumulation = reinterpret_cast<__m256i*>(
+          const auto accumulation = reinterpret_cast<__m256i*>(
               &accumulator.accumulation[perspective][i][0]);
-          auto column = reinterpret_cast<const __m256i*>(&weights_[offset]);
+          const auto column = reinterpret_cast<const __m256i*>(&weights_[offset]);
           constexpr IndexType kNumChunks = kHalfDimensions / (kSimdWidth / 2);
           for (IndexType j = 0; j < kNumChunks; ++j) {
 #if defined(__MINGW32__) || defined(__MINGW64__)
@@ -254,7 +252,7 @@ class FeatureTransformer {
       for (const auto perspective : Colors) {
 #if defined(USE_AVX2)
         constexpr IndexType kNumChunks = kHalfDimensions / (kSimdWidth / 2);
-        auto accumulation = reinterpret_cast<__m256i*>(
+        const auto accumulation = reinterpret_cast<__m256i*>(
             &accumulator.accumulation[perspective][i][0]);
 #elif defined(USE_SSE2)
         constexpr IndexType kNumChunks = kHalfDimensions / (kSimdWidth / 2);
@@ -280,7 +278,7 @@ class FeatureTransformer {
           for (const auto index : removed_indices[perspective]) {
             const IndexType offset = kHalfDimensions * index;
 #if defined(USE_AVX2)
-            auto column = reinterpret_cast<const __m256i*>(&weights_[offset]);
+            const auto column = reinterpret_cast<const __m256i*>(&weights_[offset]);
             for (IndexType j = 0; j < kNumChunks; ++j) {
               accumulation[j] = _mm256_sub_epi16(accumulation[j], column[j]);
             }
@@ -306,7 +304,7 @@ class FeatureTransformer {
           for (const auto index : added_indices[perspective]) {
             const IndexType offset = kHalfDimensions * index;
 #if defined(USE_AVX2)
-            auto column = reinterpret_cast<const __m256i*>(&weights_[offset]);
+            const auto column = reinterpret_cast<const __m256i*>(&weights_[offset]);
             for (IndexType j = 0; j < kNumChunks; ++j) {
               accumulation[j] = _mm256_add_epi16(accumulation[j], column[j]);
             }

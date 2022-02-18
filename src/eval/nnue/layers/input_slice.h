@@ -32,7 +32,7 @@ class InputSlice {
   // Hash value embedded in the evaluation function file
   static constexpr std::uint32_t GetHashValue() {
     std::uint32_t hash_value = 0xEC42E90Du;
-    hash_value ^= kOutputDimensions ^ (Offset << 10);
+    hash_value ^= kOutputDimensions ^ Offset << 10;
     return hash_value;
   }
 
@@ -44,23 +44,23 @@ class InputSlice {
   }
 
   // read parameters
-  bool ReadParameters(std::istream& /*stream*/) {
+  static bool ReadParameters(std::istream& /*stream*/) {
     return true;
   }
 
   // write parameters
-  bool WriteParameters(std::ostream& /*stream*/) const {
+  static bool WriteParameters(std::ostream& /*stream*/)
+  {
     return true;
   }
 
   // forward propagation
-  const OutputType* Propagate(
+  static const OutputType* Propagate(
       const TransformedFeatureType* transformed_features,
-      char* /*buffer*/) const {
+      char* /*buffer*/)
+  {
     return transformed_features + Offset;
   }
-
- private:
 };
 
 }  // namespace Layers

@@ -38,13 +38,13 @@ namespace UCI {
 
 /// 'On change' actions, triggered by an option's value change
 void on_clear_hash(const Option&) { Search::clear(); }
-void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
+void on_hash_size(const Option& o) { TT.resize(static_cast<size_t>(o)); }
 void on_logger(const Option& o) { start_logger(o); }
-void on_threads(const Option& o) { Threads.set(size_t(o)); }
+void on_threads(const Option& o) { Threads.set(static_cast<size_t>(o)); }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
 void on_eval_file(const Option& o)
 {
-    if (Options["EvalNNUE"])
+    if (static_cast<bool>(Options["EvalNNUE"]))
     {
     load_eval_finished = false;
     init_nnue();
@@ -56,7 +56,7 @@ void on_eval_file(const Option& o)
 bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const {
 
   return std::lexicographical_compare(s1.begin(), s1.end(), s2.begin(), s2.end(),
-         [](char c1, char c2) { return tolower(c1) < tolower(c2); });
+         [](const char c1, const char c2) { return tolower(c1) < tolower(c2); });
 }
 
 
@@ -115,17 +115,17 @@ void init(OptionsMap& o) {
 std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
 
   for (size_t idx = 0; idx < om.size(); ++idx)
-      for (const auto& it : om)
-          if (it.second.idx == idx)
+      for (const auto& [fst, snd] : om)
+          if (snd.idx == idx)
           {
-              const Option& o = it.second;
-              os << "\noption name " << it.first << " type " << o.type;
+              const Option& o = snd;
+              os << "\noption name " << fst << " type " << o.type;
 
               if (o.type == "string" || o.type == "check" || o.type == "combo")
                   os << " default " << o.defaultValue;
 
               if (o.type == "spin")
-                  os << " default " << int(stof(o.defaultValue))
+                  os << " default " << static_cast<int>(stof(o.defaultValue))
                      << " min "     << o.min
                      << " max "     << o.max;
 
@@ -138,24 +138,25 @@ std::ostream& operator<<(std::ostream& os, const OptionsMap& om) {
 
 /// Option class constructors and conversion operators
 
-Option::Option(const char* v, OnChange f) : type("string"), min(0), max(0), on_change(f)
+Option::Option(const char* v, const OnChange f) : type("string"), min(0), max(0), on_change(f)
 { defaultValue = currentValue = v; }
 
-Option::Option(bool v, OnChange f) : type("check"), min(0), max(0), on_change(f)
-{ defaultValue = currentValue = (v ? "true" : "false"); }
+Option::Option(const bool v, const OnChange f) : type("check"), min(0), max(0), on_change(f)
+{ defaultValue = currentValue = v ? "true" : "false"; }
 
-Option::Option(OnChange f) : type("button"), min(0), max(0), on_change(f)
+Option::Option(const OnChange f) : type("button"), min(0), max(0), on_change(f)
 {}
 
-Option::Option(double v, int minv, int maxv, OnChange f) : type("spin"), min(minv), max(maxv), on_change(f)
+Option::Option(const double v, const int minv, const int maxv, const OnChange f) : type("spin"), min(minv), max(maxv), on_change(f)
 { defaultValue = currentValue = std::to_string(v); }
 
-Option::Option(const char* v, const char* cur, OnChange f) : type("combo"), min(0), max(0), on_change(f)
-{ defaultValue = v; currentValue = cur; }
+Option::Option(const char* v, const char* cur, const OnChange f) : defaultValue(v), currentValue(cur), type("combo"), min(0), max(0), on_change(f)
+{
+}
 
 Option::operator double() const {
   assert(type == "check" || type == "spin");
-  return (type == "spin" ? stof(currentValue) : currentValue == "true");
+  return type == "spin" ? stof(currentValue) : currentValue == "true";
 }
 
 Option::operator std::string() const {
@@ -189,9 +190,9 @@ Option& Option::operator=(const string& v) {
 
   assert(!type.empty());
 
-  if (   (type != "button" && v.empty())
-      || (type == "check" && v != "true" && v != "false")
-      || (type == "spin" && (stof(v) < min || stof(v) > max)))
+  if (   type != "button" && v.empty()
+      || type == "check" && v != "true" && v != "false"
+      || type == "spin" && (stof(v) < min || stof(v) > max))
       return *this;
 
   if (type == "combo")

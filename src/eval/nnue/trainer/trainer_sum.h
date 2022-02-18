@@ -17,8 +17,7 @@ namespace NNUE {
 template <typename FirstPreviousLayer, typename... RemainingPreviousLayers>
 class Trainer<Layers::Sum<FirstPreviousLayer, RemainingPreviousLayers...>> :
       Trainer<Layers::Sum<RemainingPreviousLayers...>> {
- private:
-  // Type of layer to learn
+      // Type of layer to learn
   using LayerType = Layers::Sum<FirstPreviousLayer, RemainingPreviousLayers...>;
   using Tail = Trainer<Layers::Sum<RemainingPreviousLayers...>>;
 
@@ -26,8 +25,7 @@ class Trainer<Layers::Sum<FirstPreviousLayer, RemainingPreviousLayers...>> :
   // factory function
   static std::shared_ptr<Trainer> Create(
       LayerType* target_layer, FeatureTransformer* feature_transformer) {
-    return std::shared_ptr<Trainer>(
-        new Trainer(target_layer, feature_transformer));
+    return std::make_shared<Trainer>(target_layer, feature_transformer);
   }
 
   // Set options such as hyperparameters
@@ -103,16 +101,14 @@ class Trainer<Layers::Sum<FirstPreviousLayer, RemainingPreviousLayers...>> :
 // Learning: Layer that takes the sum of the outputs of multiple layers (when there is one template argument)
 template <typename PreviousLayer>
 class Trainer<Layers::Sum<PreviousLayer>> {
- private:
-  // Type of layer to learn
+	// Type of layer to learn
   using LayerType = Layers::Sum<PreviousLayer>;
 
  public:
   // factory function
   static std::shared_ptr<Trainer> Create(
       LayerType* target_layer, FeatureTransformer* feature_transformer) {
-    return std::shared_ptr<Trainer>(
-        new Trainer(target_layer, feature_transformer));
+    return std::make_shared<Trainer>(target_layer, feature_transformer);
   }
 
   // Set options such as hyperparameters

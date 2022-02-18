@@ -34,10 +34,9 @@
 #endif
 
 #include "types.h"
-#include "thread_win32_osx.h"
 
-const std::string engine_info(bool to_uci = false);
-const std::string compiler_info();
+std::string engine_info(bool to_uci = false);
+std::string compiler_info();
 void prefetch(void* addr);
 void start_logger(const std::string& fname);
 void* aligned_ttmem_alloc(size_t size, void*& mem);
@@ -59,7 +58,7 @@ inline TimePoint now() {
 
 template<class Entry, int Size>
 struct HashTable {
-  Entry* operator[](Key key) { return &table[(uint32_t)key & (Size - 1)]; }
+  Entry* operator[](const Key key) { return &table[static_cast<uint32_t>(key) & Size - 1]; }
 
 private:
   std::vector<Entry> table = std::vector<Entry>(Size); // Allocate on the heap
@@ -107,7 +106,7 @@ class PRNG {
   }
 
 public:
-  PRNG(uint64_t seed) : s(seed) { assert(seed); }
+  explicit PRNG(const uint64_t seed) : s(seed) { assert(seed); }
 
   template<typename T> T rand() { return T(rand64()); }
 
@@ -116,29 +115,29 @@ public:
   template<typename T> T sparse_rand()
   { return T(rand64() & rand64() & rand64()); }
   // Returns a random number from 0 to n-1. (Not uniform distribution, but this is enough in reality)
-  uint64_t rand(uint64_t n) { return rand<uint64_t>() % n; }
+  uint64_t rand(const uint64_t n) { return rand<uint64_t>() % n; }
 
   // Return the random seed used internally.
-  uint64_t get_seed() const { return s; }
+  [[nodiscard]] uint64_t get_seed() const { return s; }
 };
 
 // Display a random seed. (For debugging)
-inline std::ostream& operator<<(std::ostream& os, PRNG& prng)
+inline std::ostream& operator<<(std::ostream& os, const PRNG& prng)
 {
   os << "PRNG::seed = " << std::hex << prng.get_seed() << std::dec;
   return os;
 }
 
-inline uint64_t mul_hi64(uint64_t a, uint64_t b) {
+inline uint64_t mul_hi64(const uint64_t a, const uint64_t b) {
 #if defined(__GNUC__) && defined(IS_64BIT)
     __extension__ typedef unsigned __int128 uint128;
     return ((uint128)a * (uint128)b) >> 64;
 #else
-    uint64_t aL = (uint32_t)a, aH = a >> 32;
-    uint64_t bL = (uint32_t)b, bH = b >> 32;
-    uint64_t c1 = (aL * bL) >> 32;
-    uint64_t c2 = aH * bL + c1;
-    uint64_t c3 = aL * bH + (uint32_t)c2;
+	const uint64_t aL = static_cast<uint32_t>(a), aH = a >> 32;
+	const uint64_t bL = static_cast<uint32_t>(b), bH = b >> 32;
+    const uint64_t c1 = aL * bL >> 32;
+    const uint64_t c2 = aH * bL + c1;
+    const uint64_t c3 = aL * bH + static_cast<uint32_t>(c2);
     return aH * bH + (c2 >> 32) + (c3 >> 32);
 #endif
 }
@@ -175,8 +174,8 @@ static void my_exit()
 // Also, if the buffer cannot be allocated in the callback function or if the file size is different from the expected file size,
 // Return nullptr. At this time, read_file_to_memory() interrupts reading and returns with an error.
 
-int read_file_to_memory(std::string filename, std::function<void* (uint64_t)> callback_func);
-int write_memory_to_file(std::string filename, void* ptr, uint64_t size);
+int read_file_to_memory(const std::string& filename, const std::function<void* (uint64_t)>& callback_func);
+int write_memory_to_file(const std::string& filename, void* ptr, uint64_t size);
 
 // --------------------
 // async version of PRNG
@@ -185,21 +184,21 @@ int write_memory_to_file(std::string filename, void* ptr, uint64_t size);
 // async version of PRNG
 struct AsyncPRNG
 {
-  AsyncPRNG(uint64_t seed) : prng(seed) { assert(seed); }
+	explicit AsyncPRNG(const uint64_t seed) : prng(seed) { assert(seed); }
   // [ASYNC] Extract one random number.
   template<typename T> T rand() {
-    std::unique_lock<std::mutex> lk(mutex);
+    std::unique_lock lk(mutex);
     return prng.rand<T>();
   }
 
   // [ASYNC] Returns a random number from 0 to n-1. (Not uniform distribution, but this is enough in reality)
-  uint64_t rand(uint64_t n) {
-    std::unique_lock<std::mutex> lk(mutex);
+  uint64_t rand(const uint64_t n) {
+    std::unique_lock lk(mutex);
     return prng.rand(n);
   }
 
   // Return the random seed used internally.
-  uint64_t get_seed() const { return prng.get_seed(); }
+  [[nodiscard]] uint64_t get_seed() const { return prng.get_seed(); }
 
 protected:
   std::mutex mutex;
@@ -207,7 +206,7 @@ protected:
 };
 
 // Display a random seed. (For debugging)
-inline std::ostream& operator<<(std::ostream& os, AsyncPRNG& prng)
+inline std::ostream& operator<<(std::ostream& os, const AsyncPRNG& prng)
 {
   os << "AsyncPRNG::seed = " << std::hex << prng.get_seed() << std::dec;
   return os;
@@ -257,9 +256,9 @@ struct Path
 	static std::string GetFileName(const std::string& path)
 	{
 		// I don't know which "\" or "/" is used.
-		auto path_index1 = path.find_last_of("\\") + 1;
-		auto path_index2 = path.find_last_of("/") + 1;
-		auto path_index = std::max(path_index1, path_index2);
+		const auto path_index1 = path.find_last_of("\\") + 1;
+		const auto path_index2 = path.find_last_of("/") + 1;
+		const auto path_index = std::max(path_index1, path_index2);
 
 		return path.substr(path_index);
 	}
@@ -279,10 +278,11 @@ public:
   AlignedAllocator(const AlignedAllocator&) {}
   AlignedAllocator(AlignedAllocator&&) {}
 
-  template <typename U> AlignedAllocator(const AlignedAllocator<U>&) {}
+  template <typename U>
+  explicit AlignedAllocator(const AlignedAllocator<U>&) {}
 
-  T* allocate(std::size_t n) { return (T*)aligned_malloc(n * sizeof(T), alignof(T)); }
-  void deallocate(T* p, std::size_t n) { aligned_free(p); }
+  static T* allocate(const std::size_t n) { return static_cast<T*>(aligned_malloc(n * sizeof(T), alignof(T))); }
+  static void deallocate(T* p, std::size_t n) { aligned_free(p); }
 };
 
 // --------------------

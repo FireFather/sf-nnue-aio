@@ -61,6 +61,7 @@
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wclass-memaccess"
 #pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wparentheses"
 #endif
 
 /// Predefined macros hell:
@@ -215,7 +216,7 @@ enum Value : int {
 
 enum PieceType {
   NO_PIECE_TYPE, PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING,
-  ALL_PIECES = 0,
+  ALL_PIECES = 7,
   PIECE_TYPE_NB = 8
 };
 
@@ -286,21 +287,21 @@ enum Rank : int {
 /// avoid left-shifting a signed int to avoid undefined behavior.
 enum Score : int { SCORE_ZERO };
 
-constexpr Score make_score(int mg, int eg) {
-  return Score((int)((unsigned int)eg << 16) + mg);
+constexpr Score make_score(const int mg, const int eg) {
+  return static_cast<Score>(static_cast<int>(static_cast<unsigned>(eg) << 16) + mg);
 }
 
 /// Extracting the signed lower and upper 16 bits is not so trivial because
 /// according to the standard a simple cast to short is implementation defined
 /// and so is a right shift of a signed integer.
-inline Value eg_value(Score s) {
-  union { uint16_t u; int16_t s; } eg = { uint16_t(unsigned(s + 0x8000) >> 16) };
-  return Value(eg.s);
+inline Value eg_value(const Score s) {
+  union { uint16_t u; int16_t s; } eg = { static_cast<uint16_t>(static_cast<unsigned>(s + 0x8000) >> 16) };
+  return static_cast<Value>(eg.s);
 }
 
-inline Value mg_value(Score s) {
-  union { uint16_t u; int16_t s; } mg = { uint16_t(unsigned(s)) };
-  return Value(mg.s);
+inline Value mg_value(const Score s) {
+  union { uint16_t u; int16_t s; } mg = { static_cast<uint16_t>(static_cast<unsigned>(s)) };
+  return static_cast<Value>(mg.s);
 }
 
 #define ENABLE_BASE_OPERATORS_ON(T)                                \
@@ -339,24 +340,23 @@ ENABLE_BASE_OPERATORS_ON(Score)
 #undef ENABLE_BASE_OPERATORS_ON
 
 /// Additional operators to add a Direction to a Square
-constexpr Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
-constexpr Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
-inline Square& operator+=(Square& s, Direction d) { return s = s + d; }
-inline Square& operator-=(Square& s, Direction d) { return s = s - d; }
+constexpr Square operator+(const Square s, const Direction d) { return static_cast<Square>(static_cast<int>(s) + static_cast<int>(d)); }
+constexpr Square operator-(const Square s, const Direction d) { return static_cast<Square>(static_cast<int>(s) - static_cast<int>(d)); }
+inline Square& operator+=(Square& s, const Direction d) { return s = s + d; }
+inline Square& operator-=(Square& s, const Direction d) { return s = s - d; }
 
 /// Only declared but not defined. We don't want to multiply two scores due to
 /// a very high risk of overflow. So user should explicitly convert to integer.
 Score operator*(Score, Score) = delete;
 
 /// Division of a Score must be handled separately for each term
-inline Score operator/(Score s, int i) {
+inline Score operator/(const Score s, const int i) {
   return make_score(mg_value(s) / i, eg_value(s) / i);
 }
 
 /// Multiplication of a Score by an integer. We check for overflow in debug mode.
-inline Score operator*(Score s, int i) {
-
-  Score result = Score(int(s) * i);
+inline Score operator*(const Score s, const int i) {
+	const auto result = static_cast<Score>(static_cast<int>(s) * i);
 
   assert(eg_value(result) == (i * eg_value(s)));
   assert(mg_value(result) == (i * mg_value(s)));
@@ -366,89 +366,89 @@ inline Score operator*(Score s, int i) {
 }
 
 /// Multiplication of a Score by a boolean
-inline Score operator*(Score s, bool b) {
+inline Score operator*(const Score s, const bool b) {
   return b ? s : SCORE_ZERO;
 }
 
-constexpr Color operator~(Color c) {
-  return Color(c ^ BLACK); // Toggle color
+constexpr Color operator~(const Color c) {
+  return static_cast<Color>(c ^ BLACK); // Toggle color
 }
 
-constexpr Square flip_rank(Square s) { // Swap A1 <-> A8
-  return Square(s ^ SQ_A8);
+constexpr Square flip_rank(const Square s) { // Swap A1 <-> A8
+  return static_cast<Square>(s ^ SQ_A8);
 }
 
-constexpr Square flip_file(Square s) { // Swap A1 <-> H1
-  return Square(s ^ SQ_H1);
+constexpr Square flip_file(const Square s) { // Swap A1 <-> H1
+  return static_cast<Square>(s ^ SQ_H1);
 }
 
-constexpr Piece operator~(Piece pc) {
-  return Piece(pc ^ 8); // Swap color of piece B_KNIGHT <-> W_KNIGHT
+constexpr Piece operator~(const Piece pc) {
+  return static_cast<Piece>(pc ^ 8); // Swap color of piece B_KNIGHT <-> W_KNIGHT
 }
 
-constexpr CastlingRights operator&(Color c, CastlingRights cr) {
-  return CastlingRights((c == WHITE ? WHITE_CASTLING : BLACK_CASTLING) & cr);
+constexpr CastlingRights operator&(const Color c, const CastlingRights cr) {
+  return static_cast<CastlingRights>((c == WHITE ? WHITE_CASTLING : BLACK_CASTLING) & cr);
 }
 
-constexpr Value mate_in(int ply) {
+constexpr Value mate_in(const int ply) {
   return VALUE_MATE - ply;
 }
 
-constexpr Value mated_in(int ply) {
+constexpr Value mated_in(const int ply) {
   return -VALUE_MATE + ply;
 }
 
-constexpr Square make_square(File f, Rank r) {
-  return Square((r << 3) + f);
+constexpr Square make_square(const File f, const Rank r) {
+  return static_cast<Square>((r << 3) + f);
 }
 
-constexpr Piece make_piece(Color c, PieceType pt) {
-  return Piece((c << 3) + pt);
+constexpr Piece make_piece(const Color c, const PieceType pt) {
+  return static_cast<Piece>((c << 3) + pt);
 }
 
 constexpr PieceType type_of(Piece pc) {
-  return PieceType(pc & 7);
+  return static_cast<PieceType>(pc & 7);
 }
 
-inline Color color_of(Piece pc) {
+inline Color color_of(const Piece pc) {
   assert(pc != NO_PIECE);
-  return Color(pc >> 3);
+  return static_cast<Color>(pc >> 3);
 }
 
-constexpr bool is_ok(Square s) {
+constexpr bool is_ok(const Square s) {
   return s >= SQ_A1 && s <= SQ_H8;
 }
 
 constexpr File file_of(Square s) {
-  return File(s & 7);
+  return static_cast<File>(s & 7);
 }
 
-constexpr Rank rank_of(Square s) {
-  return Rank(s >> 3);
+constexpr Rank rank_of(const Square s) {
+  return static_cast<Rank>(s >> 3);
 }
 
-constexpr Square relative_square(Color c, Square s) {
-  return Square(s ^ (c * 56));
+constexpr Square relative_square(const Color c, const Square s) {
+  return static_cast<Square>(s ^ c * 56);
 }
 
-constexpr Rank relative_rank(Color c, Rank r) {
-  return Rank(r ^ (c * 7));
+constexpr Rank relative_rank(const Color c, const Rank r) {
+  return static_cast<Rank>(r ^ c * 7);
 }
 
-constexpr Rank relative_rank(Color c, Square s) {
+constexpr Rank relative_rank(const Color c, const Square s) {
   return relative_rank(c, rank_of(s));
 }
 
-constexpr Direction pawn_push(Color c) {
+constexpr Direction pawn_push(const Color c) {
   return c == WHITE ? NORTH : SOUTH;
 }
 
-constexpr Square from_sq(Move m) {
-  return Square((m >> 6) & 0x3F);
+constexpr Square from_sq(const Move m) {
+  return static_cast<Square>(m >> 6 & 0x3F);
 }
 
 constexpr Square to_sq(Move m) {
-  return Square(m & 0x3F);
+  return static_cast<Square>(m & 0x3F);
 }
 
 constexpr int from_to(Move m) {
@@ -456,35 +456,35 @@ constexpr int from_to(Move m) {
 }
 
 constexpr MoveType type_of(Move m) {
-  return MoveType(m & (3 << 14));
+  return static_cast<MoveType>(m & 3 << 14);
 }
 
-constexpr PieceType promotion_type(Move m) {
-  return PieceType(((m >> 12) & 3) + KNIGHT);
+constexpr PieceType promotion_type(const Move m) {
+  return static_cast<PieceType>((m >> 12 & 3) + KNIGHT);
 }
 
-constexpr Move make_move(Square from, Square to) {
-  return Move((from << 6) + to);
+constexpr Move make_move(const Square from, const Square to) {
+  return static_cast<Move>((from << 6) + to);
 }
 
-constexpr Move reverse_move(Move m) {
+constexpr Move reverse_move(const Move m) {
   return make_move(to_sq(m), from_sq(m));
 }
 
 template<MoveType T>
-constexpr Move make(Square from, Square to, PieceType pt = KNIGHT) {
-  return Move(T + ((pt - KNIGHT) << 12) + (from << 6) + to);
+constexpr Move make(const Square from, const Square to, const PieceType pt = KNIGHT) {
+  return static_cast<Move>(T + (pt - KNIGHT << 12) + (from << 6) + to);
 }
 
-constexpr bool is_ok(Move m) {
+constexpr bool is_ok(const Move m) {
   return from_sq(m) != to_sq(m); // Catch MOVE_NULL and MOVE_NONE
 }
 
 // Return squares when turning the board 180‹
-constexpr Square Inv(Square sq) { return (Square)((SQUARE_NB - 1) - sq); }
+constexpr Square Inv(const Square sq) { return static_cast<Square>(SQUARE_NB - 1 - sq); }
 
 // Return squares when mirroring the board
-constexpr Square Mir(Square sq) { return make_square(File(7 - (int)file_of(sq)), rank_of(sq)); }
+constexpr Square Mir(const Square sq) { return make_square(static_cast<File>(7 - static_cast<int>(file_of(sq))), rank_of(sq)); }
 
 #if defined(EVAL_NNUE) || defined(EVAL_LEARN)
 // --------------------
@@ -506,20 +506,20 @@ enum PieceNumber : uint8_t
 	PIECE_NUMBER_NB = 32,
 };
 
-inline PieceNumber& operator++(PieceNumber& d) { return d = PieceNumber(int8_t(d) + 1); }
+inline PieceNumber& operator++(PieceNumber& d) { return d = static_cast<PieceNumber>(static_cast<int8_t>(d) + 1); }
 inline PieceNumber operator++(PieceNumber& d, int) {
-  PieceNumber x = d;
-  d = PieceNumber(int8_t(d) + 1);
+	const PieceNumber x = d;
+  d = static_cast<PieceNumber>(static_cast<int8_t>(d) + 1);
   return x;
 }
-inline PieceNumber& operator--(PieceNumber& d) { return d = PieceNumber(int8_t(d) - 1); }
+inline PieceNumber& operator--(PieceNumber& d) { return d = static_cast<PieceNumber>(static_cast<int8_t>(d) - 1); }
 
 // Piece Number integrity check. for assert.
-constexpr bool is_ok(PieceNumber pn) { return pn < PIECE_NUMBER_NB; }
+constexpr bool is_ok(const PieceNumber pn) { return pn < PIECE_NUMBER_NB; }
 #endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)
 
 /// Based on a congruential pseudo random number generator
-constexpr Key make_key(uint64_t seed) {
+constexpr Key make_key(const uint64_t seed) {
   return seed * 6364136223846793005ULL + 1442695040888963407ULL;
 }
 

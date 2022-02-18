@@ -103,10 +103,10 @@ union ExtBonaPiece
 		BonaPiece fw; // from white
 		BonaPiece fb; // from black
 	};
-	BonaPiece from[2];
+	BonaPiece from[2]{};
 
-	ExtBonaPiece() {}
-	ExtBonaPiece(BonaPiece fw_, BonaPiece fb_) : fw(fw_), fb(fb_) {}
+	ExtBonaPiece() = default;
+	ExtBonaPiece(const BonaPiece fw_, const BonaPiece fb_) : fw(fw_), fb(fb_) {}
 };
 
 // Information about where the piece has moved from where to by this move.
@@ -127,11 +127,11 @@ extern ExtBonaPiece kpp_board_index[PIECE_NB];
 struct EvalList
 {
 	// List of frame numbers used in evaluation function (FV38 type)
-	BonaPiece* piece_list_fw() const { return const_cast<BonaPiece*>(pieceListFw); }
-	BonaPiece* piece_list_fb() const { return const_cast<BonaPiece*>(pieceListFb); }
+	[[nodiscard]] BonaPiece* piece_list_fw() const { return const_cast<BonaPiece*>(pieceListFw); }
+	[[nodiscard]] BonaPiece* piece_list_fb() const { return const_cast<BonaPiece*>(pieceListFb); }
 
 	// Convert the specified piece_no piece to ExtBonaPiece type and return it.
-	ExtBonaPiece bona_piece(PieceNumber piece_no) const
+	[[nodiscard]] ExtBonaPiece bona_piece(const PieceNumber piece_no) const
 	{
 		ExtBonaPiece bp;
 		bp.fw = pieceListFw[piece_no];
@@ -140,12 +140,12 @@ struct EvalList
 	}
 
 	// Place the piece_no pc piece in the sq box on the board
-	void put_piece(PieceNumber piece_no, Square sq, Piece pc) {
-		set_piece_on_board(piece_no, BonaPiece(kpp_board_index[pc].fw + sq), BonaPiece(kpp_board_index[pc].fb + Inv(sq)), sq);
+	void put_piece(const PieceNumber piece_no, const Square sq, const Piece pc) {
+		set_piece_on_board(piece_no, static_cast<BonaPiece>(kpp_board_index[pc].fw + sq), static_cast<BonaPiece>(kpp_board_index[pc].fb + Inv(sq)), sq);
 	}
 
 	// Returns the PieceNumber corresponding to a box on the board.
-	PieceNumber piece_no_of_board(Square sq) const { return piece_no_list_board[sq]; }
+	[[nodiscard]] PieceNumber piece_no_of_board(const Square sq) const { return piece_no_list_board[sq]; }
 
 	// Initialize the pieceList.
 	// Set the value of unused pieces to BONA_PIECE_ZERO in case you want to deal with dropped pieces.
@@ -166,10 +166,10 @@ struct EvalList
 
 	// Check whether the pieceListFw[] held internally is a correct BonaPiece.
 	// Note: For debugging. slow.
-	bool is_valid(const Position& pos);
+	[[nodiscard]] bool is_valid(const Position& pos) const;
 
 	// Set that the BonaPiece of the piece_no piece on the board sq is fb,fw.
-	inline void set_piece_on_board(PieceNumber piece_no, BonaPiece fw, BonaPiece fb, Square sq)
+	void set_piece_on_board(const PieceNumber piece_no, const BonaPiece fw, const BonaPiece fb, const Square sq)
 	{
 		assert(is_ok(piece_no));
 		pieceListFw[piece_no] = fw;
@@ -181,13 +181,12 @@ struct EvalList
 
 	// Length of piece list
   // 38 fixed
-public:
-	int length() const { return PIECE_NUMBER_KING; }
+	[[nodiscard]] static int length() { return PIECE_NUMBER_KING; }
 
 	// Must be a multiple of 4 to use VPGATHERDD.
 	// In addition, the KPPT type evaluation function, etc. is based on the assumption that the 39th and 40th elements are zero.
 	// Please note that there is a part that is accessed.
-	static const int MAX_LENGTH = 32;
+	static constexpr int MAX_LENGTH = 32;
 
   // An array that holds the piece number (PieceNumber) for the pieces on the board
   // Hold up to +1 for when the ball is moving to SQUARE_NB,
@@ -195,8 +194,8 @@ public:
   PieceNumber piece_no_list_board[SQUARE_NB_PLUS1];
 private:
 
-	BonaPiece pieceListFw[MAX_LENGTH];
-	BonaPiece pieceListFb[MAX_LENGTH];
+	BonaPiece pieceListFw[MAX_LENGTH] = {};
+	BonaPiece pieceListFb[MAX_LENGTH] = {};
 };
 
 // For management of evaluation value difference calculation
@@ -205,15 +204,15 @@ private:
 struct DirtyPiece
 {
 	// What changed from the piece with that piece number
-	Eval::ChangedBonaPiece changed_piece[2];
+	ChangedBonaPiece changed_piece[2];
 
 	// The number of dirty pieces
-	PieceNumber pieceNo[2];
+	PieceNumber pieceNo[2]{};
 
 	// The number of dirty files.
 	// It can be 0 for null move.
 	// Up to 2 moving pieces and taken pieces.
-	int dirty_num;
+	int dirty_num{};
 
 };
 #endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)

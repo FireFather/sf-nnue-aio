@@ -19,7 +19,6 @@
 */
 
 #include <algorithm>
-#include <cfloat>
 #include <cmath>
 
 #include "search.h"
@@ -34,11 +33,10 @@ TimeManagement Time; // Our global time management object
 //      1) x basetime (+ z increment)
 //      2) x moves in y seconds (+ z increment)
 
-void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
-
-  TimePoint moveOverhead    = TimePoint(Options["Move Overhead"]);
-  TimePoint slowMover       = TimePoint(Options["Slow Mover"]);
-  TimePoint npmsec          = TimePoint(Options["nodestime"]);
+void TimeManagement::init(Search::LimitsType& limits, const Color us, const int ply) {
+	const TimePoint moveOverhead    = static_cast<TimePoint>(Options["Move Overhead"]);
+	const TimePoint slowMover       = static_cast<TimePoint>(Options["Slow Mover"]);
+	const TimePoint npmsec          = static_cast<TimePoint>(Options["nodestime"]);
 
   // opt_scale is a percentage of available time to use for the current move.
   // max_scale is a multiplier applied to optimumTime.
@@ -54,7 +52,7 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
           availableNodes = npmsec * limits.time[us]; // Time is in msec
 
       // Convert from milliseconds to nodes
-      limits.time[us] = TimePoint(availableNodes);
+      limits.time[us] = availableNodes;
       limits.inc[us] *= npmsec;
       limits.npmsec = npmsec;
   }
@@ -62,10 +60,10 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   startTime = limits.startTime;
 
   // Maximum move horizon of 50 moves
-  int mtg = limits.movestogo ? std::min(limits.movestogo, 50) : 50;
+	const int mtg = limits.movestogo ? std::min(limits.movestogo, 50) : 50;
 
   // Make sure timeLeft is > 0 since we may use it as a divisor
-  TimePoint timeLeft =  std::max(TimePoint(1),
+  TimePoint timeLeft =  std::max(static_cast<TimePoint>(1),
       limits.time[us] + limits.inc[us] * (mtg - 1) - moveOverhead * (2 + mtg));
 
   // A user may scale time usage by setting UCI option "Slow Mover"
@@ -78,7 +76,7 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   if (limits.movestogo == 0)
   {
       opt_scale = std::min(0.008 + std::pow(ply + 3.0, 0.5) / 250.0,
-                           0.2 * limits.time[us] / double(timeLeft));
+                           0.2 * static_cast<double>(limits.time[us]) / static_cast<double>(timeLeft));
       max_scale = std::min(7.0, 4.0 + ply / 12.0);
   }
 
@@ -86,13 +84,13 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   else
   {
       opt_scale = std::min((0.8 + ply / 128.0) / mtg,
-                            0.8 * limits.time[us] / double(timeLeft));
+                            0.8 * static_cast<double>(limits.time[us]) / static_cast<double>(timeLeft));
       max_scale = std::min(6.3, 1.5 + 0.11 * mtg);
   }
 
   // Never use more than 80% of the available time for this move
-  optimumTime = TimePoint(opt_scale * timeLeft);
-  maximumTime = TimePoint(std::min(0.8 * limits.time[us] - moveOverhead, max_scale * optimumTime));
+  optimumTime = static_cast<TimePoint>(opt_scale * static_cast<double>(timeLeft));
+  maximumTime = static_cast<TimePoint>(std::min(0.8 * static_cast<double>(limits.time[us]) - static_cast<double>(moveOverhead), max_scale * static_cast<double>(optimumTime)));
 
   if (Options["Ponder"])
       optimumTime += optimumTime / 4;

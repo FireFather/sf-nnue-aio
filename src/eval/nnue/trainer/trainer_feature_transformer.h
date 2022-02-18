@@ -10,11 +10,9 @@
 #include "trainer.h"
 #include "features/factorizer_feature_set.h"
 
-#include <array>
 #include <bitset>
 #include <numeric>
 #include <random>
-#include <set>
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -27,8 +25,7 @@ namespace NNUE {
 // Learning: Input feature converter
 template <>
 class Trainer<FeatureTransformer> {
- private:
-  // Type of layer to learn
+	// Type of layer to learn
   using LayerType = FeatureTransformer;
 
  public:
@@ -70,13 +67,14 @@ class Trainer<FeatureTransformer> {
   void Initialize(RNG& rng) {
     std::fill(std::begin(weights_), std::end(weights_), +kZero);
     const double kSigma = 0.1 / std::sqrt(RawFeatures::kMaxActiveDimensions);
-    auto distribution = std::normal_distribution<double>(0.0, kSigma);
+    auto distribution = std::normal_distribution(0.0, kSigma);
     for (IndexType i = 0; i < kHalfDimensions * RawFeatures::kDimensions; ++i) {
       const auto weight = static_cast<LearnFloatType>(distribution(rng));
       weights_[i] = weight;
     }
-    for (IndexType i = 0; i < kHalfDimensions; ++i) {
-      biases_[i] = static_cast<LearnFloatType>(0.5);
+    for (float& biase : biases_)
+    {
+	    biase = static_cast<LearnFloatType>(0.5);
     }
     QuantizeParameters();
   }
@@ -133,7 +131,7 @@ class Trainer<FeatureTransformer> {
 
   // backpropagation
   void Backpropagate(const LearnFloatType* gradients,
-                     LearnFloatType learning_rate) {
+                     const LearnFloatType learning_rate) {
     const LearnFloatType local_learning_rate =
         learning_rate * learning_rate_scale_;
     for (IndexType b = 0; b < batch_->size(); ++b) {
@@ -146,7 +144,7 @@ class Trainer<FeatureTransformer> {
     }
     // Since the weight matrix updates only the columns corresponding to the features that appeared in the input,
     // Correct the learning rate and adjust the scale without using momentum
-    const LearnFloatType effective_learning_rate =
+    const auto effective_learning_rate =
         static_cast<LearnFloatType>(local_learning_rate / (1.0 - momentum_));
 #if defined(USE_BLAS)
     cblas_sscal(kHalfDimensions, momentum_, biases_diff_, 1);
@@ -186,8 +184,9 @@ class Trainer<FeatureTransformer> {
       }
     }
 #else
-    for (IndexType i = 0; i < kHalfDimensions; ++i) {
-      biases_diff_[i] *= momentum_;
+    for (float& i : biases_diff_)
+    {
+	    i *= momentum_;
     }
     for (IndexType b = 0; b < batch_->size(); ++b) {
       const IndexType batch_offset = kOutputDimensions * b;
@@ -207,8 +206,7 @@ class Trainer<FeatureTransformer> {
         const IndexType output_offset = batch_offset + kHalfDimensions * c;
         for (const auto& feature : (*batch_)[b].training_features[c]) {
           const IndexType weights_offset = kHalfDimensions * feature.GetIndex();
-          const auto scale = static_cast<LearnFloatType>(
-              effective_learning_rate / feature.GetCount());
+          const auto scale = effective_learning_rate / feature.GetCount();
           for (IndexType i = 0; i < kHalfDimensions; ++i) {
             weights_[weights_offset + i] -=
                 scale * gradients_[output_offset + i];
@@ -217,9 +215,11 @@ class Trainer<FeatureTransformer> {
       }
     }
 #endif
-    for (IndexType b = 0; b < batch_->size(); ++b) {
-      for (IndexType c = 0; c < 2; ++c) {
-        for (const auto& feature : (*batch_)[b].training_features[c]) {
+    for (const auto& [training_features, psv, sign, weight] : *batch_)
+    {
+      for (const auto& training_feature : training_features)
+      {
+        for (const auto& feature : training_feature) {
           observed_features.set(feature.GetIndex());
         }
       }
@@ -235,21 +235,21 @@ class Trainer<FeatureTransformer> {
       weights_(),
       biases_diff_(),
       momentum_(0.0),
-      learning_rate_scale_(1.0) {
-    min_pre_activation_ = std::numeric_limits<LearnFloatType>::max();
-    max_pre_activation_ = std::numeric_limits<LearnFloatType>::lowest();
-    std::fill(std::begin(min_activations_), std::end(min_activations_),
-              std::numeric_limits<LearnFloatType>::max());
+      learning_rate_scale_(1.0), min_pre_activation_(std::numeric_limits<LearnFloatType>::max()), max_pre_activation_(std::numeric_limits<LearnFloatType>::lowest())
+  {
+  	std::fill(std::begin(min_activations_), std::end(min_activations_),
+	            std::numeric_limits<LearnFloatType>::max());
     std::fill(std::begin(max_activations_), std::end(max_activations_),
               std::numeric_limits<LearnFloatType>::lowest());
     DequantizeParameters();
   }
 
   // Weight saturation and parameterization
-  void QuantizeParameters() {
+  void QuantizeParameters() const
+  {
     for (IndexType i = 0; i < kHalfDimensions; ++i) {
       target_layer_->biases_[i] =
-          Round<typename LayerType::BiasType>(biases_[i] * kBiasScale);
+          Round<LayerType::BiasType>(biases_[i] * kBiasScale);
     }
     std::vector<TrainingFeature> training_features;
 #pragma omp parallel for private(training_features)
@@ -263,7 +263,7 @@ class Trainer<FeatureTransformer> {
           sum += weights_[kHalfDimensions * feature.GetIndex() + i];
         }
         target_layer_->weights_[kHalfDimensions * j + i] =
-            Round<typename LayerType::WeightType>(sum * kWeightScale);
+            Round<LayerType::WeightType>(sum * kWeightScale);
       }
     }
   }
@@ -271,13 +271,11 @@ class Trainer<FeatureTransformer> {
   // read parameterized integer
   void DequantizeParameters() {
     for (IndexType i = 0; i < kHalfDimensions; ++i) {
-      biases_[i] = static_cast<LearnFloatType>(
-          target_layer_->biases_[i] / kBiasScale);
+      biases_[i] = target_layer_->biases_[i] / kBiasScale;
     }
     std::fill(std::begin(weights_), std::end(weights_), +kZero);
     for (IndexType i = 0; i < kHalfDimensions * RawFeatures::kDimensions; ++i) {
-      weights_[i] = static_cast<LearnFloatType>(
-          target_layer_->weights_[i] / kWeightScale);
+      weights_[i] = target_layer_->weights_[i] / kWeightScale;
     }
     std::fill(std::begin(biases_diff_), std::end(biases_diff_), +kZero);
   }
@@ -299,7 +297,7 @@ class Trainer<FeatureTransformer> {
               << " (out of " << kInputDimensions << ") features" << std::endl;
 
     constexpr LearnFloatType kPreActivationLimit =
-        std::numeric_limits<typename LayerType::WeightType>::max() /
+        std::numeric_limits<LayerType::WeightType>::max() /
         kWeightScale;
     std::cout << "INFO: (min, max) of pre-activations = "
               << min_pre_activation_ << ", "

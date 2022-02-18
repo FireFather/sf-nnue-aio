@@ -59,7 +59,7 @@ struct Stack {
 
 struct RootMove {
 
-  explicit RootMove(Move m) : pv(1, m) {}
+  explicit RootMove(const Move m) : pv(1, m) {}
   bool extract_ponder_from_tt(Position& pos);
   bool operator==(const Move& m) const { return pv[0] == m; }
   bool operator<(const RootMove& m) const { // Sort in descending order
@@ -84,19 +84,19 @@ typedef std::vector<RootMove> RootMoves;
 
 struct LimitsType {
 
-  LimitsType() { // Init explicitly due to broken value-initialization of non POD in MSVC
-    time[WHITE] = time[BLACK] = inc[WHITE] = inc[BLACK] = npmsec = movetime = TimePoint(0);
-    movestogo = depth = mate = perft = infinite = 0;
-    nodes = 0;
-    silent = false;
+  LimitsType(): startTime(0), nodes(0), silent(false)
+  {
+	  // Init explicitly due to broken value-initialization of non POD in MSVC
+	  time[WHITE] = time[BLACK] = inc[WHITE] = inc[BLACK] = npmsec = movetime = static_cast<TimePoint>(0);
+	  movestogo = depth = mate = perft = infinite = 0;
   }
 
-  bool use_time_management() const {
+  [[nodiscard]] bool use_time_management() const {
     return time[WHITE] || time[BLACK];
   }
 
   std::vector<Move> searchmoves;
-  TimePoint time[COLOR_NB], inc[COLOR_NB], npmsec, movetime, startTime;
+  TimePoint time[COLOR_NB]{}, inc[COLOR_NB]{}, npmsec, movetime, startTime;
   int movestogo, depth, mate, perft, infinite;
   int64_t nodes;
   // Silent mode that does not output to the screen (for continuous self-play in process)

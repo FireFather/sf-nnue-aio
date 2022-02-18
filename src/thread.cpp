@@ -34,7 +34,7 @@ ThreadPool Threads; // Global object
 /// Thread constructor launches the thread and waits until it goes to sleep
 /// in idle_loop(). Note that 'searching' and 'exit' should be already set.
 
-Thread::Thread(size_t n) : idx(n), stdThread(&Thread::idle_loop, this) {
+Thread::Thread(const size_t n) : idx(n), stdThread(&Thread::idle_loop, this) {
 
   wait_for_search_finished();
 }
@@ -55,10 +55,9 @@ Thread::~Thread() {
 
 /// Thread::bestMoveCount(Move move) return best move counter for the given root move
 
-int Thread::best_move_count(Move move) const {
-
-  auto rm = std::find(rootMoves.begin() + pvIdx,
-                      rootMoves.begin() + pvLast, move);
+int Thread::best_move_count(const Move move) const {
+	const auto rm = std::find(rootMoves.begin() + pvIdx,
+	                          rootMoves.begin() + pvLast, move);
 
   return rm != rootMoves.begin() + pvLast ? rm->bestMoveCount : 0;
 }
@@ -73,8 +72,8 @@ void Thread::clear() {
   lowPlyHistory.fill(0);
   captureHistory.fill(0);
 
-  for (bool inCheck : { false, true })
-      for (StatsType c : { NoCaptures, Captures })
+  for (const bool inCheck : { false, true })
+      for (const StatsType c : { NoCaptures, Captures })
       {
           for (auto& to : continuationHistory[inCheck][c])
                 for (auto& h : to)
@@ -88,7 +87,7 @@ void Thread::clear() {
 
 void Thread::start_searching() {
 
-  std::lock_guard<std::mutex> lk(mutex);
+  std::lock_guard lk(mutex);
   searching = true;
   cv.notify_one(); // Wake up the thread in idle_loop()
 }
@@ -99,7 +98,7 @@ void Thread::start_searching() {
 
 void Thread::wait_for_search_finished() {
 
-  std::unique_lock<std::mutex> lk(mutex);
+  std::unique_lock lk(mutex);
   cv.wait(lk, [&]{ return !searching; });
 }
 
@@ -119,7 +118,7 @@ void Thread::idle_loop() {
 
   while (true)
   {
-      std::unique_lock<std::mutex> lk(mutex);
+      std::unique_lock lk(mutex);
       searching = false;
       cv.notify_one(); // Wake up anyone waiting for search finished
       cv.wait(lk, [&]{ return searching; });
@@ -137,7 +136,7 @@ void Thread::idle_loop() {
 /// Created and launched threads will immediately go to sleep in idle_loop.
 /// Upon resizing, threads are recreated to allow for binding if necessary.
 
-void ThreadPool::set(size_t requested) {
+void ThreadPool::set(const size_t requested) {
 
   if (size() > 0) { // destroy any existing thread(s)
       main()->wait_for_search_finished();
@@ -154,7 +153,7 @@ void ThreadPool::set(size_t requested) {
       clear();
 
       // Reallocate the hash with the new threadpool size
-      TT.resize(size_t(Options["Hash"]));
+      TT.resize(static_cast<size_t>(Options["Hash"]));
 
       // Init thread number dependent search params.
       Search::init();
@@ -164,7 +163,8 @@ void ThreadPool::set(size_t requested) {
 
 /// ThreadPool::clear() sets threadPool data to initial values
 
-void ThreadPool::clear() {
+void ThreadPool::clear() const
+{
 
   for (Thread* th : *this)
       th->clear();
@@ -179,7 +179,7 @@ void ThreadPool::clear() {
 /// returns immediately. Main thread will wake up other threads and start the search.
 
 void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
-                                const Search::LimitsType& limits, bool ponderMode) {
+                                const Search::LimitsType& limits, const bool ponderMode) {
 
   main()->wait_for_search_finished();
 
@@ -209,7 +209,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   // be deduced from a fen string, so set() clears them and to not lose the info
   // we need to backup and later restore setupStates->back(). Note that setupStates
   // is shared by threads but is accessed in read-only mode.
-  StateInfo tmp = setupStates->back();
+  const StateInfo tmp = setupStates->back();
 
   for (Thread* th : *this)
   {
@@ -231,14 +231,14 @@ Thread* ThreadPool::get_best_thread() const {
     Value minScore = VALUE_NONE;
 
     // Find minimum score of all threads
-    for (Thread* th: *this)
+    for (const Thread* th: *this)
         minScore = std::min(minScore, th->rootMoves[0].score);
 
     // Vote according to score and depth, and select the best thread
     for (Thread* th : *this)
     {
         votes[th->rootMoves[0].pv[0]] +=
-            (th->rootMoves[0].score - minScore + 14) * int(th->completedDepth);
+            (th->rootMoves[0].score - minScore + 14) * th->completedDepth;
 
           if (abs(bestThread->rootMoves[0].score) >= VALUE_TB_WIN_IN_MAX_PLY)
           {
@@ -247,8 +247,8 @@ Thread* ThreadPool::get_best_thread() const {
                   bestThread = th;
           }
           else if (   th->rootMoves[0].score >= VALUE_TB_WIN_IN_MAX_PLY
-                   || (   th->rootMoves[0].score > VALUE_TB_LOSS_IN_MAX_PLY
-                       && votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]]))
+                   || th->rootMoves[0].score > VALUE_TB_LOSS_IN_MAX_PLY
+                   && votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]])
               bestThread = th;
     }
 
@@ -258,7 +258,8 @@ Thread* ThreadPool::get_best_thread() const {
 
 /// Start non-main threads
 
-void ThreadPool::start_searching() {
+void ThreadPool::start_searching() const
+{
 
     for (Thread* th : *this)
         if (th != front())

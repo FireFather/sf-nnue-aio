@@ -6,7 +6,6 @@
 #if defined(EVAL_LEARN) && defined(EVAL_NNUE)
 
 #include "../nnue_common.h"
-#include "../features/index_list.h"
 
 #include <sstream>
 #if defined(USE_BLAS)
@@ -24,7 +23,7 @@ constexpr double kPonanzaConstant = 600.0;
 // Class that represents one index of learning feature
 class TrainingFeature {
   using StorageType = std::uint32_t;
-  static_assert(std::is_unsigned<StorageType>::value, "");
+  static_assert(std::is_unsigned_v<StorageType>, "");
 
  public:
   static constexpr std::uint32_t kIndexBits = 24;
@@ -32,8 +31,8 @@ class TrainingFeature {
   static constexpr std::uint32_t kCountBits =
       std::numeric_limits<StorageType>::digits - kIndexBits;
 
-  explicit TrainingFeature(IndexType index) :
-      index_and_count_((index << kCountBits) | 1) {
+  explicit TrainingFeature(const IndexType index) :
+      index_and_count_(index << kCountBits | 1) {
     assert(index < (1 << kIndexBits));
   }
   TrainingFeature& operator+=(const TrainingFeature& other) {
@@ -42,15 +41,17 @@ class TrainingFeature {
     index_and_count_ += other.GetCount();
     return *this;
   }
-  IndexType GetIndex() const {
-    return static_cast<IndexType>(index_and_count_ >> kCountBits);
+
+  [[nodiscard]] IndexType GetIndex() const {
+    return index_and_count_ >> kCountBits;
   }
-  void ShiftIndex(IndexType offset) {
+  void ShiftIndex(const IndexType offset) {
     assert(GetIndex() + offset < (1 << kIndexBits));
     index_and_count_ += offset << kCountBits;
   }
-  IndexType GetCount() const {
-    return static_cast<IndexType>(index_and_count_ & ((1 << kCountBits) - 1));
+
+  [[nodiscard]] IndexType GetCount() const {
+    return index_and_count_ & (1 << kCountBits) - 1;
   }
   bool operator<(const TrainingFeature& other) const {
     return index_and_count_ < other.index_and_count_;
@@ -63,15 +64,15 @@ class TrainingFeature {
 // Structure that represents one sample of training data
 struct Example {
   std::vector<TrainingFeature> training_features[2];
-  Learner::PackedSfenValue psv;
-  int sign;
-  double weight;
+  Learner::PackedSfenValue psv{};
+  int sign{};
+  double weight{};
 };
 
 // Message used for setting hyperparameters
 struct Message {
-  Message(const std::string& name, const std::string& value = ""):
-      name(name), value(value), num_peekers(0), num_receivers(0) {}
+  Message(std::string name, std::string value = ""):
+      name(std::move(name)), value(std::move(value)), num_peekers(0), num_receivers(0) {}
   const std::string name;
   const std::string value;
   std::uint32_t num_peekers;
@@ -92,7 +93,7 @@ bool ReceiveMessage(const std::string& name, Message* message) {
 }
 
 // split the string
-std::vector<std::string> Split(const std::string& input, char delimiter) {
+std::vector<std::string> Split(const std::string& input, const char delimiter) {
   std::istringstream stream(input);
   std::string field;
   std::vector<std::string> fields;
@@ -104,7 +105,7 @@ std::vector<std::string> Split(const std::string& input, char delimiter) {
 
 // round a floating point number to an integer
 template <typename IntType>
-IntType Round(double value) {
+IntType Round(const double value) {
   return static_cast<IntType>(std::floor(value + 0.5));
 }
 

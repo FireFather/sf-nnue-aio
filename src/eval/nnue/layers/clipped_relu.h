@@ -20,7 +20,7 @@ class ClippedReLU {
   // Input/output type
   using InputType = typename PreviousLayer::OutputType;
   using OutputType = std::uint8_t;
-  static_assert(std::is_same<InputType, std::int32_t>::value, "");
+  static_assert(std::is_same_v<InputType, std::int32_t>, "");
 
   // number of input/output dimensions
   static constexpr IndexType kInputDimensions =

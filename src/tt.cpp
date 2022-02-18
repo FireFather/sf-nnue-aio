@@ -33,24 +33,24 @@ TranspositionTable TT; // Our global transposition table
 /// TTEntry::save() populates the TTEntry with a new node's data, possibly
 /// overwriting an old position. Update is not atomic and can be racy.
 
-void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) {
+void TTEntry::save(const Key k, const Value v, const bool pv, const Bound b, const Depth d, const Move m, const Value ev) {
 
   // Preserve any existing move for the same position
-  if (m || (uint16_t)k != key16)
-      move16 = (uint16_t)m;
+  if (m || static_cast<uint16_t>(k) != key16)
+      move16 = static_cast<uint16_t>(m);
 
   // Overwrite less valuable entries
-  if ((uint16_t)k != key16
+  if (static_cast<uint16_t>(k) != key16
       || d - DEPTH_OFFSET > depth8 - 4
       || b == BOUND_EXACT)
   {
       assert(d >= DEPTH_OFFSET);
 
-      key16     = (uint16_t)k;
-      value16   = (int16_t)v;
-      eval16    = (int16_t)ev;
-      genBound8 = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
-      depth8    = (uint8_t)(d - DEPTH_OFFSET);
+      key16     = static_cast<uint16_t>(k);
+      value16   = static_cast<int16_t>(v);
+      eval16    = static_cast<int16_t>(ev);
+      genBound8 = static_cast<uint8_t>(TT.generation8 | static_cast<uint8_t>(pv) << 2 | b);
+      depth8    = static_cast<uint8_t>(d - DEPTH_OFFSET);
   }
 }
 
@@ -59,7 +59,7 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) 
 /// measured in megabytes. Transposition table consists of a power of 2 number
 /// of clusters and each cluster consists of ClusterSize number of TTEntry.
 
-void TranspositionTable::resize(size_t mbSize) {
+void TranspositionTable::resize(const size_t mbSize) {
 
   Threads.main()->wait_for_search_finished();
 
@@ -81,22 +81,24 @@ void TranspositionTable::resize(size_t mbSize) {
 /// TranspositionTable::clear() initializes the entire transposition table to zero,
 //  in a multi-threaded way.
 
-void TranspositionTable::clear() {
+void TranspositionTable::clear() const
+{
 
   std::vector<std::thread> threads;
 
-  for (size_t idx = 0; idx < Options["Threads"]; ++idx)
+  for (size_t idx = 0; idx < static_cast<size_t>(Options["Threads"]); ++idx)
   {
-      threads.emplace_back([this, idx]() {
+      threads.emplace_back([this, idx]
+      {
 
           // Thread binding gives faster search on systems with a first-touch policy
           if (Options["Threads"] > 8)
               WinProcGroup::bindThisThread(idx);
 
           // Each thread will zero its part of the hash table
-          const size_t stride = size_t(clusterCount / Options["Threads"]),
-                       start  = size_t(stride * idx),
-                       len    = idx != Options["Threads"] - 1 ?
+          const size_t stride = static_cast<size_t>(clusterCount / static_cast<size_t>(Options["Threads"])),
+                       start  = stride * idx,
+                       len    = idx != static_cast<size_t>(Options["Threads"]) - 1 ?
                                 stride : clusterCount - start;
 
           std::memset(&table[start], 0, len * sizeof(Cluster));
@@ -121,14 +123,14 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
 #else
 
   TTEntry* const tte = first_entry(key);
-  const uint16_t key16 = (uint16_t)key;  // Use the low 16 bits as key inside the cluster
+  const auto key16 = static_cast<uint16_t>(key);  // Use the low 16 bits as key inside the cluster
 
   for (int i = 0; i < ClusterSize; ++i)
       if (!tte[i].key16 || tte[i].key16 == key16)
       {
-          tte[i].genBound8 = uint8_t(generation8 | (tte[i].genBound8 & 0x7)); // Refresh
+          tte[i].genBound8 = static_cast<uint8_t>(generation8 | tte[i].genBound8 & 0x7); // Refresh
 
-          return found = (bool)tte[i].key16, &tte[i];
+          return found = static_cast<bool>(tte[i].key16), &tte[i];
       }
 
   // Find an entry to be replaced according to the replacement strategy
@@ -138,8 +140,8 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
       // nature we add 263 (256 is the modulus plus 7 to keep the unrelated
       // lowest three bits from affecting the result) to calculate the entry
       // age correctly even after generation8 overflows into the next cycle.
-      if (  replace->depth8 - ((263 + generation8 - replace->genBound8) & 0xF8)
-          >   tte[i].depth8 - ((263 + generation8 -   tte[i].genBound8) & 0xF8))
+      if (  replace->depth8 - (263 + generation8 - replace->genBound8 & 0xF8)
+          >   tte[i].depth8 - (263 + generation8 -   tte[i].genBound8 & 0xF8))
           replace = &tte[i];
 
   return found = false, replace;
@@ -154,8 +156,8 @@ int TranspositionTable::hashfull() const {
 
   int cnt = 0;
   for (int i = 0; i < 1000; ++i)
-      for (int j = 0; j < ClusterSize; ++j)
-          cnt += (table[i].entry[j].genBound8 & 0xF8) == generation8;
+      for (auto& j : table[i].entry)
+	      cnt += (j.genBound8 & 0xF8) == generation8;
 
   return cnt / ClusterSize;
 }

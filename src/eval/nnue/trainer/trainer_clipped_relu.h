@@ -16,8 +16,7 @@ namespace NNUE {
 // Learning: Affine transformation layer
 template <typename PreviousLayer>
 class Trainer<Layers::ClippedReLU<PreviousLayer>> {
- private:
-  // Type of layer to learn
+	// Type of layer to learn
   using LayerType = Layers::ClippedReLU<PreviousLayer>;
 
  public:

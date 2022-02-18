@@ -20,8 +20,7 @@ namespace Features {
 // Specialization for HalfKP
 template <Side AssociatedKing>
 class Factorizer<HalfKP<AssociatedKing>> {
- private:
-  using FeatureType = HalfKP<AssociatedKing>;
+	using FeatureType = HalfKP<AssociatedKing>;
 
   // The maximum value of the number of indexes whose value is 1 at the same time among the feature values
   static constexpr IndexType kMaxActiveDimensions =
@@ -57,7 +56,7 @@ class Factorizer<HalfKP<AssociatedKing>> {
 
   // Get index of learning feature and scale of learning rate
   static void AppendTrainingFeatures(
-      IndexType base_index, std::vector<TrainingFeature>* training_features) {
+	  const IndexType base_index, std::vector<TrainingFeature>* training_features) {
     // kFeaturesHalfKP
     IndexType index_offset = AppendBaseFeature<FeatureType>(
         kProperties[kFeaturesHalfKP], base_index, training_features);
@@ -66,8 +65,7 @@ class Factorizer<HalfKP<AssociatedKing>> {
     const auto p = static_cast<BonaPiece>(base_index % fe_end);
     // kFeaturesHalfK
     {
-      const auto& properties = kProperties[kFeaturesHalfK];
-      if (properties.active) {
+	    if (const auto& properties = kProperties[kFeaturesHalfK]; properties.active) {
         training_features->emplace_back(index_offset + sq_k);
         index_offset += properties.dimensions;
       }
@@ -88,10 +86,6 @@ class Factorizer<HalfKP<AssociatedKing>> {
     assert(index_offset == GetDimensions());
   }
 };
-
-template <Side AssociatedKing>
-constexpr FeatureProperties Factorizer<HalfKP<AssociatedKing>>::kProperties[];
-
 }  // namespace Features
 
 }  // namespace NNUE

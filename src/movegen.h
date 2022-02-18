@@ -41,11 +41,11 @@ struct ExtMove {
   int value;
 
   operator Move() const { return move; }
-  void operator=(Move m) { move = m; }
+  void operator=(const Move m) { move = m; }
 
   // Inhibit unwanted implicit conversions to Move
   // with an ambiguity that yields to a compile error.
-  operator float() const = delete;
+  explicit operator float() const = delete;
 };
 
 inline bool operator<(const ExtMove& f, const ExtMove& s) {
@@ -60,16 +60,21 @@ ExtMove* generate(const Position& pos, ExtMove* moveList);
 template<GenType T>
 struct MoveList {
 
-  explicit MoveList(const Position& pos) : last(generate<T>(pos, moveList)) {}
-  const ExtMove* begin() const { return moveList; }
-  const ExtMove* end() const { return last; }
-  size_t size() const { return last - moveList; }
-  bool contains(Move move) const {
+  explicit MoveList(const Position& pos) : moveList{}, last(generate<T>(pos, moveList))
+  {
+  }
+
+  [[nodiscard]] const ExtMove* begin() const { return moveList; }
+  [[nodiscard]] const ExtMove* end() const { return last; }
+  [[nodiscard]] size_t size() const { return last - moveList; }
+
+  [[nodiscard]] bool contains(const Move move) const {
     return std::find(begin(), end(), move) != end();
   }
 
   // returns the i th element
-  const ExtMove at(size_t i) const { assert(0 <= i && i < size()); return begin()[i]; }
+  [[nodiscard]] ExtMove at(const size_t i) const
+  { assert(0 <= i && i < size()); return begin()[i]; }
 
 private:
   ExtMove moveList[MAX_MOVES], *last;

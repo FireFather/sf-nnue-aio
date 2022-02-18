@@ -19,11 +19,11 @@ template <Side AssociatedKing>
 class HalfRelativeKP {
  public:
   // feature quantity name
-  static constexpr const char* kName = (AssociatedKing == Side::kFriend) ?
+  static constexpr const char* kName = AssociatedKing == Side::kFriend ?
       "HalfRelativeKP(Friend)" : "HalfRelativeKP(Enemy)";
   // Hash value embedded in the evaluation function file
   static constexpr std::uint32_t kHashValue =
-      0xF9180919u ^ (AssociatedKing == Side::kFriend);
+      0xF9180919u ^ AssociatedKing == Side::kFriend;
   // Piece type excluding balls
   static constexpr IndexType kNumPieceKinds = (fe_end - fe_hand_end) / SQUARE_NB;
   // width of the virtual board with the ball in the center
@@ -37,7 +37,7 @@ class HalfRelativeKP {
   static constexpr IndexType kMaxActiveDimensions = PIECE_NUMBER_KING;
   // Timing of full calculation instead of difference calculation
   static constexpr TriggerEvent kRefreshTrigger =
-      (AssociatedKing == Side::kFriend) ?
+      AssociatedKing == Side::kFriend ?
       TriggerEvent::kFriendKingMoved : TriggerEvent::kEnemyKingMoved;
 
   // Get a list of indices with a value of 1 among the features

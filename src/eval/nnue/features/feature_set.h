@@ -25,9 +25,7 @@ struct CompileTimeList<T, First, Remaining...> {
   static constexpr std::array<T, sizeof...(Remaining) + 1>
       kValues = {{First, Remaining...}};
 };
-template <typename T, T First, T... Remaining>
-constexpr std::array<T, sizeof...(Remaining) + 1>
-    CompileTimeList<T, First, Remaining...>::kValues;
+
 template <typename T>
 struct CompileTimeList<T> {
   static constexpr bool Contains(T /*value*/) {
@@ -52,7 +50,7 @@ struct InsertToSet<T, CompileTimeList<T, First, Remaining...>, AnotherValue> {
   using Result = std::conditional_t<
       CompileTimeList<T, First, Remaining...>::Contains(AnotherValue),
       CompileTimeList<T, First, Remaining...>,
-      std::conditional_t<(AnotherValue <First),
+      std::conditional_t<AnotherValue <First,
           CompileTimeList<T, AnotherValue, First, Remaining...>,
           typename AppendToList<T, typename InsertToSet<
               T, CompileTimeList<T, Remaining...>, AnotherValue>::Result,
@@ -126,14 +124,13 @@ template <typename FirstFeatureType, typename... RemainingFeatureTypes>
 class FeatureSet<FirstFeatureType, RemainingFeatureTypes...> :
     public FeatureSetBase<
         FeatureSet<FirstFeatureType, RemainingFeatureTypes...>> {
- private:
-  using Head = FirstFeatureType;
+    using Head = FirstFeatureType;
   using Tail = FeatureSet<RemainingFeatureTypes...>;
 
  public:
   // Hash value embedded in the evaluation function file
   static constexpr std::uint32_t kHashValue =
-      Head::kHashValue ^ (Tail::kHashValue << 1) ^ (Tail::kHashValue >> 31);
+      Head::kHashValue ^ Tail::kHashValue << 1 ^ Tail::kHashValue >> 31;
   // number of feature dimensions
   static constexpr IndexType kDimensions =
       Head::kDimensions + Tail::kDimensions;

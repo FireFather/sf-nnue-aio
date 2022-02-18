@@ -24,7 +24,6 @@
 #include "endgame.h"
 #include "misc.h"
 #include "position.h"
-#include "types.h"
 
 namespace Material {
 
@@ -38,21 +37,20 @@ namespace Material {
 /// which will result in scores of absolute value less than one pawn.
 
 struct Entry {
-
-  Score imbalance() const { return make_score(value, value); }
-  Phase game_phase() const { return gamePhase; }
-  bool specialized_eval_exists() const { return evaluationFunction != nullptr; }
-  Value evaluate(const Position& pos) const { return (*evaluationFunction)(pos); }
+	[[nodiscard]] Score imbalance() const { return make_score(value, value); }
+	[[nodiscard]] Phase game_phase() const { return gamePhase; }
+	[[nodiscard]] bool specialized_eval_exists() const { return evaluationFunction != nullptr; }
+	[[nodiscard]] Value evaluate(const Position& pos) const { return (*evaluationFunction)(pos); }
 
   // scale_factor() takes a position and a color as input and returns a scale factor
   // for the given color. We have to provide the position in addition to the color
   // because the scale factor may also be a function which should be applied to
   // the position. For instance, in KBP vs K endgames, the scaling function looks
   // for rook pawns and wrong-colored bishops.
-  ScaleFactor scale_factor(const Position& pos, Color c) const {
-    ScaleFactor sf = scalingFunction[c] ? (*scalingFunction[c])(pos)
-                                        :  SCALE_FACTOR_NONE;
-    return sf != SCALE_FACTOR_NONE ? sf : ScaleFactor(factor[c]);
+  [[nodiscard]] ScaleFactor scale_factor(const Position& pos, const Color c) const {
+	  const ScaleFactor sf = scalingFunction[c] ? (*scalingFunction[c])(pos)
+		                         :  SCALE_FACTOR_NONE;
+    return sf != SCALE_FACTOR_NONE ? sf : static_cast<ScaleFactor>(factor[c]);
   }
 
   Key key;

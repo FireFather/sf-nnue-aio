@@ -13,15 +13,15 @@ namespace Features {
 
 // Get a list of indices with a value of 1 among the features
 void P::AppendActiveIndices(
-    const Position& pos, Color perspective, IndexList* active) {
+    const Position& pos, const Color perspective, IndexList* active) {
   // do nothing if array size is small to avoid compiler warning
-  if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
+  if constexpr (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
 
-  const BonaPiece* pieces = (perspective == BLACK) ?
+  const BonaPiece* pieces = perspective == BLACK ?
       pos.eval_list()->piece_list_fb() :
       pos.eval_list()->piece_list_fw();
   for (PieceNumber i = PIECE_NUMBER_ZERO; i < PIECE_NUMBER_KING; ++i) {
-    if (pieces[i] != Eval::BONA_PIECE_ZERO) {
+    if (pieces[i] != BONA_PIECE_ZERO) {
       active->push_back(pieces[i]);
     }
   }
@@ -29,16 +29,16 @@ void P::AppendActiveIndices(
 
 // Get a list of indices whose values ​​have changed from the previous one in the feature quantity
 void P::AppendChangedIndices(
-    const Position& pos, Color perspective,
+    const Position& pos, const Color perspective,
     IndexList* removed, IndexList* added) {
-  const auto& dp = pos.state()->dirtyPiece;
-  for (int i = 0; i < dp.dirty_num; ++i) {
-    if (dp.pieceNo[i] >= PIECE_NUMBER_KING) continue;
-    if (dp.changed_piece[i].old_piece.from[perspective] != Eval::BONA_PIECE_ZERO) {
-      removed->push_back(dp.changed_piece[i].old_piece.from[perspective]);
+  const auto& [changed_piece, pieceNo, dirty_num] = pos.state()->dirtyPiece;
+  for (int i = 0; i < dirty_num; ++i) {
+    if (pieceNo[i] >= PIECE_NUMBER_KING) continue;
+    if (changed_piece[i].old_piece.from[perspective] != BONA_PIECE_ZERO) {
+      removed->push_back(changed_piece[i].old_piece.from[perspective]);
     }
-    if (dp.changed_piece[i].new_piece.from[perspective] != Eval::BONA_PIECE_ZERO) {
-      added->push_back(dp.changed_piece[i].new_piece.from[perspective]);
+    if (changed_piece[i].new_piece.from[perspective] != BONA_PIECE_ZERO) {
+      added->push_back(changed_piece[i].new_piece.from[perspective]);
     }
   }
 }

@@ -22,13 +22,9 @@ namespace {
 
 // Testing RawFeatures mainly for difference calculation
 void TestFeatures(Position& pos) {
-  const std::uint64_t num_games = 1000;
+  constexpr std::uint64_t num_games = 1000;
   StateInfo si;
   pos.set(StartFEN, false, &si, Threads.main());
-  const int MAX_PLY = 256; // test up to 256 hands
-
-  StateInfo state[MAX_PLY]; // StateInfo only for the maximum number of steps
-  int ply; // Trouble from the initial phase
 
   std::random_device seed_it;
   PRNG prng(seed_it());
@@ -37,9 +33,9 @@ void TestFeatures(Position& pos) {
   std::vector<std::uint64_t> num_updates(kRefreshTriggers.size() + 1);
   std::vector<std::uint64_t> num_resets(kRefreshTriggers.size());
   constexpr IndexType kUnknown = -1;
-  std::vector<IndexType> trigger_map(RawFeatures::kDimensions, kUnknown);
+  std::vector trigger_map(RawFeatures::kDimensions, kUnknown);
   auto make_index_sets = [&](const Position& pos) {
-    std::vector<std::vector<std::set<IndexType>>> index_sets(
+    std::vector index_sets(
         kRefreshTriggers.size(), std::vector<std::set<IndexType>>(2));
     for (IndexType i = 0; i < kRefreshTriggers.size(); ++i) {
       Features::IndexList active_indices[2];
@@ -47,9 +43,9 @@ void TestFeatures(Position& pos) {
                                        active_indices);
       for (const auto perspective : Colors) {
         for (const auto index : active_indices[perspective]) {
-          ASSERT(index < RawFeatures::kDimensions);
-          ASSERT(index_sets[i][perspective].count(index) == 0);
-          ASSERT(trigger_map[index] == kUnknown || trigger_map[index] == i);
+          ASSERT(index < RawFeatures::kDimensions)
+          ASSERT(index_sets[i][perspective].count(index) == 0)
+          ASSERT(trigger_map[index] == kUnknown || trigger_map[index] == i)
           index_sets[i][perspective].insert(index);
           trigger_map[index] = i;
         }
@@ -69,9 +65,9 @@ void TestFeatures(Position& pos) {
           ++num_resets[i];
         } else {
           for (const auto index : removed_indices[perspective]) {
-            ASSERT(index < RawFeatures::kDimensions);
-            ASSERT((*index_sets)[i][perspective].count(index) == 1);
-            ASSERT(trigger_map[index] == kUnknown || trigger_map[index] == i);
+            ASSERT(index < RawFeatures::kDimensions)
+            ASSERT((*index_sets)[i][perspective].count(index) == 1)
+            ASSERT(trigger_map[index] == kUnknown || trigger_map[index] == i)
             (*index_sets)[i][perspective].erase(index);
             ++num_updates.back();
             ++num_updates[i];
@@ -79,9 +75,9 @@ void TestFeatures(Position& pos) {
           }
         }
         for (const auto index : added_indices[perspective]) {
-          ASSERT(index < RawFeatures::kDimensions);
-          ASSERT((*index_sets)[i][perspective].count(index) == 0);
-          ASSERT(trigger_map[index] == kUnknown || trigger_map[index] == i);
+          ASSERT(index < RawFeatures::kDimensions)
+          ASSERT((*index_sets)[i][perspective].count(index) == 0)
+          ASSERT(trigger_map[index] == kUnknown || trigger_map[index] == i)
           (*index_sets)[i][perspective].insert(index);
           ++num_updates.back();
           ++num_updates[i];
@@ -96,33 +92,35 @@ void TestFeatures(Position& pos) {
   std::cout << "start testing with random games";
 
   for (std::uint64_t i = 0; i < num_games; ++i) {
-    auto index_sets = make_index_sets(pos);
-    for (ply = 0; ply < MAX_PLY; ++ply) {
-      MoveList<LEGAL> mg(pos); // Generate all legal hands
+	  constexpr int MAX_PLY = 256;
+	  auto index_sets = make_index_sets(pos);
+    for (int ply = 0; ply < MAX_PLY; ++ply) {
+	    StateInfo state[MAX_PLY];
+	    MoveList<LEGAL> mg(pos); // Generate all legal hands
 
       // There was no legal move == Clog
       if (mg.size() == 0)
         break;
 
       // Randomly choose from the generated moves and advance the phase with the moves.
-      Move m = mg.begin()[prng.rand(mg.size())];
+      const Move m = mg.begin()[prng.rand(mg.size())];
       pos.do_move(m, state[ply]);
 
       ++num_moves;
       update_index_sets(pos, &index_sets);
-      ASSERT(index_sets == make_index_sets(pos));
+	    ASSERT(index_sets == make_index_sets(pos))
     }
 
     pos.set(StartFEN, false, &si, Threads.main());
 
     // Output'.' every 100 times (so you can see that it's progressing)
-    if ((i % 100) == 0)
+    if (i % 100 == 0)
       std::cout << "." << std::flush;
   }
   std::cout << "passed." << std::endl;
   std::cout << num_games << " games, " << num_moves << " moves, "
             << num_updates.back() << " updates, "
-            << (1.0 * num_updates.back() / num_moves)
+            << 1.0 * static_cast<double>(num_updates.back()) / static_cast<double>(num_moves)
             << " updates per move" << std::endl;
   std::size_t num_observed_indices = 0;
   for (IndexType i = 0; i < kRefreshTriggers.size(); ++i) {
@@ -130,15 +128,15 @@ void TestFeatures(Position& pos) {
     num_observed_indices += count;
     std::cout << "TriggerEvent(" << static_cast<int>(kRefreshTriggers[i])
               << "): " << count << " features ("
-              << (100.0 * count / RawFeatures::kDimensions) << "%), "
+              << 100.0 * static_cast<double>(count) / RawFeatures::kDimensions << "%), "
               << num_updates[i] << " updates ("
-              << (1.0 * num_updates[i] / num_moves) << " per move), "
+              << 1.0 * static_cast<double>(num_updates[i]) / static_cast<double>(num_moves) << " per move), "
               << num_resets[i] << " resets ("
-              << (100.0 * num_resets[i] / num_moves) << "%)"
+              << 100.0 * static_cast<double>(num_resets[i]) / static_cast<double>(num_moves) << "%)"
               << std::endl;
   }
   std::cout << "observed " << num_observed_indices << " ("
-            << (100.0 * num_observed_indices / RawFeatures::kDimensions)
+            << 100.0 * num_observed_indices / RawFeatures::kDimensions
             << "% of " << RawFeatures::kDimensions
             << ") features" << std::endl;
 }
@@ -154,7 +152,8 @@ void PrintInfo(std::istream& stream) {
 
     std::uint32_t hash_value;
     std::string architecture;
-    const bool success = [&]() {
+    const bool success = [&]
+    {
       std::ifstream file_stream(file_name, std::ios::binary);
       if (!file_stream) return false;
       if (!ReadHeader(file_stream, &hash_value, &architecture)) return false;

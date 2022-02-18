@@ -30,7 +30,6 @@
 #include "search.h"
 #include "thread.h"
 #include "timeman.h"
-#include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
@@ -106,8 +105,8 @@ namespace {
     else
         return;
 
-    states = StateListPtr(new std::deque<StateInfo>(1)); // Drop old and create a new one
-    pos.set(fen, Options["UCI_Chess960"], &states->back(), Threads.main());
+    states = std::make_unique<std::deque<StateInfo>>(1); // Drop old and create a new one
+    pos.set(fen, static_cast<bool>(Options["UCI_Chess960"]), &states->back(), Threads.main());
 
     // Parse move list (if any)
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
@@ -183,10 +182,10 @@ namespace {
   void bench(Position& pos, istream& args, StateListPtr& states) {
 
     string token;
-    uint64_t num, nodes = 0, cnt = 1;
+    uint64_t nodes = 0, cnt = 1;
 
     vector<string> list = setup_bench(pos, args);
-    num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0 || s.find("eval") == 0; });
+    const uint64_t num = count_if(list.begin(), list.end(), [](const string& s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
     TimePoint elapsed = now();
 
@@ -211,7 +210,7 @@ namespace {
         else if (token == "position")   position(pos, is, states);
         else if (token == "ucinewgame")
         {
-            if (Options["EvalNNUE"])
+            if (static_cast<bool>(Options["EvalNNUE"]))
                 init_nnue();
             Search::clear();
             elapsed = now(); // Search::clear() may take some while
@@ -230,24 +229,24 @@ namespace {
 
   // The win rate model returns the probability (per mille) of winning given an eval
   // and a game-ply. The model fits rather accurately the LTC fishtest statistics.
-  int win_rate_model(Value v, int ply) {
+  int win_rate_model(const Value v, const int ply) {
 
      // The model captures only up to 240 plies, so limit input (and rescale)
-     double m = std::min(240, ply) / 64.0;
+     const double m = std::min(240, ply) / 64.0;
 
      // Coefficients of a 3rd order polynomial fit based on fishtest data
      // for two parameters needed to transform eval to the argument of a
      // logistic function.
-     double as[] = {-8.24404295, 64.23892342, -95.73056462, 153.86478679};
-     double bs[] = {-3.37154371, 28.44489198, -56.67657741,  72.05858751};
-     double a = (((as[0] * m + as[1]) * m + as[2]) * m) + as[3];
-     double b = (((bs[0] * m + bs[1]) * m + bs[2]) * m) + bs[3];
+     constexpr double as[] = {-8.24404295, 64.23892342, -95.73056462, 153.86478679};
+     constexpr double bs[] = {-3.37154371, 28.44489198, -56.67657741,  72.05858751};
+     const double a = ((as[0] * m + as[1]) * m + as[2]) * m + as[3];
+     const double b = ((bs[0] * m + bs[1]) * m + bs[2]) * m + bs[3];
 
      // Transform eval to centipawns with limited range
-     double x = Utility::clamp(double(100 * v) / PawnValueEg, -1000.0, 1000.0);
+     const double x = Utility::clamp(static_cast<double>(100 * v) / PawnValueEg, -1000.0, 1000.0);
 
      // Return win rate in per mille (rounded to nearest)
-     return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
+     return static_cast<int>(0.5 + 1000 / (1 + std::exp((a - x) / b)));
   }
 
 // When you calculate check sum, save it and check the consistency later.
@@ -256,7 +255,7 @@ namespace {
 
 // Make is_ready_cmd() callable from outside. (Because I want to call it from the bench command etc.)
 // Note that the phase is not initialized.
-void init_nnue(bool skipCorruptCheck)
+void init_nnue(const bool skipCorruptCheck)
 {
 #if defined(EVAL_NNUE)
   // After receiving "isready", modify so that a line feed is sent every 5 seconds until "readyok" is returned. (keep alive processing)
@@ -300,9 +299,9 @@ void init_nnue(bool skipCorruptCheck)
 void qsearch_cmd(Position& pos)
 {
   cout << "qsearch : ";
-  auto pv = Learner::qsearch(pos);
-  cout << "Value = " << pv.first << " , " << UCI::value(pv.first) << " , PV = ";
-  for (auto m : pv.second)
+  const auto [fst, snd] = Learner::qsearch(pos);
+  cout << "Value = " << fst << " , " << UCI::value(fst) << " , PV = ";
+  for (const auto m : snd)
     cout << UCI::move(m, false) << " ";
   cout << endl;
 }
@@ -311,7 +310,7 @@ void search_cmd(Position& pos, istringstream& is)
 {
   string token;
   int depth = 1;
-  int multi_pv = (int)Options["MultiPV"];
+  int multi_pv = static_cast<int>(Options["MultiPV"]);
   while (is >> token)
   {
     if (token == "depth")
@@ -321,9 +320,9 @@ void search_cmd(Position& pos, istringstream& is)
   }
 
   cout << "search depth = " << depth << " , multi_pv = " << multi_pv << " : ";
-  auto pv = Learner::search(pos, depth, multi_pv);
-  cout << "Value = " << pv.first << " , " << UCI::value(pv.first) << " , PV = ";
-  for (auto m : pv.second)
+  const auto [fst, snd] = Learner::search(pos, depth, multi_pv);
+  cout << "Value = " << fst << " , " << UCI::value(fst) << " , PV = ";
+  for (const auto m : snd)
     cout << UCI::move(m, false) << " ";
   cout << endl;
 }
@@ -336,13 +335,13 @@ void search_cmd(Position& pos, istringstream& is)
 /// run 'bench', once the command is executed the function returns immediately.
 /// In addition to the UCI ones, also some additional debug commands are supported.
 
-void UCI::loop(int argc, char* argv[]) {
+void UCI::loop(const int argc, char* argv[]) {
 
   Position pos;
   string token, cmd;
   StateListPtr states(new std::deque<StateInfo>(1));
 
-  if (Options["EvalNNUE"])
+  if (static_cast<bool>(Options["EvalNNUE"]))
     init_nnue();
 
   pos.set(StartFEN, false, &states->back(), Threads.main());
@@ -380,7 +379,7 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "position")   position(pos, is, states);
       else if (token == "ucinewgame")
       {
-          if (Options["EvalNNUE"])
+          if (static_cast<bool>(Options["EvalNNUE"]))
             init_nnue();
           Search::clear();
       }
@@ -429,7 +428,7 @@ void UCI::loop(int argc, char* argv[]) {
 /// mate <y>  Mate in y moves, not plies. If the engine is getting mated
 ///           use negative values for y.
 
-string UCI::value(Value v) {
+string UCI::value(const Value v) {
 
   assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
 
@@ -447,13 +446,13 @@ string UCI::value(Value v) {
 /// UCI::wdl() report WDL statistics given an evaluation and a game ply, based on
 /// data gathered for fishtest LTC games.
 
-string UCI::wdl(Value v, int ply) {
+string UCI::wdl(const Value v, const int ply) {
 
   stringstream ss;
 
-  int wdl_w = win_rate_model( v, ply);
-  int wdl_l = win_rate_model(-v, ply);
-  int wdl_d = 1000 - wdl_w - wdl_l;
+  const int wdl_w = win_rate_model( v, ply);
+  const int wdl_l = win_rate_model(-v, ply);
+  const int wdl_d = 1000 - wdl_w - wdl_l;
   ss << " wdl " << wdl_w << " " << wdl_d << " " << wdl_l;
 
   return ss.str();
@@ -462,8 +461,8 @@ string UCI::wdl(Value v, int ply) {
 
 /// UCI::square() converts a Square to a string in algebraic notation (g1, a7, etc.)
 
-std::string UCI::square(Square s) {
-  return std::string{ char('a' + file_of(s)), char('1' + rank_of(s)) };
+std::string UCI::square(const Square s) {
+  return std::string{ static_cast<char>('a' + file_of(s)), static_cast<char>('1' + rank_of(s)) };
 }
 
 
@@ -472,9 +471,8 @@ std::string UCI::square(Square s) {
 /// normal chess mode, and in e1h1 notation in chess960 mode. Internally all
 /// castling moves are always encoded as 'king captures rook'.
 
-string UCI::move(Move m, bool chess960) {
-
-  Square from = from_sq(m);
+string UCI::move(const Move m, const bool chess960) {
+	const Square from = from_sq(m);
   Square to = to_sq(m);
 
   if (m == MOVE_NONE)
@@ -486,7 +484,7 @@ string UCI::move(Move m, bool chess960) {
   if (type_of(m) == CASTLING && !chess960)
       to = make_square(to > from ? FILE_G : FILE_C, rank_of(from));
 
-  string move = UCI::square(from) + UCI::square(to);
+  string move = square(from) + square(to);
 
   if (type_of(m) == PROMOTION)
       move += " pnbrqk"[promotion_type(m)];
@@ -501,10 +499,10 @@ string UCI::move(Move m, bool chess960) {
 Move UCI::to_move(const Position& pos, string& str) {
 
   if (str.length() == 5) // Junior could send promotion piece in uppercase
-      str[4] = char(tolower(str[4]));
+      str[4] = static_cast<char>(tolower(str[4]));
 
   for (const auto& m : MoveList<LEGAL>(pos))
-      if (str == UCI::move(m, pos.is_chess960()))
+      if (str == move(m, pos.is_chess960()))
           return m;
 
   return MOVE_NONE;

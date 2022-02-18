@@ -18,8 +18,7 @@ namespace NNUE {
 // Learning: Affine transformation layer
 template <typename PreviousLayer, IndexType OutputDimensions>
 class Trainer<Layers::AffineTransform<PreviousLayer, OutputDimensions>> {
- private:
-  // Type of layer to learn
+	// Type of layer to learn
   using LayerType = Layers::AffineTransform<PreviousLayer, OutputDimensions>;
 
  public:
@@ -62,7 +61,7 @@ class Trainer<Layers::AffineTransform<PreviousLayer, OutputDimensions>> {
       // Assuming that the input distribution is unit-mean 0.5, equal variance,
       // Initialize the output distribution so that each unit has a mean of 0.5 and the same variance as the input
       const double kSigma = 1.0 / std::sqrt(kInputDimensions);
-      auto distribution = std::normal_distribution<double>(0.0, kSigma);
+      auto distribution = std::normal_distribution(0.0, kSigma);
       for (IndexType i = 0; i < kOutputDimensions; ++i) {
         double sum = 0.0;
         for (IndexType j = 0; j < kInputDimensions; ++j) {
@@ -253,8 +252,8 @@ class Trainer<Layers::AffineTransform<PreviousLayer, OutputDimensions>> {
   static constexpr LearnFloatType kActivationScale =
       std::numeric_limits<std::int8_t>::max();
   static constexpr LearnFloatType kBiasScale = kIsOutputLayer ?
-      (kPonanzaConstant * FV_SCALE) :
-      ((1 << kWeightScaleBits) * kActivationScale);
+      kPonanzaConstant * FV_SCALE :
+      (1 << kWeightScaleBits) * kActivationScale;
   static constexpr LearnFloatType kWeightScale = kBiasScale / kActivationScale;
 
   // Upper limit of absolute value of weight used to prevent overflow when parameterizing integers
