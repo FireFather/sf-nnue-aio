@@ -25,6 +25,7 @@
 #include <string>
 
 #include "evaluate.h"
+#include "learn/learn.h"
 #include "movegen.h"
 #include "position.h"
 #include "search.h"
@@ -61,10 +62,6 @@ namespace Learner
 
   // A pair of reader and evaluation value. Returned by Learner::search(),Learner::qsearch().
   typedef std::pair<Value, std::vector<Move> > ValueAndPV;
-
-  ValueAndPV qsearch(Position& pos);
-  ValueAndPV search(Position& pos, int depth_, size_t multiPV = 1, uint64_t nodesLimit = 0);
-
 }
 #endif
 
