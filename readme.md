@@ -1,4 +1,4 @@
-# nodchip-nnue
+# sf-nnue
 Nodchip's NNUE impementation (efficiently updateable neural network)
 
 https://github.com/nodchip/Stockfish/releases/tag/stockfish-nnue-2020-06-09
