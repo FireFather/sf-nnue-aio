@@ -43,7 +43,7 @@ namespace EvalLearningTools
 		const uint64_t size = g_kpp.max_index();
 		min_index_flag.resize(size);
 
-#pragma omp parallel
+//#pragma omp parallel
 		{
 #if defined(_OPENMP)
 			// To prevent the logical 64 cores from being used when there are two CPUs under Windows

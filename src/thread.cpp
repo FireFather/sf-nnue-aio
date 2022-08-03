@@ -153,7 +153,7 @@ void ThreadPool::set(const size_t requested) {
       clear();
 
       // Reallocate the hash with the new threadpool size
-      TT.resize(static_cast<size_t>(Options["Hash"]));
+      TT.resize(Options["Hash"]);
 
       // Init thread number dependent search params.
       Search::init();

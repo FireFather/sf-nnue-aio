@@ -88,7 +88,7 @@ struct Magic {
   unsigned  shift;
 
   // Compute the attack's index using the 'magic bitboards' approach
-  [[nodiscard]] unsigned index(Bitboard occupied) const {
+  [[nodiscard]] unsigned index(const Bitboard occupied) const {
 
     if (HasPext)
         return static_cast<unsigned>(pext(occupied, mask));
@@ -114,26 +114,26 @@ inline Bitboard square_bb(const Square s) {
 /// Overloads of bitwise operators between a Bitboard and a Square for testing
 /// whether a given bit is set in a bitboard, and for setting and clearing bits.
 
-inline Bitboard  operator&( Bitboard  b, const Square s) { return b &  square_bb(s); }
+inline Bitboard  operator&(const Bitboard  b, const Square s) { return b &  square_bb(s); }
 inline Bitboard  operator|(const Bitboard  b, const Square s) { return b |  square_bb(s); }
 inline Bitboard  operator^(const Bitboard  b, const Square s) { return b ^  square_bb(s); }
 inline Bitboard& operator|=(Bitboard& b, const Square s) { return b |= square_bb(s); }
 inline Bitboard& operator^=(Bitboard& b, const Square s) { return b ^= square_bb(s); }
 
-inline Bitboard  operator&(const Square s, Bitboard b) { return b & s; }
+inline Bitboard  operator&(const Square s, const Bitboard b) { return b & s; }
 inline Bitboard  operator|(const Square s, const Bitboard b) { return b | s; }
 inline Bitboard  operator^(const Square s, const Bitboard b) { return b ^ s; }
 
 inline Bitboard  operator|(const Square s1, const Square s2) { return square_bb(s1) | s2; }
 
-constexpr bool more_than_one(Bitboard b) {
+constexpr bool more_than_one(const Bitboard b) {
   return b & b - 1;
 }
 
 /// Counts the occupation of the bitboard depending on the occupation of SQ_A1
 /// as in `b & (1ULL << SQ_A1) ? more_than_two(b) : more_than_one(b)`
 
-constexpr bool conditional_more_than_two(Bitboard b) {
+constexpr bool conditional_more_than_two(const Bitboard b) {
   return b & b - 1 & b - 2;
 }
 
@@ -165,7 +165,7 @@ constexpr Bitboard file_bb(const Square s) {
 /// shift() moves a bitboard one or two steps as specified by the direction D
 
 template<Direction D>
-constexpr Bitboard shift(Bitboard b) {
+constexpr Bitboard shift(const Bitboard b) {
   return  D == NORTH      ?  b             << 8 : D == SOUTH      ?  b             >> 8
         : D == NORTH+NORTH?  b             <<16 : D == SOUTH+SOUTH?  b             >>16
         : D == EAST       ? (b & ~FileHBB) << 1 : D == WEST       ? (b & ~FileABB) >> 1
@@ -227,7 +227,7 @@ inline Bitboard line_bb(const Square s1, const Square s2) {
 /// between_bb(SQ_C4, SQ_F7) will return a bitboard with squares D5 and E6.
 
 inline Bitboard between_bb(const Square s1, const Square s2) {
-  Bitboard b = line_bb(s1, s2) & (AllSquares << s1 ^ AllSquares << s2);
+	const Bitboard b = line_bb(s1, s2) & (AllSquares << s1 ^ AllSquares << s2);
   return b & b - 1; //exclude lsb
 }
 

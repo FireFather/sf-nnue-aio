@@ -328,7 +328,7 @@ inline bool Position::can_castle(const CastlingRights cr) const {
   return st->castlingRights & cr;
 }
 
-inline CastlingRights Position::castling_rights(Color c) const {
+inline CastlingRights Position::castling_rights(const Color c) const {
   return c & static_cast<CastlingRights>(st->castlingRights);
 }
 

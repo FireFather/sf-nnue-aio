@@ -406,7 +406,7 @@ constexpr Piece make_piece(const Color c, const PieceType pt) {
   return static_cast<Piece>((c << 3) + pt);
 }
 
-constexpr PieceType type_of(Piece pc) {
+constexpr PieceType type_of(const Piece pc) {
   return static_cast<PieceType>(pc & 7);
 }
 
@@ -419,7 +419,7 @@ constexpr bool is_ok(const Square s) {
   return s >= SQ_A1 && s <= SQ_H8;
 }
 
-constexpr File file_of(Square s) {
+constexpr File file_of(const Square s) {
   return static_cast<File>(s & 7);
 }
 
@@ -447,15 +447,15 @@ constexpr Square from_sq(const Move m) {
   return static_cast<Square>(m >> 6 & 0x3F);
 }
 
-constexpr Square to_sq(Move m) {
+constexpr Square to_sq(const Move m) {
   return static_cast<Square>(m & 0x3F);
 }
 
-constexpr int from_to(Move m) {
+constexpr int from_to(const Move m) {
  return m & 0xFFF;
 }
 
-constexpr MoveType type_of(Move m) {
+constexpr MoveType type_of(const Move m) {
   return static_cast<MoveType>(m & 3 << 14);
 }
 

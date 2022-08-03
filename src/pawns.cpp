@@ -87,8 +87,8 @@ namespace {
     Score score = SCORE_ZERO;
     const Square* pl = pos.squares<PAWN>(Us);
 
-    Bitboard ourPawns   = pos.pieces(  Us, PAWN);
-    Bitboard theirPawns = pos.pieces(Them, PAWN);
+    const Bitboard ourPawns   = pos.pieces(  Us, PAWN);
+    const Bitboard theirPawns = pos.pieces(Them, PAWN);
 
     const Bitboard doubleAttackThem = pawn_double_attacks_bb<Them>(theirPawns);
 
@@ -111,7 +111,7 @@ namespace {
         const Bitboard lever = theirPawns & pawn_attacks_bb(Us, s);
         const Bitboard leverPush = theirPawns & pawn_attacks_bb(Us, s + Up);
         const bool doubled = ourPawns & s - Up;
-        Bitboard neighbours = ourPawns & adjacent_files_bb(s);
+        const Bitboard neighbours = ourPawns & adjacent_files_bb(s);
         const Bitboard phalanx = neighbours & rank_bb(s);
         Bitboard support = neighbours & rank_bb(s - Up);
 
@@ -212,8 +212,8 @@ Score Entry::evaluate_shelter(const Position& pos, const Square ksq) const {
   constexpr Color Them = ~Us;
 
   Bitboard b = pos.pieces(PAWN) & ~forward_ranks_bb(Them, ksq);
-  Bitboard ourPawns = b & pos.pieces(Us) & ~pawnAttacks[Them];
-  Bitboard theirPawns = b & pos.pieces(Them);
+  const Bitboard ourPawns = b & pos.pieces(Us) & ~pawnAttacks[Them];
+  const Bitboard theirPawns = b & pos.pieces(Them);
 
   Score bonus = make_score(5, 5);
 

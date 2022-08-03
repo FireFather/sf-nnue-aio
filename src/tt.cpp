@@ -96,7 +96,7 @@ void TranspositionTable::clear() const
               WinProcGroup::bindThisThread(idx);
 
           // Each thread will zero its part of the hash table
-          const size_t stride = static_cast<size_t>(clusterCount / static_cast<size_t>(Options["Threads"])),
+          const size_t stride = clusterCount / static_cast<size_t>(Options["Threads"]),
                        start  = stride * idx,
                        len    = idx != static_cast<size_t>(Options["Threads"]) - 1 ?
                                 stride : clusterCount - start;
@@ -156,7 +156,7 @@ int TranspositionTable::hashfull() const {
 
   int cnt = 0;
   for (int i = 0; i < 1000; ++i)
-      for (auto& j : table[i].entry)
+      for (const auto& j : table[i].entry)
 	      cnt += (j.genBound8 & 0xF8) == generation8;
 
   return cnt / ClusterSize;

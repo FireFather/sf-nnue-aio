@@ -45,11 +45,12 @@ class FeatureTransformer {
   }
 
   // read parameters
-  bool ReadParameters(std::istream& stream) {
+  bool ReadParameters(std::istream& stream)
+  {
     stream.read(reinterpret_cast<char*>(biases_),
                 kHalfDimensions * sizeof(BiasType));
     stream.read(reinterpret_cast<char*>(weights_),
-                kHalfDimensions * kInputDimensions * sizeof(WeightType));
+        static_cast<unsigned long long>(kHalfDimensions) * kInputDimensions * sizeof(WeightType));
     return !stream.fail();
   }
 

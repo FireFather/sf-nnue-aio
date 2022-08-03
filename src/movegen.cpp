@@ -48,7 +48,7 @@ namespace {
 
 
   template<Color Us, GenType Type>
-  ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard target) {
+  ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, const Bitboard target) {
 
     constexpr Color     Them     = ~Us;
     constexpr Bitboard  TRank7BB = Us == WHITE ? Rank7BB    : Rank2BB;
@@ -61,7 +61,7 @@ namespace {
     Bitboard emptySquares;
 
     const Bitboard pawnsOn7    = pos.pieces(Us, PAWN) &  TRank7BB;
-    Bitboard pawnsNotOn7 = pos.pieces(Us, PAWN) & ~TRank7BB;
+    const Bitboard pawnsNotOn7 = pos.pieces(Us, PAWN) & ~TRank7BB;
 
     Bitboard enemies = Type == EVASIONS ? pos.pieces(Them) & target:
 	                       Type == CAPTURES ? target : pos.pieces(Them);
@@ -91,7 +91,7 @@ namespace {
             // promotion has been already generated amongst the captures.
             if (const Bitboard dcCandidateQuiets = pos.blockers_for_king(Them) & pawnsNotOn7)
             {
-                Bitboard dc1 = shift<Up>(dcCandidateQuiets) & emptySquares & ~file_bb(ksq);
+	            const Bitboard dc1 = shift<Up>(dcCandidateQuiets) & emptySquares & ~file_bb(ksq);
                 const Bitboard dc2 = shift<Up>(dc1 & TRank3BB) & emptySquares;
 
                 b1 |= dc1;

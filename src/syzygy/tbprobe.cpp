@@ -152,7 +152,8 @@ struct LR {
                    // bits is the right-hand symbol. If symbol has length 1,
                    // then the left-hand symbol is the stored value.
     template<Side S>
-    Sym get() {
+    [[nodiscard]] [[nodiscard]] [[nodiscard]] Sym get() const
+    {
         return S == Left  ? (lr[1] & 0xF) << 8 | lr[0] :
                S == Right ?  lr[2] << 4 | lr[1] >> 4 : (assert(false), static_cast<Sym>(-1));
     }
@@ -508,7 +509,7 @@ void TBTables::add(const std::vector<PieceType>& pieces) {
 // Huffman codes is the same for all blocks in the table. A non-symmetric pawnless TB file
 // will have one table for wtm and one for btm, a TB file with pawns will have tables per
 // file a,b,c,d also in this case one set for wtm and one for btm.
-int decompress_pairs(PairsData* d, const uint64_t idx) {
+int decompress_pairs(const PairsData* d, const uint64_t idx) {
 
     // Special case where all table positions store the same value
     if (d->flags & SingleValue)
@@ -620,8 +621,7 @@ int decompress_pairs(PairsData* d, const uint64_t idx) {
 bool check_dtz_stm(TBTable<WDL>*, int, File) { return true; }
 
 bool check_dtz_stm(TBTable<DTZ>* entry, const int stm, const File f) {
-
-    auto flags = entry->get(stm, f)->flags;
+	const auto flags = entry->get(stm, f)->flags;
     return   (flags & STM) == stm
           || entry->key == entry->key2 && !entry->hasPawns;
 }
@@ -636,7 +636,7 @@ int map_score(TBTable<DTZ>* entry, const File f, int value, const WDLScore wdl) 
 
     constexpr int WDLMap[] = { 1, 3, 0, 2, 0 };
 
-    auto flags = entry->get(0, f)->flags;
+    const auto flags = entry->get(0, f)->flags;
 
     uint8_t* map = entry->map;
     const uint16_t* idx = entry->get(0, f)->map_idx;
@@ -1033,7 +1033,7 @@ uint8_t* set_dtz_map(TBTable<DTZ>& e, uint8_t* data, const File maxFile) {
     e.map = data;
 
     for (File f = FILE_A; f <= maxFile; ++f) {
-	    if (auto flags = e.get(0, f)->flags; flags & Mapped) {
+	    if (const auto flags = e.get(0, f)->flags; flags & Mapped) {
             if (flags & Wide) {
                 data += reinterpret_cast<uintptr_t>(data) & 1;  // Word alignment, we may have a mixed table
                 for (unsigned short& i : e.get(0, f)->map_idx)
@@ -1580,7 +1580,7 @@ bool Tablebases::root_probe_wdl(Position& pos, Search::RootMoves& rootMoves) {
     ProbeState result;
     StateInfo st;
 
-    const bool rule50 = static_cast<bool>(Options["Syzygy50MoveRule"]);
+    const bool rule50 = Options["Syzygy50MoveRule"];
 
     // Probe and rank each move
     for (auto& m : rootMoves)

@@ -97,7 +97,7 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
 // https://marcelk.net/2013-04-06/paper/upcoming-rep-v2.pdf
 
 // First and second hash functions for indexing the cuckoo tables
-inline int H1(Key h) { return h & 0x1fff; }
+inline int H1(const Key h) { return h & 0x1fff; }
 inline int H2(const Key h) { return h >> 16 & 0x1fff; }
 
 // Cuckoo tables with Zobrist hashes of valid reversible moves, and the moves themselves
@@ -315,9 +315,9 @@ size_t idx;
 /// Position::set_castling_right() is a helper function used to set castling
 /// rights given the corresponding color and the rook starting square.
 
-void Position::set_castling_right(Color c, const Square rfrom) {
+void Position::set_castling_right(const Color c, const Square rfrom) {
 	const Square kfrom = square<KING>(c);
-  CastlingRights cr = c & (kfrom < rfrom ? KING_SIDE: QUEEN_SIDE);
+	const CastlingRights cr = c & (kfrom < rfrom ? KING_SIDE: QUEEN_SIDE);
 
   st->castlingRights |= cr;
   castlingRightsMask[kfrom] |= cr;
@@ -486,7 +486,7 @@ Bitboard Position::slider_blockers(const Bitboard sliders, const Square s, Bitbo
   {
 	  const Square sniperSq = pop_lsb(&snipers);
 
-	  if (Bitboard b = between_bb(s, sniperSq) & occupancy; b && !more_than_one(b))
+	  if (const Bitboard b = between_bb(s, sniperSq) & occupancy; b && !more_than_one(b))
     {
         blockers |= b;
         if (b & pieces(color_of(piece_on(s))))
@@ -1440,7 +1440,7 @@ bool Position::pos_is_ok() const {
               assert(0 && "pos_is_ok: Index");
   }
 
-  for (Color c : { WHITE, BLACK })
+  for (const Color c : { WHITE, BLACK })
       for (const CastlingRights cr : {c & KING_SIDE, c & QUEEN_SIDE})
       {
           if (!can_castle(cr))

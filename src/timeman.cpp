@@ -34,9 +34,9 @@ TimeManagement Time; // Our global time management object
 //      2) x moves in y seconds (+ z increment)
 
 void TimeManagement::init(Search::LimitsType& limits, const Color us, const int ply) {
-	const TimePoint moveOverhead    = static_cast<TimePoint>(Options["Move Overhead"]);
-	const TimePoint slowMover       = static_cast<TimePoint>(Options["Slow Mover"]);
-	const TimePoint npmsec          = static_cast<TimePoint>(Options["nodestime"]);
+	const TimePoint moveOverhead    = Options["Move Overhead"];
+	const TimePoint slowMover       = Options["Slow Mover"];
+	const TimePoint npmsec          = Options["nodestime"];
 
   // opt_scale is a percentage of available time to use for the current move.
   // max_scale is a multiplier applied to optimumTime.

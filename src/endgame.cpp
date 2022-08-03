@@ -324,8 +324,8 @@ ScaleFactor Endgame<KBPsK>::operator()(const Position& pos) const {
   // No assertions about the material of weakSide, because we want draws to
   // be detected even when the weaker side has some pawns.
 
-  Bitboard strongPawns = pos.pieces(strongSide, PAWN);
-  Bitboard allPawns = pos.pieces(PAWN);
+  const Bitboard strongPawns = pos.pieces(strongSide, PAWN);
+  const Bitboard allPawns = pos.pieces(PAWN);
 
   const Square strongBishop = pos.square<BISHOP>(strongSide);
   const Square weakKing = pos.square<KING>(weakSide);
@@ -576,7 +576,7 @@ ScaleFactor Endgame<KPsK>::operator()(const Position& pos) const {
   const Square weakKing = pos.square<KING>(weakSide);
 
   // If all pawns are ahead of the king on a single rook file, it's a draw.
-  if (Bitboard strongPawns = pos.pieces(strongSide, PAWN); !(strongPawns & ~FileABB || strongPawns & ~FileHBB) &&
+  if (const Bitboard strongPawns = pos.pieces(strongSide, PAWN); !(strongPawns & ~FileABB || strongPawns & ~FileHBB) &&
       !(strongPawns & ~passed_pawn_span(weakSide, weakKing)))
       return SCALE_FACTOR_DRAW;
 

@@ -318,7 +318,7 @@ namespace {
         if (Pt == BISHOP || Pt == KNIGHT)
         {
             // Bonus if piece is on an outpost square or can reach one
-            if (Bitboard bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them); Pt == KNIGHT
+            if (const Bitboard bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them); Pt == KNIGHT
                 && bb & s & ~CenterFiles
                 && !(b & pos.pieces(Them) & ~pos.pieces(PAWN))
                 && !conditional_more_than_two(
@@ -341,7 +341,7 @@ namespace {
                 // Penalty according to the number of our pawns on the same color square as the
                 // bishop, bigger when the center files are blocked with pawns and smaller
                 // when the bishop is outside the pawn chain.
-                Bitboard blocked = pos.pieces(Us, PAWN) & shift<Down>(pos.pieces());
+                const Bitboard blocked = pos.pieces(Us, PAWN) & shift<Down>(pos.pieces());
 
                 score -= BishopPawns * pos.pawns_on_same_color_squares(Us, s)
                                      * (!(attackedBy[Us][PAWN] & s) + popcount(blocked & CenterFiles));
@@ -420,7 +420,7 @@ namespace {
     Score score = pe->king_safety<Us>(pos);
 
     // Attacked squares defended at most once by our queen or king
-    Bitboard weak = attackedBy[Them][ALL_PIECES]
+    const Bitboard weak = attackedBy[Them][ALL_PIECES]
 	    & ~attackedBy2[Us]
 	    & (~attackedBy[Us][ALL_PIECES] | attackedBy[Us][KING] | attackedBy[Us][QUEEN]);
 
@@ -455,7 +455,7 @@ namespace {
         unsafeChecks |= b2 & attackedBy[Them][BISHOP];
 
     // Enemy knights checks
-    if (Bitboard knightChecks = attacks_bb<KNIGHT>(ksq) & attackedBy[Them][KNIGHT]; knightChecks & safe)
+    if (const Bitboard knightChecks = attacks_bb<KNIGHT>(ksq) & attackedBy[Them][KNIGHT]; knightChecks & safe)
         kingDanger += SafeCheck[KNIGHT][more_than_one(knightChecks & safe)];
     else
         unsafeChecks |= knightChecks;
@@ -527,7 +527,7 @@ namespace {
     // Enemies not strongly protected and under our attack
 
     // Bonus according to the kind of attacking pieces
-    if (Bitboard weak = pos.pieces(Them) & ~stronglyProtected & attackedBy[Us][ALL_PIECES]; defended | weak)
+    if (const Bitboard weak = pos.pieces(Them) & ~stronglyProtected & attackedBy[Us][ALL_PIECES]; defended | weak)
     {
         b = (defended | weak) & (attackedBy[Us][KNIGHT] | attackedBy[Us][BISHOP]);
         while (b)

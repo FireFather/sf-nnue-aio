@@ -90,7 +90,7 @@ namespace HalfFloat
 			return f_;
 		}
 
-		static float to_float(float16 v)
+		static float to_float(const float16 v)
 		{
 			const uint32_t sign_bit = (v.v_ & 0x8000) << 16;
 			const uint32_t exponent = ((v.v_ >> 10 & 0x1f) - 15 + 127 & 0xff) << 23;

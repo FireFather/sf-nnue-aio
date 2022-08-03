@@ -47,7 +47,7 @@ namespace {
 /// Bitboards::pretty() returns an ASCII representation of a bitboard suitable
 /// to be printed to standard output. Useful for debugging.
 
-std::string Bitboards::pretty(Bitboard b)
+std::string Bitboards::pretty(const Bitboard b)
 {
 
   std::string s = "+---+---+---+---+---+---+---+---+\n";
@@ -107,7 +107,7 @@ void Bitboards::init() {
 
 namespace {
 
-  Bitboard sliding_attack(const PieceType pt, const Square sq, Bitboard occupied) {
+  Bitboard sliding_attack(const PieceType pt, const Square sq, const Bitboard occupied) {
 
     Bitboard attacks = 0;
     Direction   RookDirections[4] = {NORTH, SOUTH, EAST, WEST};

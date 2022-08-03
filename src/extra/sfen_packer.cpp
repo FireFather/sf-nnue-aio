@@ -49,7 +49,7 @@ struct BitStream
 
   // write n bits of data
   // Data shall be written out from the lower order of d.
-  void write_n_bit(int d, const int n)
+  void write_n_bit(const int d, const int n)
   {
     for (int i = 0; i <n; ++i)
       write_one_bit(d & 1 << i);

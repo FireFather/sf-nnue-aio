@@ -2037,7 +2037,7 @@ namespace Learner
 
       rootMoves.clear();
       for (auto m: MoveList<LEGAL>(pos))
-        rootMoves.push_back(RootMove(m));
+        rootMoves.emplace_back(m);
 
       assert(!rootMoves.empty());
 

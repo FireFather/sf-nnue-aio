@@ -910,7 +910,7 @@ void MultiThinkGenSfen::thread_worker(size_t thread_id)
 void gen_sfen(Position&, istringstream& is)
 {
 	// number of threads (given by USI setoption)
-	uint32_t thread_num = static_cast<uint32_t>(Options["Threads"]);
+	uint32_t thread_num = Options["Threads"];
 
 	// Number of generated game records default = 8 billion phases (Ponanza specification)
 	uint64_t loop_max = 8000000000UL;

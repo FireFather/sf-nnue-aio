@@ -103,7 +103,7 @@ namespace {
         return;
 
     states = std::make_unique<std::deque<StateInfo>>(1); // Drop old and create a new one
-    pos.set(fen, static_cast<bool>(Options["UCI_Chess960"]), &states->back(), Threads.main());
+    pos.set(fen, Options["UCI_Chess960"], &states->back(), Threads.main());
 
     // Parse move list (if any)
     while (is >> token && (m = UCI::to_move(pos, token)) != MOVE_NONE)
@@ -307,7 +307,7 @@ void search_cmd(Position& pos, istringstream& is)
 {
   string token;
   int depth = 1;
-  int multi_pv = static_cast<int>(Options["MultiPV"]);
+  int multi_pv = Options["MultiPV"];
   while (is >> token)
   {
     if (token == "depth")
