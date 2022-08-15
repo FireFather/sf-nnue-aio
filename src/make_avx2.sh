@@ -1,5 +1,5 @@
 #!/bin/bash
-# make_all.sh
+# make_avx2.sh
 
 make profile-nnue ARCH=x86-64-avx2
 strip stockfish.exe
