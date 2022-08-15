@@ -12,6 +12,9 @@ stockfish.md
 for more info
 
 Use nnue-gui:
+
 https://github.com/FireFather/nnue-gui
+
 It's a basic GUI to keep track of settings, paths, UCI options, command line parameters, etc.
-It will also launch the various binaries needed for all 3 phases: gen training data, gen validation data, and learning (training).
+
+It will also launch and monitor the various binaries needed for all 3 phases: gen training data, gen validation data, and learning (training).
